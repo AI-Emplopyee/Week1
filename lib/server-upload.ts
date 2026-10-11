@@ -2,7 +2,7 @@ import PostalMime from 'postal-mime';
 import { boundedPdfPages } from '@/lib/pdf-pages';
 import { assessExtraction } from '@/lib/extraction-quality';
 import { ApiError, bucket, expectRevision, json, mutate, readLimitedBytes, requireSameOrigin, response, workspace } from '@/lib/server';
-import { acceptedFile, MAX_UPLOAD_BYTES, parseId, parsePages, parseRevision, safeFilename } from '@/lib/server-validation';
+import { acceptedFile, MAX_UPLOAD_BYTES, parseId, parseUploadedPages, parseRevision, safeFilename } from '@/lib/server-validation';
 import type { EmailRecord, SourcePage, UploadedDocument } from '@/lib/types';
 
 async function hash(bytes: Uint8Array): Promise<string> {
@@ -108,7 +108,7 @@ export async function upload(request: Request): Promise<Response> {
       return json(await mutate(context, revision, { type: 'intake', documents, targetCaseId, email }));
     }
     if (context.state.documents.some(doc => doc.sha256 === sha256)) return json({ ...response(context), notice: 'This exact original document is already in the workspace. No duplicate was created.' });
-    let pages = parsePages(JSON.parse(String(form.get('pages') || '[]')));
+    let pages = parseUploadedPages(JSON.parse(String(form.get('pages') || '[]')));
     if (['txt', 'csv'].includes(extension)) pages = textPages(new TextDecoder().decode(bytes));
     if (extension === 'pdf') pages = await pdfPages(bytes, pages);
     if (['png', 'jpg', 'jpeg', 'webp'].includes(extension)) {

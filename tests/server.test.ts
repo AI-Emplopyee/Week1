@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { DatabaseSync } from 'node:sqlite';
-import { acceptedFile, parseMutation, parsePages, safeFilename, sameOrigin } from '../lib/server-validation.ts';
+import { acceptedFile, parseMutation, parsePages, parseUploadedPages, safeFilename, sameOrigin } from '../lib/server-validation.ts';
 import { COMMIT_SQL, commitSucceeded } from '../lib/server-persistence.ts';
 import { PDFDocument } from 'pdf-lib';
 import { boundedPdfPages } from '../lib/pdf-pages.ts';
@@ -95,4 +95,12 @@ test('server extraction quality overrides falsely complete OCR and preserves bro
   assert.equal(assessExtraction([{ ...pages[0], ocrConfidence: 0.6 }], 'extracted').extractionStatus, 'extracted');
   assert.equal(assessExtraction([pages[0]], 'needs_transcription', 'Worker could not finish.').extractionStatus, 'needs_transcription');
   assert.equal(assessExtraction([{ page: 1, text: 'X', textSource: 'manual' }]).extractionStatus, 'extracted');
+});
+
+test('file uploads cannot claim a manual review that never passed through the audited action', () => {
+  const manuallyLabelled = [{ page: 1, text: 'Synthetic source transcription', textSource: 'manual' }];
+  assert.throws(() => parseUploadedPages(manuallyLabelled), /audited document transcription action/);
+  assert.doesNotThrow(() => parseMutation({ revision: 1, action: { type: 'transcribe_document', documentId: 'doc_demo', pages: manuallyLabelled, reason: 'Compared and transcribed the original source.' } }));
+  assert.equal(parseUploadedPages([{ page: 1, text: 'Synthetic OCR text', textSource: 'ocr', ocrConfidence: 0.4 }])[0].ocrConfidence, 0.4);
+  assert.equal(parseUploadedPages([{ page: 1, text: 'Synthetic PDF text', textSource: 'pdf_text' }])[0].textSource, 'pdf_text');
 });

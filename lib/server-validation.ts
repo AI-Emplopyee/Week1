@@ -53,6 +53,11 @@ export const mutationSchema = z.object({ revision: z.number().int().nonnegative(
 export const inviteSchema = z.object({ email: z.string().trim().email().max(320) }).strict();
 export function parseMutation(value: unknown): { revision: number; action: Action } { return mutationSchema.parse(value); }
 export function parsePages(value: unknown): SourcePage[] { return pagesSchema.parse(value); }
+export function parseUploadedPages(value: unknown): SourcePage[] {
+  return pagesSchema.refine(pages => !pages.some(page => page.textSource === 'manual'), {
+    message: 'Manual transcription must use the audited document transcription action.',
+  }).parse(value);
+}
 export function parseId(value: unknown): string { return id.parse(value); }
 export function parseRevision(value: unknown): number { return z.coerce.number().int().nonnegative().parse(value); }
 export function safeFilename(value: string): string {
