@@ -1,0 +1,8 @@
+SYNTHETIC FIXTURE ONLY
+COMMERCIAL INVOICE
+Invoice Number: AMBIGUOUS-001
+Invoice Date: 03/04/2026
+Importer: Demo A
+Exporter: Demo B
+Currency: USD
+Invoice Total: 1,200

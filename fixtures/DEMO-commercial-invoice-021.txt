@@ -1,0 +1,12 @@
+SYNTHETIC DEMO — FICTIONAL COMPANIES — NOT A REAL CLIENT SHIPMENT
+COMMERCIAL INVOICE
+Invoice Number: DEMO-INV-021
+Invoice Date: 2026-09-25
+B/L Number: DEMO-BL-021
+Importer: Công ty Minh An Demo
+Exporter: Harbor Components Demo Ltd
+Currency: usd
+Invoice Total: 12,500.00
+Incoterm: FOB
+Description | Quantity | Unit | Unit Price | Amount
+Electronic housings | 500 | PCS | 25.00 | 12500.00

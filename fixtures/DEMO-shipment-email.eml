@@ -1,0 +1,31 @@
+From: demo-supplier@example.invalid
+To: demo-broker@example.invalid
+Subject: SYNTHETIC AICD shipment DEMO-INV-022
+Date: Sat, 10 Oct 2026 09:00:00 -0700
+Message-ID: <aicd-demo-022@example.invalid>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="aicd-synthetic-fixture"
+
+--aicd-synthetic-fixture
+Content-Type: text/plain; charset=UTF-8
+
+SYNTHETIC FIXTURE ONLY. Fictional shipment documents attached.
+--aicd-synthetic-fixture
+Content-Type: text/plain; charset=UTF-8; name="DEMO-commercial-invoice-022.txt"
+Content-Disposition: attachment; filename="DEMO-commercial-invoice-022.txt"
+Content-Transfer-Encoding: base64
+
+U1lOVEhFVElDIERFTU8g4oCUIEZJQ1RJT05BTCBDT01QQU5JRVMg4oCUIE5PVCBBIFJFQUwgQ0xJRU5UIFNISVBNRU5UCkNPTU1FUkNJQUwgSU5WT0lDRQpJbnZvaWNlIE51bWJlcjogREVNTy1JTlYtMDIyCkludm9pY2UgRGF0ZTogMjAyNi0wOS0yNgpCL0wgTnVtYmVyOiBERU1PLUJMLTAyMgpJbXBvcnRlcjogQ8O0bmcgdHkgU+G7o2kgVmnhu4d0IERlbW8KRXhwb3J0ZXI6IE5vcnRoIExvb20gRGVtbyBDbwpDdXJyZW5jeTogVVNECkludm9pY2UgVG90YWw6IDg0MDAuMDAKSW5jb3Rlcm06IENJRgpEZXNjcmlwdGlvbiB8IFF1YW50aXR5IHwgVW5pdCB8IFVuaXQgUHJpY2UgfCBBbW91bnQKV292ZW4gZmFicmljIHJvbGxzIHwgMTIwMCB8IE0gfCA3LjAwIHwgODQwMC4wMA==
+--aicd-synthetic-fixture
+Content-Type: text/plain; charset=UTF-8; name="DEMO-packing-list-022.txt"
+Content-Disposition: attachment; filename="DEMO-packing-list-022.txt"
+Content-Transfer-Encoding: base64
+
+U1lOVEhFVElDIERFTU8g4oCUIEZJQ1RJT05BTCBDT01QQU5JRVMg4oCUIE5PVCBBIFJFQUwgQ0xJRU5UIFNISVBNRU5UClBBQ0tJTkcgTElTVApJbnZvaWNlIE51bWJlcjogREVNTy1JTlYtMDIyCkIvTCBOdW1iZXI6IERFTU8tQkwtMDIyCkltcG9ydGVyOiBDw7RuZyB0eSBT4bujaSBWaeG7h3QgRGVtbwpFeHBvcnRlcjogTm9ydGggTG9vbSBEZW1vIENvClBhY2thZ2VzOiAxMgpHcm9zcyBXZWlnaHQ6IDYzMApOZXQgV2VpZ2h0OiA2MDAKRGVzY3JpcHRpb24gfCBRdWFudGl0eSB8IFVuaXQKV292ZW4gZmFicmljIHJvbGxzIHwgMTIwMCB8IE0=
+--aicd-synthetic-fixture
+Content-Type: text/plain; charset=UTF-8; name="DEMO-bill-of-lading-022.txt"
+Content-Disposition: attachment; filename="DEMO-bill-of-lading-022.txt"
+Content-Transfer-Encoding: base64
+
+U1lOVEhFVElDIERFTU8g4oCUIEZJQ1RJT05BTCBDT01QQU5JRVMg4oCUIE5PVCBBIFJFQUwgQ0xJRU5UIFNISVBNRU5UCkJJTEwgT0YgTEFESU5HCkIvTCBOdW1iZXI6IERFTU8tQkwtMDIyCkltcG9ydGVyOiBDw7RuZyB0eSBT4bujaSBWaeG7h3QgRGVtbwpFeHBvcnRlcjogTm9ydGggTG9vbSBEZW1vIENvClZlc3NlbDogREVNTyBNRVJJRElBTgpWb3lhZ2U6IEQwMjIKUG9ydCBvZiBMb2FkaW5nOiBCdXNhbgpQb3J0IG9mIERpc2NoYXJnZTogSGFpIFBob25nCkNvbnRhaW5lcjogREVNTzAwMDAwMjIKUGFja2FnZXM6IDEyCkdyb3NzIFdlaWdodDogNjMw
+--aicd-synthetic-fixture--

@@ -1,0 +1,12 @@
+SYNTHETIC DEMO — FICTIONAL COMPANIES — NOT A REAL CLIENT SHIPMENT
+COMMERCIAL INVOICE
+Invoice Number: DEMO-INV-022
+Invoice Date: 2026-09-26
+B/L Number: DEMO-BL-022
+Importer: Công ty Sợi Việt Demo
+Exporter: North Loom Demo Co
+Currency: USD
+Invoice Total: 8500.00
+Incoterm: CIF
+Description | Quantity | Unit | Unit Price | Amount
+Woven fabric rolls | 1200 | M | 7.00 | 8400.00

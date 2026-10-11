@@ -1,0 +1,12 @@
+SYNTHETIC DEMO — FICTIONAL COMPANIES — NOT A REAL CLIENT SHIPMENT
+BILL OF LADING
+B/L Number: DEMO-BL-021
+Importer: Công ty Minh An Demo
+Exporter: Harbor Components Demo Ltd
+Vessel: DEMO OCEAN
+Voyage: D021
+Port of Loading: Shanghai
+Port of Discharge: Cat Lai
+Container: DEMO0000021
+Packages: 24
+Gross Weight: 850

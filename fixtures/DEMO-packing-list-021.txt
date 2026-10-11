@@ -1,0 +1,11 @@
+SYNTHETIC DEMO — FICTIONAL COMPANIES — NOT A REAL CLIENT SHIPMENT
+PACKING LIST
+Invoice Number: DEMO-INV-021
+B/L Number: DEMO-BL-021
+Importer: Công ty Minh An Demo
+Exporter: Harbor Components Demo Ltd
+Packages: 25
+Gross Weight: 850
+Net Weight: 800
+Description | Quantity | Unit
+Electronic housings | 480 | PCS

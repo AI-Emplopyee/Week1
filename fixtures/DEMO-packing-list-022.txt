@@ -1,0 +1,11 @@
+SYNTHETIC DEMO — FICTIONAL COMPANIES — NOT A REAL CLIENT SHIPMENT
+PACKING LIST
+Invoice Number: DEMO-INV-022
+B/L Number: DEMO-BL-022
+Importer: Công ty Sợi Việt Demo
+Exporter: North Loom Demo Co
+Packages: 12
+Gross Weight: 630
+Net Weight: 600
+Description | Quantity | Unit
+Woven fabric rolls | 1200 | M

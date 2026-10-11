@@ -1,0 +1,12 @@
+SYNTHETIC DEMO — FICTIONAL COMPANIES — NOT A REAL CLIENT SHIPMENT
+BILL OF LADING
+B/L Number: DEMO-BL-022
+Importer: Công ty Sợi Việt Demo
+Exporter: North Loom Demo Co
+Vessel: DEMO MERIDIAN
+Voyage: D022
+Port of Loading: Busan
+Port of Discharge: Hai Phong
+Container: DEMO0000022
+Packages: 12
+Gross Weight: 630
