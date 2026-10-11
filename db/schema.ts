@@ -1,4 +1,4 @@
-import { integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const workspaces = sqliteTable('workspaces', {
   id: text('id').primaryKey(),
@@ -20,3 +20,15 @@ export const workspaceMembers = sqliteTable('workspace_members', {
   primaryKey({ columns: [table.workspaceId, table.email] }),
   uniqueIndex('workspace_member_identity').on(table.workspaceId, table.userId),
 ]);
+
+export const authRateLimits = sqliteTable('auth_rate_limits', {
+  key: text('key').primaryKey(),
+  count: integer('count').notNull(),
+  expiresAt: integer('expires_at').notNull(),
+}, table => [index('auth_rate_limits_expiry').on(table.expiresAt)]);
+
+export const authRecoveryGrants = sqliteTable('auth_recovery_grants', {
+  tokenHash: text('token_hash').primaryKey(),
+  userId: text('user_id').notNull(),
+  expiresAt: integer('expires_at').notNull(),
+}, table => [index('auth_recovery_grants_expiry').on(table.expiresAt)]);

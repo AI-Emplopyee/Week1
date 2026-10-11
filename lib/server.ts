@@ -1,6 +1,7 @@
 import { env } from 'cloudflare:workers';
 import { ZodError } from 'zod';
-import { getChatGPTUser } from '@/app/chatgpt-auth';
+import { AuthError, authMode, supabaseConfig } from '@/lib/auth-provider';
+import { requireAuthActor } from '@/lib/server-auth';
 import { applyAction, createEmptyWorkspace, getIssues } from '@/lib/engine';
 import { commitSucceeded, prepareCommit } from '@/lib/server-persistence';
 import { MAX_JSON_BYTES, MAX_WORKSPACE_BYTES, parseId, sameOrigin } from '@/lib/server-validation';
@@ -17,6 +18,7 @@ export function json(value: unknown, status = 200): Response { return Response.j
 export async function route(fn: () => Promise<Response>): Promise<Response> {
   try { return await fn(); }
   catch (error) {
+    if (error instanceof AuthError) return json({ error: error.message }, error.status);
     if (error instanceof ApiError) return json({ error: error.message, ...error.detail }, error.status);
     if (error instanceof ZodError) return json({ error: error.issues.map(issue => `${issue.path.join('.') || 'Request'}: ${issue.message}`).join('; ') }, 400);
     if (error instanceof SyntaxError) return json({ error: 'The request contains invalid JSON.' }, 400);
@@ -53,11 +55,9 @@ export function bucket(): R2Bucket {
   return env.BUCKET;
 }
 export async function workspace(request: Request): Promise<WorkspaceContext> {
-  const user = await getChatGPTUser();
-  if (!user) throw new ApiError(401, 'Sign in with ChatGPT to access this workspace.');
+  const actor = await requireAuthActor(request);
   if (!env.DB) throw new ApiError(503, 'Workspace storage is not available.');
   const db = env.DB;
-  const actor: Actor = { id: user.userId, email: user.email.toLowerCase(), name: user.displayName };
   // Only a trusted, signed-in identity can claim a matching, owner-created invitation.
   await db.prepare('UPDATE workspace_members SET user_id = ? WHERE email = ? AND user_id IS NULL')
     .bind(actor.id, actor.email).run();
@@ -72,6 +72,11 @@ export async function workspace(request: Request): Promise<WorkspaceContext> {
     membership = await db.prepare("SELECT workspace_id, role FROM workspace_members WHERE user_id = ? ORDER BY CASE WHEN role = 'reviewer' THEN 0 ELSE 1 END, created_at DESC LIMIT 1")
       .bind(actor.id).first<Membership>();
     if (!membership) {
+      if (authMode(env) === 'supabase') {
+        // Standalone users need an owner-created membership. Only the explicitly
+        // configured, verified owner can bootstrap a completely empty database.
+        if (actor.email !== supabaseConfig(env).ownerEmail || await db.prepare('SELECT id FROM workspaces LIMIT 1').first()) throw new ApiError(403, 'Workspace membership is required. Existing identities must be migrated explicitly.');
+      }
       const state = createEmptyWorkspace(`ws_${crypto.randomUUID()}`);
       const at = new Date().toISOString();
       // Unique owner_id makes concurrent first visits converge to one personal workspace.

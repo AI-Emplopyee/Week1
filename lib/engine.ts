@@ -3,6 +3,7 @@ import { classifyDocument, extractDocument, parseNumber, derivePageTypes, docume
 import { simulateTestDraft, successfulRunForSnapshot } from './ecus.ts';
 import { syntheticShipments } from './demo.ts';
 import { assessExtraction, NO_USABLE_EXTRACTION, pagesNeedingReview } from './extraction-quality.ts';
+import { groundKimiProposals, selectKimiPages, KIMI_ENDPOINT } from './kimi.ts';
 
 export const FIELD_DEFINITIONS: FieldDefinition[] = [
   { key: 'importer', label: 'Người nhập khẩu', group: 'Các bên', required: true },
@@ -82,7 +83,9 @@ export function getProposedFields(state: WorkspaceState, caseId: string): Record
 }
 function rebuildCandidatesAndGoods(state: WorkspaceState, c: ShipmentCase, preserveReviewed = false) {
   const activeVersions = new Set(documentsFor(state, c).map(d => `${d.id}:${d.version}`));
-  state.candidates = state.candidates.filter(x => !activeVersions.has(`${x.documentId}:${x.documentVersion}`));
+  state.candidates = state.candidates.filter(x => !activeVersions.has(`${x.documentId}:${x.documentVersion}`) || x.method.startsWith('kimi:'));
+  // An unrelated intake must not erase reviewed AI evidence. A move changes its current case only.
+  for (const candidate of state.candidates) if (activeVersions.has(`${candidate.documentId}:${candidate.documentVersion}`) && candidate.method.startsWith('kimi:')) candidate.caseId = c.id;
   const extracted = documentsFor(state, c).map(d => {
     derivePageTypes(d);
     const result = extractDocument(d);
@@ -100,7 +103,7 @@ function groupingMatch(state: WorkspaceState, upload: UploadedDocument): { c?: S
   const extracted = extractDocument(probe).candidates.filter(x => !x.lineId);
   const ids = extracted.filter(x => ['billOfLading', 'houseBillOfLading', 'masterBillOfLading', 'invoiceNumber', 'contractNumber', 'transportReference', 'container'].includes(x.field));
   const scored = state.cases.filter(c => c.status !== 'completed' && !c.mergedInto).map(c => {
-    const existing = candidatesFor(state, c.id).filter(x => !x.lineId);
+    const existing = candidatesFor(state, c.id).filter(x => !x.lineId && !x.method.startsWith('kimi:'));
     const conflicts = ids.some(x => existing.some(v => v.field === x.field) && !existing.some(v => v.field === x.field && same(v.value) === same(x.value)));
     const matches = ids.filter(x => existing.some(v => v.field === x.field && same(v.value) === same(x.value)));
     const parties = extracted.filter(x => ['importer', 'exporter'].includes(x.field)).filter(x => existing.some(v => v.field === x.field && same(v.value) === same(x.value)));
@@ -228,6 +231,24 @@ export function applyAction(original: WorkspaceState, action: Action, actor: Act
   } else if (action.type === 'create_case') {
     if (!present(action.title)) throw new Error('Cần tên hồ sơ.');
     newCase(state, action.title, actor, action.caseType);
+  } else if (action.type === 'add_ai_candidates') {
+    // Internal server-only action. The public mutation schema deliberately does not expose it.
+    const c = findCase(state, action.caseId); assertReviewable(c);
+    const document = findDocument(state, action.documentId);
+    if (document.caseId !== c.id || document.version !== action.documentVersion) throw new Error('Chứng từ đã thay đổi; cần gửi lại yêu cầu trên bản hiện tại.');
+    const pages = selectKimiPages(document, action.pages);
+    const grounded = groundKimiProposals(document, pages, action.proposals, action.model);
+    const existing = candidatesFor(state, c.id);
+    const fresh = grounded.candidates.filter(candidate => !existing.some(prior => prior.documentId === candidate.documentId && prior.documentVersion === candidate.documentVersion && prior.field === candidate.field && prior.page === candidate.page && prior.value === candidate.value && prior.originalText === candidate.originalText && prior.method === candidate.method));
+    if (fresh.length) {
+      const affected = new Set(fresh.map(candidate => candidate.field));
+      for (const field of affected) if (c.fields[field]) c.fields[field].stale = true;
+      c.resolutions = [];
+      clearApproval(state, c, actor, 'Có đề xuất Kimi mới; cần rà soát lại các trường bị ảnh hưởng.');
+      state.candidates.push(...fresh);
+      for (const candidate of fresh.filter(candidate => candidate.normalizations.length)) audit(state, actor, 'safe_normalization', candidate.normalizations.map(change => change.reason).join(' '), { caseId: c.id, field: candidate.field, before: candidate.normalizations[0].before, after: candidate.value });
+    }
+    audit(state, actor, 'ai_header_proposals_received', 'Người dùng đồng ý gửi các trang văn bản đã chọn đến Moonshot International. Đề xuất cần được người phụ trách rà soát; không phải xác minh dữ liệu hay quyết định hải quan.', { caseId: c.id, after: { provider: 'Moonshot International', endpoint: KIMI_ENDPOINT, model: action.model, scope: 'header_facts_text_only', documentId: document.id, documentVersion: document.version, pages: pages.map(page => page.page), added: fresh.length, rejected: grounded.rejected, duplicate: grounded.candidates.length - fresh.length, candidateIds: fresh.map(candidate => candidate.id) } });
   } else if (action.type === 'intake') {
     if (!action.documents.length && !action.email) throw new Error('Chưa chọn chứng từ để tải lên.');
     const existingEmail = action.email && state.emails.find(e => e.messageId === action.email!.messageId || e.sha256 === action.email!.sha256);
@@ -328,7 +349,7 @@ export function applyAction(original: WorkspaceState, action: Action, actor: Act
   } else if (action.type === 'classify_document') {
     const document = findDocument(state, action.documentId); const c = findCase(state, document.caseId); assertReviewable(c);
     if (!(action.documentType in DOCUMENT_LABELS)) throw new Error('Loại chứng từ không hợp lệ.');
-    const before = document.type; document.type = action.documentType; document.classificationConfirmed = true;
+    const before = document.type; document.type = action.documentType; document.classificationConfirmed = true; document.version++;
     invalidate(state, c, actor, 'Phân loại chứng từ thay đổi.'); c.groupingConfirmed = false; rebuildCandidatesAndGoods(state, c, true);
     audit(state, actor, 'document_classified', 'Người rà soát chọn loại chứng từ.', { caseId: c.id, before, after: action.documentType });
   } else if (action.type === 'transcribe_document') {

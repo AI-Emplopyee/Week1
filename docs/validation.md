@@ -21,6 +21,8 @@ Run `npm test` for the actual executable test list. See the delivery notes for c
 - Multi-person use under an explicitly configured shared Site audience.
 - Real ECUS installation, real draft creation/read-back, transmission or registration.
 - Regulations, code tables, valuation, duty/VAT, origin/FTA or HS classification.
+- Live Supabase sign-in, SMTP invitations/recovery, session renewal and standalone deployment in the owner's cloud accounts.
+- Live Kimi model responses, account/model availability and extraction accuracy. All Kimi transport tests are mocked; no real shipment was sent.
 
 ## Acceptance boundary
 
@@ -34,6 +36,16 @@ Internal approval freezes an AICD review snapshot; it does not grant customs app
 - `node scripts/smoke-api.mjs`: 8 integration groups passed against the running loopback app. This included an authenticated review-to-snapshot workflow, failed/successful/idempotent test handoffs, responsible completion and reopen, exact EML/PDF original-byte preservation, duplicate messages, concurrent HTTP 200/409 saves, and HTTP 400/403/404/401 guards.
 - Browser inspection: sign-in, synthetic demo queue, source evidence, conflicts displayed side by side and a reviewer decision persisted; no client console errors in the inspected flow.
 - PDF: Vietnamese and English reports generated from synthetic state, reopened and rendered with Poppler. Both eight-page reports passed visual checks for Unicode, page breaks, source references, changes and footer numbering.
+
+## Email/password and Kimi update
+
+- 96 automated tests pass, including provider identity validation, invite allowlists, atomic throttling, one-use recovery proofs, cookie protections, bounded and redacted provider responses, callback parsing and localization, session refresh, Kimi page selection, exact source grounding, version retirement and review invalidation.
+- The standalone build and Wrangler dry run passed without deployment, using clearly synthetic infrastructure identifiers. Generated configuration selects Supabase mode, disables simulated Sites identity and resolves both D1 migration files.
+- Local HTTP checks rejected forged platform identity headers in standalone mode, rejected HTTP password submission before any provider call and blocked cross-origin authentication requests.
+- Browser inspection verified English/Vietnamese login and password-reset screens using a fake local provider configuration without submitting credentials. The unconfigured state blocks login. Kimi settings display the international endpoint and unavailable state until server configuration exists.
+- Eight existing API integration groups passed again after the auth changes. These checks cover the Sites-mode local workspace with synthetic data; they do not substitute for live Supabase testing.
+
+Kimi only proposes factual header fields from explicitly selected stored text pages (up to five pages / 24,000 characters). Successful proposal saves are audited. Failed or timed-out provider attempts consume the rate limit but do not yet create a separate durable transmission ledger. Requests are not automatically retried after provider errors.
 
 The API smoke script supplies known text fixture pages for its PDF upload. That check validates storage and page/provenance constraints, not the browser PDF text parser's accuracy. These API and workflow tests use synthetic data only. The separate real-sample regression is described below.
 

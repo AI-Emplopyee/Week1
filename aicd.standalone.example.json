@@ -1,0 +1,6 @@
+{
+  "name": "aicd",
+  "databaseName": "aicd-db",
+  "databaseId": "REPLACE_WITH_YOUR_CLOUDFLARE_D1_DATABASE_ID",
+  "bucketName": "aicd-documents"
+}

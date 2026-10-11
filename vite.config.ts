@@ -4,6 +4,7 @@ import hostingConfig from "./.openai/hosting.json";
 import { readExecutionProfile } from "./scripts/execution-profile.mjs";
 import { sites } from "./build/sites-vite-plugin";
 import { connectorPreview } from "./build/connector-preview-plugin.mjs";
+import { standaloneConfig } from "./scripts/standalone-config.mjs";
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
   "00000000-0000-4000-8000-000000000000";
@@ -13,6 +14,7 @@ const { d1, r2 } = hostingConfig;
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt" || process.platform === "darwin";
 const managedLinux = readExecutionProfile() === "managed-linux";
+const standalone = process.env.AICD_STANDALONE === "1";
 
 const localBindingConfig = {
   main: "./build/sites-worker.ts",
@@ -62,14 +64,16 @@ export default defineConfig(async ({ command }) => {
     },
     plugins: [
       vinext(),
-      sites({ mockAuth: !managedLinux }),
-      connectorPreview(),
+      sites({ mockAuth: !managedLinux && !standalone }),
+      ...(!standalone ? [connectorPreview()] : []),
       cloudflare({
         viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
         inspectorPort: false,
         config: {
           ...localBindingConfig,
-          ...(command === "serve"
+          d1_databases: localBindingConfig.d1_databases.map(binding => ({ ...binding, migrations_dir: command === "serve" ? "drizzle" : "../../drizzle" })),
+          ...(standalone ? standaloneConfig({ development: command === "serve" }) : {}),
+          ...(command === "serve" && !standalone
             ? {
                 services: [
                   {
@@ -81,7 +85,7 @@ export default defineConfig(async ({ command }) => {
               }
             : {}),
         },
-        ...(command === "serve"
+        ...(command === "serve" && !standalone
           ? {
               auxiliaryWorkers: [
                 {

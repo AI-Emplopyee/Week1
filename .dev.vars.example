@@ -1,0 +1,11 @@
+# Copy to .dev.vars for local development only. This example contains no credentials.
+# Never prefix secrets with VITE_ or NEXT_PUBLIC_. Never commit the populated file.
+AICD_AUTH_MODE="supabase"
+SUPABASE_URL=""
+SUPABASE_ANON_KEY=""
+AICD_OWNER_EMAIL=""
+
+# Optional Kimi extraction. Both values are required to enable it.
+# The API endpoint is fixed to https://api.moonshot.ai/v1 by server code.
+MOONSHOT_API_KEY=""
+MOONSHOT_MODEL=""

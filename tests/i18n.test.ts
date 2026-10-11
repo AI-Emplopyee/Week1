@@ -90,14 +90,21 @@ test('all static translated UI keys are registered and visible Vietnamese JSX is
   const missing = new Set<string>();
   const untranslated = new Set<string>();
   function visit(node: ts.Node) {
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 't' && node.arguments[0] && ts.isStringLiteral(node.arguments[0])) {
-      const key = node.arguments[0].text.trim();
-      if (!Object.hasOwn(EN_TRANSLATIONS, key)) missing.add(key);
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 't' && node.arguments[0]) {
+      const inspectKey = (expression: ts.Node): void => {
+        if (ts.isStringLiteral(expression)) { const key = expression.text.trim(); if (key && !Object.hasOwn(EN_TRANSLATIONS, key)) missing.add(key); }
+        else if (ts.isConditionalExpression(expression)) { inspectKey(expression.whenTrue); inspectKey(expression.whenFalse); }
+      };
+      inspectKey(node.arguments[0]);
     }
     if (ts.isJsxText(node) && vietnamese.test(node.text) && node.text.trim() !== 'Tiếng Việt') untranslated.add(node.text.trim());
     ts.forEachChild(node, visit);
   }
   visit(file);
+  for (const path of ['../components/account-access.tsx', '../components/kimi-review.tsx']) {
+    const component = ts.createSourceFile(path, readFileSync(new URL(path, import.meta.url), 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    visit(component);
+  }
   assert.deepEqual([...missing], [], 'every UI translation key must have an English value');
   assert.deepEqual([...untranslated], [], 'visible JSX must use explicit translation bindings');
   assert.ok(source.includes('value={locale}'), 'language control must reflect active locale');

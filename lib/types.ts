@@ -17,7 +17,9 @@ export type HandoffRun = { id: string; caseId: string; snapshotId: string; idemp
 export type WorkspaceState = { id: string; name: string; revision: number; cases: ShipmentCase[]; documents: ShipmentDocument[]; candidates: Candidate[]; audit: AuditEntry[]; emails: EmailRecord[]; snapshots: Snapshot[]; handoffs: HandoffRun[]; settings: { inboxProvider: 'gmail'; inboxAddress: string; inboxStatus: 'not_connected'; defaultReviewer: string }; };
 export type Actor = { id: string; name: string; email: string };
 export type UploadedDocument = { id: string; name: string; mime: string; size: number; sha256: string; blobKey?: string; pages: SourcePage[]; extractionStatus: ShipmentDocument['extractionStatus']; extractionError?: string; sourceEmailId?: string; synthetic?: boolean };
+export type AiSourceProposal = { field: string; value: string; quote: string; page: number; confidence: 'low' | 'medium' };
 export type Action =
+ | { type: 'add_ai_candidates'; caseId: string; documentId: string; documentVersion: number; model: string; pages: number[]; proposals: AiSourceProposal[] }
  | { type: 'seed_demo' }
  | { type: 'create_case'; title: string; caseType?: ShipmentCase['caseType'] }
  | { type: 'intake'; documents: UploadedDocument[]; targetCaseId?: string; email?: EmailRecord }

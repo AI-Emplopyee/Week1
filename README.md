@@ -15,6 +15,14 @@ A working Phase 1 pilot: upload shipment documents, inspect extracted evidence, 
 
 All included examples and fixtures are explicitly synthetic. They test software behavior, not real supplier extraction accuracy. No real client documents are included.
 
+## Download, email/password and Kimi
+
+Run `npm run export:source` to create `outputs/AICD-source.zip`, a complete source ZIP with tests, migrations, bundled assets and setup guides. Installed dependencies, credentials, local databases and uploaded client files are excluded. Downloading source does not export the hosted workspace's records.
+
+The existing private Sites preview uses the hosting platform's ChatGPT login. To use invite-only email/password without that outer gate, follow [standalone setup](docs/standalone-setup.md) to deploy to your own Cloudflare account with Supabase Auth. Passwords are verified by Supabase; the application uses protected HTTP-only cookies and provider-verified, allowlisted identities. See [authentication setup](docs/authentication.md) for invitations and recovery.
+
+Optional Kimi integration uses `https://api.moonshot.ai/v1` and server-only `MOONSHOT_API_KEY` / `MOONSHOT_MODEL` settings. A reviewer explicitly selects stored text pages and confirms sending them for factual header proposals. Source-quoted proposals remain unreviewed; goods extraction and customs decisions are outside this AI integration. Without provider configuration, no Kimi request is made. Live authentication, email and model behavior require testing in your configured HTTPS environment.
+
 ## Run locally
 
 Requires Node.js 22.13+ and npm. Do not expose the development server to a public interface: the starter's local identity simulation exists only for loopback development and is excluded from production builds.
@@ -23,11 +31,11 @@ Requires Node.js 22.13+ and npm. Do not expose the development server to a publi
 npm ci
 npm run db:generate  # only after changing db/schema.ts; the initial migration is already committed
 npm run build
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_charming_ghost_rider.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 migrations apply DB --local --config dist/server/wrangler.json --persist-to .wrangler/state
 npm run dev -- --hostname 127.0.0.1
 ```
 
-Apply the initial migration **once** to a new local database; do not replay it after every startup. Open the URL printed by the server. Local sign-in uses the development identity supplied by the Sites starter. Choose **Khám phá hồ sơ mẫu** to load synthetic examples or upload your own files. Data persists in local D1/R2 state across server restarts. Hosted deployment uses a separate database and bucket.
+Apply pending migrations to a new database and after schema updates. For an existing development database whose initial migration was applied manually, apply only the new migration SQL and do not replay the initial schema. Open the URL printed by the server. Local sign-in uses the development identity supplied by the Sites starter. Choose **Khám phá hồ sơ mẫu** to load synthetic examples or upload your own files. Data persists in local D1/R2 state across server restarts. Hosted deployment uses a separate database and bucket.
 
 ```sh
 npm test
@@ -36,7 +44,7 @@ npm run build
 node scripts/smoke-api.mjs # optional: writes synthetic verification records to the running local preview
 ```
 
-The postinstall script copies PDF.js and Tesseract.js workers/cores into same-origin static assets. English and Vietnamese OCR language models are bundled from the official tessdata_fast project under Apache 2.0. Choose **Tiếng Việt / English** in the header; the preference persists in your browser and sets the PDF report language. Source text and reviewer entries remain verbatim. Noto Sans is bundled under its SIL Open Font License so PDF reports preserve Vietnamese text. Document parsing does not call a third-party AI or OCR service.
+The postinstall script copies PDF.js and Tesseract.js workers/cores into same-origin static assets. English and Vietnamese OCR language models are bundled from the official tessdata_fast project under Apache 2.0. Choose **Tiếng Việt / English** in the header; the preference persists in your browser and sets the PDF report language. Source text and reviewer entries remain verbatim. Noto Sans is bundled under its SIL Open Font License so PDF reports preserve Vietnamese text. Local document parsing does not call a third-party AI or OCR service; Kimi is a separate, explicit optional action.
 
 ## Working demo
 

@@ -14,7 +14,12 @@
     "db:generate": "drizzle-kit generate",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "typecheck": "tsc --noEmit",
-    "postinstall": "node scripts/prepare-assets.mjs"
+    "postinstall": "node scripts/prepare-assets.mjs",
+    "dev:standalone": "node scripts/standalone.mjs dev",
+    "build:standalone": "node scripts/standalone.mjs build",
+    "check:standalone": "node scripts/standalone.mjs dry-run",
+    "deploy:standalone": "node scripts/standalone.mjs deploy",
+    "export:source": "python3 scripts/export-source.py"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
