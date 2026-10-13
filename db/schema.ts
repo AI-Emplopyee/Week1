@@ -9,6 +9,13 @@ export const workspaces = sqliteTable('workspaces', {
   updatedAt: text('updated_at').notNull(),
 });
 
+export const workspaceStateChunks = sqliteTable('workspace_state_chunks', {
+  workspaceId: text('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
+  snapshotId: text('snapshot_id').notNull(),
+  chunkIndex: integer('chunk_index').notNull(),
+  content: text('content').notNull(),
+}, table => [primaryKey({ columns: [table.workspaceId, table.snapshotId, table.chunkIndex] })]);
+
 export const workspaceMembers = sqliteTable('workspace_members', {
   workspaceId: text('workspace_id').notNull().references(() => workspaces.id),
   email: text('email').notNull(),

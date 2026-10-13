@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { authAvailability, callbackParameters, passwordValidation } from '../lib/account-validation.ts';
-import { selectedAiPages } from '../lib/ai-selection.ts';
+import { buildAiBatches } from '../lib/client-vision.ts';
 import { fetchWithSession } from '../lib/auth-client.ts';
 import { translate, translateSystemText, auditActionLabel } from '../lib/i18n-core.ts';
 
@@ -11,7 +11,6 @@ const limits = { maxPages: 5, maxTextCharacters: 24000, maxCandidates: 100 };
 test('only configured email deployments offer password sign-in; partial config shows setup', () => {
   assert.equal(authAvailability({ mode: 'supabase', configured: false }), 'unconfigured');
   assert.equal(authAvailability({ mode: 'unconfigured', configured: false }), 'unconfigured');
-  assert.equal(authAvailability({ mode: 'sites', configured: true }), 'sites');
   assert.equal(authAvailability({ mode: 'supabase', configured: true }), 'supabase');
 });
 
@@ -33,24 +32,21 @@ test('password checks preserve whitespace and require exact confirmation within 
   assert.equal(passwordValidation('a'.repeat(128), 'a'.repeat(128)), undefined);
 });
 
-test('AI preview selects exact stored page text without modification or leaking unselected pages', () => {
-  const source = { pages: [{ page: 3, text: 'Hóa đơn: 12.450,50 USD\n  quoted facts\n' }, { page: 1, text: 'Page one text' }, { page: 2, text: 'PRIVATE UNSELECTED PAGE' }] };
-  const original = JSON.stringify(source); const result = selectedAiPages(source, [3, 1, 3], limits);
-  assert.equal(result.error, undefined); assert.deepEqual(result.pages.map(p => p.page), [1, 3]);
-  assert.strictEqual(result.pages[1], source.pages[0]);
-  assert.equal(result.characters, source.pages[0].text.length + source.pages[1].text.length);
-  assert.equal(JSON.stringify(source), original); assert.ok(!JSON.stringify(result).includes('PRIVATE UNSELECTED'));
+test('AI batches select only requested pages and preserve stored text', () => {
+  const pages = [{ page: 3, text: 'Invoice: 12.450,50 USD\n quoted facts\n' }, { page: 1, text: 'Page one text' }, { page: 2, text: 'PRIVATE UNSELECTED PAGE' }];
+  const before = JSON.stringify(pages);
+  assert.deepEqual(buildAiBatches(pages, [3, 1], limits, false), [[1, 3]]);
+  assert.equal(JSON.stringify(pages), before);
 });
 
-test('AI limits reject missing or blank pages and oversized selections without truncation', () => {
-  assert.ok(selectedAiPages({ pages: [{ page: 1, text: 'x' }] }, [], limits).error);
-  assert.ok(selectedAiPages({ pages: [{ page: 1, text: 'x' }] }, [1, 2], limits).error);
-  assert.ok(selectedAiPages({ pages: [{ page: 1, text: '  ' }] }, [1], limits).error);
+test('AI text batches reject missing, blank or oversized pages and divide long selections', () => {
+  assert.throws(() => buildAiBatches([{ page: 1, text: 'x' }], [], limits, false));
+  assert.throws(() => buildAiBatches([{ page: 1, text: 'x' }], [1, 2], limits, false));
+  assert.throws(() => buildAiBatches([{ page: 1, text: '  ' }], [1], limits, false));
   const pages = Array.from({ length: 6 }, (_, index) => ({ page: index + 1, text: 'x' }));
-  assert.ok(selectedAiPages({ pages }, [1, 2, 3, 4, 5, 6], limits).error);
-  const large = { pages: [{ page: 1, text: 'x'.repeat(24001) }] }; const result = selectedAiPages(large, [1], limits);
-  assert.ok(result.error); assert.equal(result.pages[0].text.length, 24001);
-  assert.equal(selectedAiPages({ pages: [{ page: 1, text: 'x'.repeat(24000) }] }, [1], limits).error, undefined);
+  assert.deepEqual(buildAiBatches(pages, [1, 2, 3, 4, 5, 6], limits, false), [[1, 2, 3, 4, 5], [6]]);
+  assert.throws(() => buildAiBatches([{ page: 1, text: 'x'.repeat(24001) }], [1], limits, false));
+  assert.deepEqual(buildAiBatches([{ page: 1, text: 'x'.repeat(24000) }], [1], limits, false), [[1]]);
 });
 
 test('session refresh retries an authorized internal request once with its original body', async context => {

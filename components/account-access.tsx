@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { AlertCircle, ArrowLeft, ArrowRight, CheckCheck, KeyRound, Loader2, LockKeyhole, LogOut, Mail, ShieldCheck } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCheck, HardDrive, KeyRound, Loader2, LockKeyhole, LogOut, Mail, ShieldCheck } from 'lucide-react';
 import { AUTH_CHANGED_EVENT, notifyAuthChanged } from '@/lib/auth-client';
 import { LocaleProvider, useLocale } from '@/lib/i18n';
 import { translateSystemText } from '@/lib/i18n-core';
 import { passwordValidation, callbackParameters, authAvailability } from '@/lib/account-validation';
 
-type AuthStatus = { mode: 'sites' | 'supabase' | 'unconfigured'; configured: boolean; authenticated: boolean; user?: { email: string; name: string }; canRefresh?: boolean };
+type AuthStatus = { mode: 'supabase' | 'local' | 'unconfigured'; configured: boolean; authenticated: boolean; user?: { email: string; name: string }; canRefresh?: boolean; localOnly?: boolean; localDataPath?: string };
 type AuthResponse = { ok?: boolean; user?: { email?: string; name?: string }; error?: string };
 async function postAuth(endpoint: string, body: Record<string, unknown>): Promise<AuthResponse> {
   const response = await fetch(`/api/auth/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -16,7 +16,7 @@ async function postAuth(endpoint: string, body: Record<string, unknown>): Promis
   if (!response.ok) throw new Error(value.error || 'Không thể hoàn tất thao tác tài khoản. Vui lòng thử lại.');
   return value;
 }
-function useAuthStatus() {
+export function useAuthStatus() {
   const [status, setStatus] = useState<AuthStatus | null>(null); const [error, setError] = useState('');
   useEffect(() => {
     let active = true; const controller = new AbortController();
@@ -32,13 +32,13 @@ function LanguageSelect() { const { locale, setLocale, t } = useLocale(); return
 export function AuthGate({ onAuthenticated, onRetry }: { onAuthenticated: () => void; onRetry: () => void }) {
   const { t } = useLocale(); const { status, error } = useAuthStatus();
   const availability = status ? authAvailability(status) : null;
-  return <section className="auth-gate"><div className="auth-intro"><span className="auth-symbol"><ShieldCheck size={29} /></span><span className="eyebrow">AICD WORKSPACE</span><h1>{t('Chứng từ của đội bạn. Quyền truy cập được kiểm soát.')}</h1><p>{t('Đăng nhập bằng tài khoản đã được mời để tiếp tục rà soát lô hàng.')}</p><div className="auth-trust"><CheckCheck size={16} /><span>{t('Chỉ thành viên được cấp quyền mới truy cập hồ sơ và chứng từ.')}</span></div></div>
-    <div className="auth-card"><div className="auth-card-heading"><span className="auth-lock"><LockKeyhole size={21} /></span><div><h2>{t('Đăng nhập không gian làm việc')}</h2><p>{t('Chỉ dành cho tài khoản được mời')}</p></div></div>
+  return <section className="auth-gate"><div className="auth-intro"><span className="auth-symbol"><ShieldCheck size={29} /></span><span className="eyebrow">AICD WORKSPACE</span><h1>{t(availability === 'local' ? 'Hồ sơ nhập khẩu, trên Mac của bạn.' : 'Chứng từ của đội bạn. Quyền truy cập được kiểm soát.')}</h1><p>{t(availability === 'local' ? 'Không gian cục bộ cho một người sử dụng. Không cần tài khoản ChatGPT hoặc email / mật khẩu.' : 'Đăng nhập bằng tài khoản đã được mời để tiếp tục rà soát lô hàng.')}</p><div className="auth-trust"><CheckCheck size={16} /><span>{t(availability === 'local' ? 'Dữ liệu hồ sơ và tệp gốc được lưu trên Mac này.' : 'Chỉ thành viên được cấp quyền mới truy cập hồ sơ và chứng từ.')}</span></div></div>
+    <div className="auth-card"><div className="auth-card-heading"><span className="auth-lock"><LockKeyhole size={21} /></span><div><h2>{t(availability === 'local' ? 'Mở không gian cục bộ' : 'Đăng nhập không gian làm việc')}</h2><p>{t(availability === 'local' ? 'Một người sử dụng · lưu trên Mac' : 'Chỉ dành cho tài khoản được mời')}</p></div></div>
       {!status && !error && <p className="auth-loading"><Loader2 size={17} className="spin" />{t('Đang kiểm tra cấu hình máy chủ…')}</p>}
+      {availability === 'local' && <div className="auth-mode-notice"><span className="badge green"><HardDrive size={12} />{t('Chế độ cục bộ')}</span><p>{t('Không đọc được không gian cục bộ. Kiểm tra AICD đang chạy trên Mac này rồi thử lại. Không cần đăng nhập.')}</p><button className="button primary" onClick={onRetry}>{t('Thử lại')}</button></div>}
       {availability === 'supabase' && status && (status.authenticated ? <div className="auth-session-state"><span className="badge green">{t('Đã đăng nhập')}</span><strong>{status.user?.email}</strong><p>{t('Tài khoản cần được quản trị viên cấp quyền vào không gian làm việc. Không có đăng ký công khai.')}</p><button className="button primary" onClick={onRetry}>{t('Kiểm tra lại quyền truy cập')}</button><SessionControl /></div> : <EmailPasswordForm onAuthenticated={onAuthenticated} />)}
-      {availability === 'sites' && <div className="auth-mode-notice"><p>{t('Phiên bản Sites hiện tại dùng cổng đăng nhập ChatGPT. Email và mật khẩu chỉ hoạt động trên bản triển khai độc lập đã cấu hình.')}</p><a className="button primary" href="/signin-with-chatgpt?return_to=/" target="_top">{t('Tiếp tục với ChatGPT')}<ArrowRight size={15} /></a></div>}
       {availability === 'unconfigured' && <div className="auth-mode-notice"><span className="badge amber">{t('Đăng nhập chưa được cấu hình')}</span><p>{t('Quản trị viên cần hoàn tất cấu hình đăng nhập và mời tài khoản trước khi mở không gian làm việc. Hiện chưa thể đăng nhập bằng email / mật khẩu.')}</p><button className="button secondary" onClick={onRetry}>{t('Thử lại')}</button></div>}
-      <AuthError message={error} /><div className="auth-footer-note"><Mail size={14} />{t('Chưa có lời mời? Liên hệ quản trị viên của đội bạn.')}</div>
+      <AuthError message={error} /><div className="auth-footer-note">{availability === 'local' ? <HardDrive size={14} /> : <Mail size={14} />}{t(availability === 'local' ? 'Dừng máy chủ AICD để đóng quyền truy cập cục bộ.' : 'Chưa có lời mời? Liên hệ quản trị viên của đội bạn.')}</div>
     </div></section>;
 }
 
@@ -68,17 +68,6 @@ export function SessionControl({ disabled = false }: { disabled?: boolean }) {
   if (status?.mode !== 'supabase' || !status.authenticated) return null;
   const logout = async () => { setPending(true); setError(''); try { await postAuth('logout', {}); notifyAuthChanged(); window.location.assign('/'); } catch (error) { setError(error instanceof Error ? error.message : 'Không thể hoàn tất thao tác tài khoản. Vui lòng thử lại.'); setPending(false); } };
   return <div className="session-control"><button className="button secondary small" disabled={disabled || pending} onClick={() => void logout()} title={t(disabled ? 'Lưu nội dung đang chỉnh sửa trước khi đăng xuất' : 'Đăng xuất khỏi tài khoản này')}>{pending ? <Loader2 size={14} className="spin" /> : <LogOut size={14} />}{t('Đăng xuất')}</button><AuthError message={error} /></div>;
-}
-
-export function AccountSettingsCard() {
-  const { t } = useLocale(); const { status, error } = useAuthStatus();
-  return <section className="card settings-card"><div className="section-heading"><h2><KeyRound size={19} />{t('Tài khoản và đăng nhập')}</h2><span className="badge">{status?.mode === 'supabase' && status.configured ? t('Email / mật khẩu') : status?.mode === 'sites' ? 'ChatGPT Sites' : t('Chưa cấu hình')}</span></div>
-    <p>{t('Chỉ tài khoản được mời và được cấp quyền vào không gian mới có thể truy cập. Không có đăng ký công khai.')}</p>
-    {status?.user?.email && <div className="account-email-display"><Mail size={15} /><strong>{status.user.email}</strong></div>}
-    {status?.mode === 'sites' && <div className="setting-note">{t('Bản Sites giữ cổng đăng nhập hiện có. Tính năng email / mật khẩu sẵn sàng cho bản triển khai độc lập sau khi quản trị viên cấu hình.')}</div>}
-    {status?.mode === 'supabase' && <div className="setting-note">{t('Quản trị viên gửi lời mời tài khoản qua hệ thống đăng nhập, sau đó cấp quyền thành viên bên dưới. Cấp quyền thành viên không tự gửi email.')}</div>}
-    <AuthError message={error} />
-  </section>;
 }
 
 export function AccountCallbackPage() { return <LocaleProvider><AccountCallback /></LocaleProvider>; }

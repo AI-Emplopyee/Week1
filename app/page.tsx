@@ -1,236 +1,1334 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Activity, AlertCircle, AlertTriangle, ArrowDownToLine, ArrowLeft, ArrowRight, ArrowUpRight, Archive, Bell, Check, CheckCheck, ChevronDown, ChevronLeft, ChevronRight, ChevronsUpDown, ClipboardCheck, Clock3, FileCheck2, FileText, FolderOpen, GitBranch, History, Inbox, LayoutDashboard, Loader2, Mail, Plus, Search, Settings2, ShieldCheck, Ship, Sparkles, Upload, Users, X } from "lucide-react";
-import type { Action, Candidate, DocumentType, GoodsLine, Issue, ShipmentCase, WorkspaceResponse, WorkspaceState } from "@/lib/types";
-import { FIELD_DEFINITIONS, DOCUMENT_LABELS } from "@/lib/engine";
-import { AuthGate, AccountSettingsCard, SessionControl } from "@/components/account-access";
-import { AiSettingsCard, KimiReviewButton } from "@/components/kimi-review";
+import { AuthGate, useAuthStatus } from "@/components/account-access";
+import {
+  DeclarationDraftEditor,
+  type DeclarationUiDraft,
+} from "@/components/declaration-draft";
 import { fetchWithSession } from "@/lib/auth-client";
+import { CASE_TYPE_LABELS, caseScopeMessage } from "@/lib/case-scope";
+import { clearSavedGoodsDraft } from "@/lib/client-drafts";
+import { prepareIntakeFile } from "@/lib/client-intake";
+import { AiPipelineError, buildAiBatches, canRenderVisionDocument, runDocumentAi, type ClientAiStatus } from "@/lib/client-vision";
+import { declarationEntryKey } from "@/lib/declaration";
+import {
+  clearSavedDeclarationDraft,
+  hasDeclarationDrafts,
+} from "@/lib/declaration-client";
 import { LocaleProvider, useLocale } from "@/lib/i18n";
-import { translateIssue, translateSystemText, auditActionLabel, fieldLabel } from "@/lib/i18n-core";
-import { prepareFile } from "@/lib/client-intake";
+import { translateIssue, translateSystemText } from "@/lib/i18n-core";
 import { downloadReport } from "@/lib/report";
+import { actionableReviewIssues } from "@/lib/review-questions";
+import { getReviewHistory } from "@/lib/review-history";
+import type { Candidate, GoodsLine, Issue, ShipmentCase } from "@/lib/types";
+import {
+  AlertCircle,
+  AlertTriangle,
+  Archive,
+  ArrowDownToLine,
+  ArrowLeft,
+  ArrowUpRight,
+  Check,
+  CheckCheck,
+  ClipboardCheck,
+  Clock3,
+  FileCheck2,
+  FileText,
+  GitBranch,
+  History,
+  Loader2,
+  Mail,
+  Settings2,
+  ShieldCheck,
+  Ship,
+  X,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
-type View = "overview" | "cases" | "email" | "archive" | "settings";
-type Modal = { kind: "create" | "edit_case" | "group" | "transcribe" | "complete" | "reopen" | "resolve"; issue?: Issue } | null;
-const NAV = [{ id: "overview", label: "Tổng quan", icon: LayoutDashboard }, { id: "cases", label: "Hồ sơ lô hàng", icon: FolderOpen }, { id: "email", label: "Hộp thư đầu vào", icon: Inbox }, { id: "archive", label: "Lưu trữ", icon: Archive }] as const;
-const STATUS = { review: "Đang rà soát", approved: "Đã duyệt nội bộ", completed: "Đã hoàn tất" };
-const confidenceLabel = { high: "Độ tin cậy cao", medium: "Cần kiểm tra", low: "Chưa chắc chắn" };
-const initials = (value: string) => value.split(/[\s@]+/).filter(Boolean).slice(0, 2).map(v => v[0]).join("").toUpperCase();
-const activeDocs = (state: WorkspaceState, caseId: string) => state.documents.filter(d => d.caseId === caseId && d.active);
-const proposed = (state: WorkspaceState, c: ShipmentCase, key: string) => {
-  const reviewed = c.fields[key]; if (reviewed && !reviewed.stale) return reviewed.value;
-  const values = [...new Set(state.candidates.filter(v => v.caseId === c.id && v.field === key && !v.lineId && state.documents.some(d => d.id === v.documentId && d.active && d.version === v.documentVersion)).map(v => v.value))];
-  return values.length === 1 ? values[0] : "";
-};
-type ApiResponse = WorkspaceResponse & { error?: string; notice?: string };
-type TeamResponse = { members: { email: string; role: string; status: string; createdAt: string }[]; canManage: boolean; error?: string };
-const documentLabel = (type: DocumentType): string => DOCUMENT_LABELS[type] || type;
-const errorMessage = (error: unknown) => error instanceof Error ? error.message : "Không thể hoàn thành thao tác. Vui lòng thử lại.";
+import { AuditList } from "@/components/workspace/audit-list";
+import { ModalShell } from "@/components/workspace/modal-shell";
+import {
+  activeDocs,
+  Badge,
+  proposed,
+  STATUS,
+} from "@/components/workspace/shared";
+import {
+  ShipmentActionDialog,
+  type ShipmentDialogRequest,
+} from "@/components/workspace/shipment-action-dialog";
+import { ShipmentDocuments } from "@/components/workspace/shipment-documents";
+import { ShipmentIssues } from "@/components/workspace/shipment-issues";
+import { EmailShipmentMatches } from "@/components/workspace/email-shipment-matches";
+import { ShipmentList } from "@/components/workspace/shipment-list";
+import {
+  ShipmentMessages,
+  type EmailDraftEdit,
+} from "@/components/workspace/shipment-messages";
+import { ShipmentReport } from "@/components/workspace/shipment-report";
+import { SourceFields } from "@/components/workspace/source-fields";
+import { SourceGoods } from "@/components/workspace/source-goods";
+import { WorkspaceSettings } from "@/components/workspace/workspace-settings";
+import {
+  WorkspaceShell,
+  type WorkspaceView,
+} from "@/components/workspace/workspace-shell";
 
-function Badge({ children, tone = "neutral" }: { children: React.ReactNode; tone?: string }) { return <span className={`badge ${tone}`}>{children}</span>; }
-function Empty({ icon: Icon = Inbox, title, children }: { icon?: typeof Inbox; title: string; children?: React.ReactNode }) { return <div className="empty-state"><span className="empty-icon"><Icon size={25} /></span><h3>{title}</h3><div className="muted">{children}</div></div>; }
-function ModalShell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  const { t } = useLocale();
-  const dialog = useRef<HTMLDialogElement>(null);
-  useEffect(() => { dialog.current?.showModal(); const current = dialog.current; return () => current?.close(); }, []);
-  return <dialog ref={dialog} onCancel={onClose} className="modal"><div className="modal-header"><h2>{title}</h2><button className="icon-button" aria-label={t("Đóng")} onClick={onClose}><X size={19} /></button></div>{children}</dialog>;
+import {
+  errorMessage,
+  useWorkspaceSession,
+  type ApiResponse,
+} from "@/hooks/use-workspace-session";
+
+export default function WorkspaceApp() {
+  return (
+    <LocaleProvider>
+      <Workspace />
+    </LocaleProvider>
+  );
 }
 
-export default function WorkspaceApp() { return <LocaleProvider><Workspace /></LocaleProvider>; }
-
 function Workspace() {
-  const { locale, setLocale, t, date } = useLocale();
-  const [data, setData] = useState<WorkspaceResponse | null>(null);
-  const stateRef = useRef<WorkspaceResponse | null>(null);
-  const [error, setError] = useState("");
-  const [toast, setToast] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [conflict, setConflict] = useState<WorkspaceResponse | null>(null);
-  const conflictRef = useRef(false);
-  const requestQueue = useRef<Promise<unknown>>(Promise.resolve());
+  const { locale, t, date } = useLocale();
+  const { status: authStatus } = useAuthStatus();
+  const localMode = authStatus?.mode === "local";
+  const {
+    data,
+    stateRef,
+    error,
+    setError,
+    toast,
+    setToast,
+    busy,
+    setBusy,
+    loading,
+    conflict,
+    setConflict,
+    conflictRef,
+    install,
+    load,
+    mutation,
+    refreshConflict,
+  } = useWorkspaceSession();
   const pendingFieldSaves = useRef(new Map<string, string>());
-  const [view, setView] = useState<View>("overview");
+  const [view, setView] = useState<WorkspaceView>("shipments");
+  const [shipmentQuery, setShipmentQuery] = useState("");
+  const [shipmentFilter, setShipmentFilter] = useState("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState("all");
-  const [tab, setTab] = useState("fields");
+  const [tab, setReviewTab] = useState("declaration");
+  const [shipmentTab, setShipmentTab] = useState<
+    "review" | "documents" | "messages"
+  >("review");
+  const [secondary, setSecondary] = useState<"report" | "history" | null>(null);
+  const setTab = (next: string) => {
+    setReviewTab(next);
+    setShipmentTab("review");
+  };
+  const [declarationDrafts, setDeclarationDrafts] = useState<
+    Record<string, DeclarationUiDraft>
+  >({});
+  const [declarationFocus, setDeclarationFocus] = useState<
+    string | undefined
+  >();
+  const [declarationGoodsFocus, setDeclarationGoodsFocus] = useState<
+    string | undefined
+  >();
   const [docId, setDocId] = useState("");
   const [page, setPage] = useState(1);
   const [sourceMode, setSourceMode] = useState("text");
   const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
   const [selectedIssue, setSelectedIssue] = useState("");
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [emailDraftEdits, setEmailDraftEdits] = useState<
+    Record<string, EmailDraftEdit>
+  >({});
   const [reviewReason, setReviewReason] = useState("");
-  const [goodsDrafts, setGoodsDrafts] = useState<Record<string, GoodsLine[]>>({});
-  const goodsDraft = selectedId ? goodsDrafts[selectedId] ?? null : null;
-  const setGoodsDraft = (next: GoodsLine[] | null) => { if (selectedId) setGoodsDrafts(previous => { const value = { ...previous }; if (next) value[selectedId] = next; else delete value[selectedId]; return value; }); };
-  const [modal, setModal] = useState<Modal>(null);
-  const [modalText, setModalText] = useState("");
-  const [modalTarget, setModalTarget] = useState("");
-  const [groupMode, setGroupMode] = useState("move");
+  const [goodsDrafts, setGoodsDrafts] = useState<Record<string, GoodsLine[]>>(
+    {},
+  );
+  const goodsDraft = selectedId ? (goodsDrafts[selectedId] ?? null) : null;
+  const setGoodsDraft = (next: GoodsLine[] | null) => {
+    if (selectedId)
+      setGoodsDrafts((previous) => {
+        const value = { ...previous };
+        if (next) value[selectedId] = next;
+        else delete value[selectedId];
+        return value;
+      });
+  };
+  const [modal, setModal] = useState<ShipmentDialogRequest | null>(null);
   const [simulateFailure, setSimulateFailure] = useState(false);
   const [showActivity, setShowActivity] = useState(false);
   const [uploadLabel, setUploadLabel] = useState("");
   const [extractionCancelable, setExtractionCancelable] = useState(false);
   const uploadAbort = useRef<AbortController | null>(null);
-  const [emailId, setEmailId] = useState("");
-  const [team, setTeam] = useState<{ members: { email: string; role: string; status: string; createdAt: string }[]; canManage: boolean } | null>(null);
-  const [invite, setInvite] = useState("");
-  const [inboxAddress, setInboxAddress] = useState("");
-  const [defaultReviewer, setDefaultReviewer] = useState("");
   const uploadInput = useRef<HTMLInputElement>(null);
   const replaceInput = useRef<HTMLInputElement>(null);
   const replaceId = useRef("");
 
-  const install = useCallback((response: WorkspaceResponse) => { stateRef.current = response; setData(response); }, []);
-  const load = useCallback(async () => {
-    setLoading(true); setError("");
-    try { const response = await fetchWithSession("/api/workspace"); const body = await response.json() as ApiResponse; if (!response.ok) throw new Error(body.error || t("Không thể tải không gian làm việc.")); install(body); }
-    catch (e) { setError(errorMessage(e)); } finally { setLoading(false); }
-  }, [install, t]);
-  useEffect(() => { const controller = new AbortController(); fetchWithSession("/api/workspace", { signal: controller.signal }).then(async response => { const body = await response.json() as ApiResponse; if (!response.ok) throw new Error(body.error || "Không thể tải không gian làm việc."); install(body); }).catch(e => { if (!controller.signal.aborted) setError(errorMessage(e)); }).finally(() => { if (!controller.signal.aborted) setLoading(false); }); return () => controller.abort(); }, [install]);
-  useEffect(() => { if (!toast) return; const id = setTimeout(() => setToast(""), 5000); return () => clearTimeout(id); }, [toast]);
-  useEffect(() => { if (view !== "settings") return; fetchWithSession("/api/team").then(async r => { const body = await r.json() as TeamResponse; if (!r.ok) throw new Error(body.error); setTeam(body); }).catch(e => setError(errorMessage(e))); setInboxAddress(stateRef.current?.state.settings.inboxAddress || ""); setDefaultReviewer(stateRef.current?.state.settings.defaultReviewer || ""); }, [view]);
-
-  const mutation = useCallback((action: Action, success?: string): Promise<boolean> => {
-    const run = async (): Promise<boolean> => {
-      if (conflictRef.current) { setError(t("Nạp bản mới trước khi lưu tiếp. Nội dung bạn nhập vẫn được giữ lại.")); return false; }
-      setBusy(true); setError("");
-      try {
-        const response = await fetchWithSession("/api/workspace", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ revision: stateRef.current?.state.revision, action }) });
-        const body = await response.json() as ApiResponse;
-        if (response.status === 409) { setConflict(body); conflictRef.current = true; throw new Error(t("Một thành viên khác đã cập nhật hồ sơ. Bản nhập của bạn được giữ lại.")); }
-        if (!response.ok) throw new Error(body.error || t("Thao tác chưa được lưu."));
-        install(body); if (success) setToast(success); return true;
-      } catch (e) { setError(errorMessage(e)); return false; } finally { setBusy(false); }
-    };
-    const result = requestQueue.current.then(run, run); requestQueue.current = result; return result;
-  }, [install, t]);
-
   const upload = async (files: FileList | null, replacement = false) => {
     if (!files?.length || conflictRef.current) return;
-    setBusy(true); setError("");
-    const controller = new AbortController(); uploadAbort.current = controller;
-    let count = 0;
-    for (const file of Array.from(files)) {
+    setBusy(true);
+    setError("");
+    const controller = new AbortController();
+    uploadAbort.current = controller;
+    const batch = replacement ? [files[0]] : Array.from(files);
+    let currentFile = "";
+    let committed = false;
+    const existingDocuments = new Set((stateRef.current?.state.documents || []).map(document => `${document.id}:${document.version}`));
+    try {
+      if (
+        batch.reduce((total, file) => total + file.size, 0) >
+        22 * 1024 * 1024
+      )
+        throw new Error(
+          t(
+            "Lô chứng từ vượt quá giới hạn 22 MB. Chia thành các lần tải lên nhỏ hơn; AICD sẽ đối chiếu với các lô hàng đã có.",
+          ),
+        );
+      const metadata = [];
+      setExtractionCancelable(true);
+      for (const [index, file] of batch.entries()) {
+        currentFile = file.name;
+        setUploadLabel(
+          t("Đang đọc lô chứng từ · {p0}/{p1} · {p2}", {
+            p0: index + 1,
+            p1: batch.length,
+            p2: file.name,
+          }),
+        );
+        const prepared = await prepareIntakeFile(file, {
+          signal: controller.signal,
+          onProgress: (progress) =>
+            setUploadLabel(
+              t("Đang chuẩn bị {p0} · trang {p1}/{p2}", {
+                p0: file.name,
+                p1: progress.page,
+                p2: progress.total,
+              }),
+            ),
+        });
+        if (controller.signal.aborted)
+          throw new DOMException("Đã hủy tiếp nhận.", "AbortError");
+        metadata.push({ name: file.name, ...prepared });
+      }
+      // Preserve the complete batch before Kimi reads the saved originals.
+      // Shipment grouping is reconsidered as source-backed facts arrive.
+      setExtractionCancelable(false);
+      currentFile = "";
+      setUploadLabel(t("Đang lưu toàn bộ chứng từ…"));
+      const form = new FormData();
+      for (const file of batch) form.append("file", file);
+      form.set("documents", JSON.stringify(metadata));
+      form.set("revision", String(stateRef.current?.state.revision ?? 0));
+      if (replacement) form.set("documentId", replaceId.current);
+      const response = await fetchWithSession("/api/documents", {
+        method: "POST",
+        body: form,
+      });
+      const rawResponse = await response.text();
+      let body: ApiResponse;
       try {
-        setUploadLabel(t("Đang tiếp nhận {p0}", {p0: (file.name)}));
-        setExtractionCancelable(true);
-        const prepared = file.name.toLowerCase().endsWith(".eml") ? { pages: [], extractionStatus: "extracted" } : await prepareFile(file, { signal: controller.signal, onProgress: progress => setUploadLabel(progress.stage === "ocr" ? t("Đang nhận dạng {p0} · trang {p1}/{p2} · {p3}%", { p0: file.name, p1: progress.page, p2: progress.total, p3: Math.round(progress.progress * 100) }) : t("Đang đọc {p0} · trang {p1}/{p2}", { p0: file.name, p1: progress.page, p2: progress.total })) });
-        if (controller.signal.aborted) throw new DOMException("Đã hủy tiếp nhận.", "AbortError");
-        setExtractionCancelable(false); setUploadLabel(t("Đang lưu {p0}", { p0: file.name }));
-        const form = new FormData(); form.set("file", file); form.set("revision", String(stateRef.current?.state.revision ?? 0)); form.set("pages", JSON.stringify(prepared.pages)); form.set("extractionStatus", prepared.extractionStatus);
-        if ("extractionError" in prepared && prepared.extractionError) form.set("extractionError", prepared.extractionError);
-        if (selectedId) form.set("targetCaseId", selectedId); if (replacement) form.set("documentId", replaceId.current);
-        const response = await fetchWithSession("/api/documents", { method: "POST", body: form }); const body = await response.json() as ApiResponse;
-        if (response.status === 409) { conflictRef.current = true; setConflict(body); throw new Error(t("Có thay đổi từ thành viên khác. Nạp bản mới và chọn lại tệp chưa tải lên.")); }
-        if (!response.ok) throw new Error(body.error || t("Không thể tiếp nhận {p0}", {p0: (file.name)}));
-        install(body); count++;
-      } catch (e) { if (controller.signal.aborted) setToast(t("Đã dừng nhận dạng cục bộ. Các tệp đã tải lên trước đó vẫn được giữ.")); else setError(`${file.name}: ${errorMessage(e)}`); break; }
+        body = JSON.parse(rawResponse) as ApiResponse;
+      } catch {
+        if (response.status === 413)
+          throw new Error(
+            t(
+              "Lô chứng từ vượt quá giới hạn 22 MB. Chia thành các lần tải lên nhỏ hơn; AICD sẽ đối chiếu với các lô hàng đã có.",
+            ),
+          );
+        throw new Error(
+          t("Không thể tiếp nhận chứng từ (HTTP {p0}). Vui lòng thử lại.", {
+            p0: response.status,
+          }),
+        );
+      }
+      if (response.status === 409) {
+        conflictRef.current = true;
+        setConflict(body);
+        throw new Error(
+          t(
+            "Có thay đổi từ thành viên khác. Nạp bản mới và chọn lại tệp chưa tải lên.",
+          ),
+        );
+      }
+      if (!response.ok)
+        throw new Error(body.error || t("Không thể tiếp nhận lô chứng từ."));
+      install(body);
+      committed = true;
+      // Kimi reads the saved originals in small batches. A later failure never
+      // loses uploaded files or results from completed pages.
+      const visualDocuments = body.state.documents.filter(document => document.active && !document.referenceOnly && canRenderVisionDocument(document) && !existingDocuments.has(`${document.id}:${document.version}`));
+      if (visualDocuments.length) {
+        const statusResponse = await fetchWithSession("/api/ai/status");
+        const status = await statusResponse.json() as ClientAiStatus & { error?: string };
+        if (!statusResponse.ok) throw new Error(status.error || t("Không thể kiểm tra kết nối Kimi."));
+        if (status.configured && status.visionSupported === false) throw new Error(t("Quản trị viên cần chọn mô hình Kimi hỗ trợ đọc ảnh."));
+        if (status.configured) {
+          setExtractionCancelable(true);
+          let workspace = body;
+          const queue: { documentId: string; batches: number[][] }[] = [];
+          const skipped: string[] = [];
+          for (const document of visualDocuments) {
+            try {
+              const remaining = document.pages.filter(page => !(document.aiProcessedPages || []).includes(page.page)).map(page => page.page);
+              if (!remaining.length && document.pages.length) continue;
+              queue.push({ documentId: document.id, batches: buildAiBatches(document.pages, remaining, status.limits, true) });
+            } catch (error) { skipped.push(`${document.name}: ${translateSystemText(errorMessage(error), locale)}`); }
+          }
+          // Visit each document before a second batch of a long packing list.
+          // This lets invoices and bills contribute before the request budget is exhausted.
+          while (queue.some(item => item.batches.length)) for (const item of queue) {
+            const pages = item.batches.shift();
+            if (!pages) continue;
+            const document = workspace.state.documents.find(document => document.id === item.documentId && document.active);
+            if (!document) continue;
+            currentFile = document.name;
+            const savedPages = document.aiProcessedPages?.length || 0;
+            const result = await runDocumentAi({
+              workspace, documentId: document.id, pages, status, signal: controller.signal,
+              onWorkspace: response => install(response),
+              onProgress: progress => setUploadLabel(t(progress.stage === "rendering" ? "Đang chuẩn bị ảnh {p0} · trang {p1} · đã lưu {p2}/{p3}" : "Đang đọc bằng AI {p0} · đã lưu {p2}/{p3} trang", { p0: document.name, p1: progress.page, p2: savedPages + progress.completed, p3: document.pages.length })),
+            });
+            workspace = result.workspace;
+          }
+          if (workspace.state.emails.length && !controller.signal.aborted) {
+            // New visual facts can identify previously unmatched replies. The server
+            // rotates bounded batches, prioritizing pending or stale evidence.
+            const matching = await fetchWithSession('/api/ai/group-emails', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ revision: workspace.state.revision }) });
+            const matched = await matching.json() as ApiResponse;
+            if (!matching.ok) throw new AiPipelineError(matched.error || 'Email matching could not finish. Saved documents remain available.', matching.status, matched.state ? matched : undefined);
+            install(matched);
+          }
+          currentFile = "";
+          if (skipped.length) setError(`${t("Một số chứng từ cần kiểm tra trước khi đọc bằng AI. Bản gốc vẫn được lưu.")} ${skipped.join(" · ")}`);
+        } else {
+          setError(t("Chứng từ đã được lưu và đang chờ Kimi. Quản trị viên cần cấu hình Kimi trên máy chủ để trích xuất dữ liệu."));
+        }
+      }
+      setToast(
+        body.notice ? translateSystemText(body.notice, locale) : t("Đã xử lý {p0} tệp cùng nhau. Kiểm tra nhóm chứng từ và bản nháp.", {
+          p0: batch.length,
+        }),
+      );
+    } catch (error) {
+      if (error instanceof AiPipelineError && error.status === 409 && error.workspace) {
+        conflictRef.current = true;
+        setConflict(error.workspace);
+      }
+      if (controller.signal.aborted)
+        setToast(t(committed ? "Đã dừng. Chứng từ và kết quả các trang đã xử lý vẫn được lưu. Mở chứng từ để tiếp tục đọc bằng AI." : "Đã dừng đọc chứng từ. Chưa lưu tệp nào trong lần tiếp nhận này."));
+      else
+        setError(
+          `${committed ? `${t("Chứng từ đã được lưu. Có thể tiếp tục đọc bằng AI trong mục chứng từ.")} ` : ""}${currentFile ? `${currentFile}: ` : ""}${errorMessage(error)}`,
+        );
+    } finally {
+      setBusy(false);
+      setUploadLabel("");
+      setExtractionCancelable(false);
+      uploadAbort.current = null;
+      if (uploadInput.current) uploadInput.current.value = "";
+      if (replaceInput.current) replaceInput.current.value = "";
     }
-    setBusy(false); setUploadLabel(""); setExtractionCancelable(false); uploadAbort.current = null; if (count) setToast(t("Đã tiếp nhận {p0} tệp. Kiểm tra phân nhóm và dữ liệu được đề xuất.", {p0: (count)}));
-    if (uploadInput.current) uploadInput.current.value = ""; if (replaceInput.current) replaceInput.current.value = "";
   };
-  const navigate = (next: View) => { setView(next); setSelectedId(null); setQuery(""); setFilter("all"); setModal(null); };
-  const openCase = (id: string) => { const target = stateRef.current?.state.cases.find(c => c.id === id)?.mergedInto || id; setSelectedId(target); setTab("fields"); setDocId(""); setPage(1); setSelectedDocs([]); setSelectedIssue(""); setReviewReason(""); setError(""); };
-  const showModal = (kind: NonNullable<Modal>["kind"], issue?: Issue) => { setModal({ kind, issue }); const c = stateRef.current?.state.cases.find(v => v.id === selectedId); setModalText(kind === "edit_case" ? c?.title || "" : ""); setModalTarget(kind === "edit_case" ? c?.assignedTo || "" : ""); setGroupMode(kind === "edit_case" ? c?.caseType || "import" : "move"); };
-  const evidence = (candidate: Candidate) => { setDocId(candidate.documentId); setPage(candidate.page); setSourceMode("text"); };
+  const navigate = (next: WorkspaceView) => {
+    setView(next);
+    setSelectedId(null);
+    setModal(null);
+    setSecondary(null);
+  };
+  const openCase = (id: string) => {
+    const target =
+      stateRef.current?.state.cases.find((c) => c.id === id)?.mergedInto || id;
+    setSelectedId(target);
+    setView("shipments");
+    setSecondary(null);
+    setTab("declaration");
+    setDeclarationFocus(undefined);
+    setDeclarationGoodsFocus(undefined);
+    setDocId("");
+    setPage(1);
+    setSelectedDocs([]);
+    setSelectedIssue("");
+    setReviewReason("");
+    setError("");
+  };
+  const showModal = (kind: ShipmentDialogRequest["kind"], issue?: Issue) =>
+    setModal({ kind, issue });
+
+  const evidence = (candidate: Candidate) => {
+    setDocId(candidate.documentId);
+    setPage(candidate.page);
+    setSourceMode(candidate.visualEvidence ? "original" : "text");
+  };
   const saveField = async (c: ShipmentCase, field: string) => {
-    const key = `${c.id}:${field}`; if (!(key in drafts)) return; const submittedValue = drafts[key]; if (pendingFieldSaves.current.get(key) === submittedValue) return;
-    if (!reviewReason.trim()) { setError(t("Thêm lý do rà soát trước khi lưu giá trị chỉnh sửa. Nội dung đã nhập được giữ lại.")); return; }
+    const key = `${c.id}:${field}`;
+    if (!(key in drafts)) return;
+    const submittedValue = drafts[key];
+    if (pendingFieldSaves.current.get(key) === submittedValue) return;
+    if (!reviewReason.trim()) {
+      setError(
+        t(
+          "Thêm lý do rà soát trước khi lưu giá trị chỉnh sửa. Nội dung đã nhập được giữ lại.",
+        ),
+      );
+      return;
+    }
     pendingFieldSaves.current.set(key, submittedValue);
-    if (await mutation({ type: "review_field", caseId: c.id, field, value: submittedValue, reason: reviewReason }, t("Đã lưu giá trị và lý do rà soát"))) setDrafts(current => { const next = { ...current }; if (next[key] === submittedValue) delete next[key]; return next; });
-    if (pendingFieldSaves.current.get(key) === submittedValue) pendingFieldSaves.current.delete(key);
+    if (
+      await mutation(
+        {
+          type: "review_field",
+          caseId: c.id,
+          field,
+          value: submittedValue,
+          reason: reviewReason,
+        },
+        t("Đã lưu giá trị và lý do rà soát"),
+      )
+    )
+      setDrafts((current) => {
+        const next = { ...current };
+        if (next[key] === submittedValue) delete next[key];
+        return next;
+      });
+    if (pendingFieldSaves.current.get(key) === submittedValue)
+      pendingFieldSaves.current.delete(key);
   };
-  const acceptCandidate = async (c: ShipmentCase, candidate: Candidate) => { const previousDraft = drafts[`${c.id}:${candidate.field}`]; if (candidate.lineId) { setTab("goods"); evidence(candidate); setToast(t("Đối chiếu và xác nhận dòng hàng trong bảng hàng hóa.")); return; } if (!reviewReason.trim() && (candidate.confidence !== "high" || stateRef.current?.issues.some(i => i.caseId === c.id && i.field === candidate.field && i.kind === "conflict" && !i.resolved))) { setError(t("Ghi rõ lý do chọn nguồn này trong ô Lý do rà soát trước khi xác nhận dữ kiện mâu thuẫn hoặc chưa chắc chắn.")); document.getElementById("review-reason")?.focus(); evidence(candidate); return; } if (await mutation({ type: "review_field", caseId: c.id, field: candidate.field, value: candidate.value, candidateId: candidate.id, reason: reviewReason.trim() || t("Đã đối chiếu {p0}, trang {p1}: {p2}", {p0: (stateRef.current?.state.documents.find(d => d.id === candidate.documentId)?.name),p1: (candidate.page),p2: (candidate.originalText)}) }, t("Đã ghi nhận lựa chọn của người rà soát"))) setDrafts(current => { const next = { ...current }; if (next[`${c.id}:${candidate.field}`] === previousDraft) delete next[`${c.id}:${candidate.field}`]; return next; }); };
-  const exportPdf = async (caseId: string) => { if (!stateRef.current) return; setBusy(true); try { await downloadReport(stateRef.current.state, caseId, locale); setToast(t("Đã tạo báo cáo PDF")); } catch (e) { setError(errorMessage(e)); } finally { setBusy(false); } };
+  const acceptCandidate = async (c: ShipmentCase, candidate: Candidate) => {
+    const previousDraft = drafts[`${c.id}:${candidate.field}`];
+    if (candidate.lineId) {
+      setTab("goods");
+      evidence(candidate);
+      setToast(t("Đối chiếu và xác nhận dòng hàng trong bảng hàng hóa."));
+      return;
+    }
+    if (
+      !reviewReason.trim() &&
+      (candidate.confidence !== "high" ||
+        stateRef.current?.issues.some(
+          (i) =>
+            i.caseId === c.id &&
+            i.field === candidate.field &&
+            i.kind === "conflict" &&
+            !i.resolved,
+        ))
+    ) {
+      setError(
+        t(
+          "Ghi rõ lý do chọn nguồn này trong ô Lý do rà soát trước khi xác nhận dữ kiện mâu thuẫn hoặc chưa chắc chắn.",
+        ),
+      );
+      document.getElementById("review-reason")?.focus();
+      evidence(candidate);
+      return;
+    }
+    if (
+      await mutation(
+        {
+          type: "review_field",
+          caseId: c.id,
+          field: candidate.field,
+          value: candidate.value,
+          candidateId: candidate.id,
+          reason:
+            reviewReason.trim() ||
+            t("Đã đối chiếu {p0}, trang {p1}: {p2}", {
+              p0: stateRef.current?.state.documents.find(
+                (d) => d.id === candidate.documentId,
+              )?.name,
+              p1: candidate.page,
+              p2: candidate.originalText,
+            }),
+        },
+        t("Đã ghi nhận lựa chọn của người rà soát"),
+      )
+    )
+      setDrafts((current) => {
+        const next = { ...current };
+        if (next[`${c.id}:${candidate.field}`] === previousDraft)
+          delete next[`${c.id}:${candidate.field}`];
+        return next;
+      });
+  };
+  const exportPdf = async (caseId: string) => {
+    if (!stateRef.current) return;
+    setBusy(true);
+    try {
+      await downloadReport(stateRef.current.state, caseId, locale);
+      setToast(t("Đã tạo báo cáo PDF"));
+    } catch (e) {
+      setError(errorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const state = data?.state;
-  const current = state?.cases.find(c => c.id === selectedId);
-  const unresolved = data?.issues.filter(i => !i.resolved) || [];
-  const issuePriority: Record<string, number> = { conflict: 0, stale: 1, document: 2, grouping: 3, unsupported: 4, missing: 5, goods: 6, uncertain: 7, transfer: 8 };
-  const caseIssues = unresolved.filter(i => i.caseId === selectedId).map(issue => translateIssue(issue, locale)).sort((a, b) => (issuePriority[a.kind] ?? 9) - (issuePriority[b.kind] ?? 9));
-  const documents = state && current ? activeDocs(state, current.id) : [];
-  const source = documents.find(d => d.id === docId) || documents[0];
-  const sourcePage = source?.pages.find(p => p.page === page) || source?.pages[0];
-  const currentCandidates = state?.candidates.filter(c => c.caseId === selectedId && documents.some(d => d.id === c.documentId && d.version === c.documentVersion)) || [];
-  const run = state?.handoffs.filter(h => h.caseId === selectedId && h.snapshotId === current?.approval?.snapshotId).at(-1);
-  const editable = current?.status === "review";
-  const hasPendingDrafts = !!current && (Object.keys(drafts).some(key => key.startsWith(`${current.id}:`)) || !!goodsDraft);
-  const liveCases = state?.cases.filter(c => !c.mergedInto && c.status !== "completed") || [];
-  const issueCases = liveCases.filter(c => unresolved.some(i => i.caseId === c.id));
-  const readyCases = liveCases.filter(c => !unresolved.some(i => i.caseId === c.id));
-  const rows = (state?.cases || []).filter(c => !c.mergedInto && (view === "archive" ? c.status === "completed" : c.status !== "completed") && (filter === "all" || filter === "issues" && unresolved.some(i => i.caseId === c.id) || filter === "ready" && !unresolved.some(i => i.caseId === c.id) || filter === "approved" && c.status === "approved") && (!query || [c.reference, c.title, c.assignedTo, ...Object.values(c.fields).map(f => f.value), ...(state?.candidates.filter(v => v.caseId === c.id).map(v => v.value) || [])].join(" ").toLowerCase().includes(query.toLowerCase())));
-  const selectedEmail = state?.emails.find(e => e.id === emailId);
-
-  const submitModal = async (event: React.FormEvent) => {
-    event.preventDefault(); if (!modal) return; let ok = false;
-    if (modal.kind === "create") { ok = await mutation({ type: "create_case", title: modalText }, t("Đã tạo hồ sơ mới")); if (ok) { const newest = stateRef.current?.state.cases.at(-1); if (newest) openCase(newest.id); } }
-    if (current) {
-      if (modal.kind === "edit_case") ok = await mutation({ type: "update_case", caseId: current.id, title: modalText, assignedTo: modalTarget, caseType: groupMode as ShipmentCase["caseType"] }, t("Đã cập nhật thông tin hồ sơ"));
-      if (modal.kind === "complete" || modal.kind === "reopen") ok = await mutation({ type: modal.kind, caseId: current.id, reason: modalText }, modal.kind === "complete" ? t("Đã hoàn tất và lưu trữ hồ sơ") : t("Đã mở lại hồ sơ để điều chỉnh"));
-      if (modal.kind === "resolve" && modal.issue) ok = await mutation({ type: "resolve_issue", caseId: current.id, issueId: modal.issue.id, reason: modalText }, t("Đã lưu quyết định xử lý"));
-      if (modal.kind === "transcribe" && source) ok = await mutation({ type: "transcribe_document", documentId: source.id, pages: [{ page, text: modalText }], reason: t("Người rà soát nhập văn bản từ chứng từ gốc") }, t("Đã lưu bản chép và phân tích lại dữ liệu"));
-      if (modal.kind === "group") {
-        if (groupMode === "merge") ok = await mutation({ type: "merge_cases", sourceCaseId: current.id, targetCaseId: modalTarget }, t("Đã gộp hồ sơ"));
-        else ok = await mutation({ type: "move_documents", documentIds: selectedDocs, ...(modalTarget ? { targetCaseId: modalTarget } : { title: modalText || t("Tách từ {p0}", {p0: (current.reference)}) }) }, t("Đã cập nhật phân nhóm chứng từ"));
-        if (ok) { setSelectedDocs([]); if (groupMode === "merge") openCase(modalTarget); }
-      }
-    }
-    if (ok) setModal(null);
+  const current = state?.cases.find((c) => c.id === selectedId);
+  const currentScope = current ? caseScopeMessage(current.caseType) : null;
+  const unresolved = data?.issues.filter((i) => !i.resolved) || [];
+  const issuePriority: Record<string, number> = {
+    conflict: 0,
+    stale: 1,
+    document: 2,
+    grouping: 3,
+    unsupported: 4,
+    missing: 5,
+    goods: 6,
+    uncertain: 7,
+    transfer: 8,
+    declaration: 5,
   };
+  const caseIssues = unresolved
+    .filter((i) => i.caseId === selectedId)
+    .map((issue) => translateIssue(issue, locale))
+    .sort(
+      (a, b) => (issuePriority[a.kind] ?? 9) - (issuePriority[b.kind] ?? 9),
+    );
+  const pendingQuestions = state
+    ? actionableReviewIssues(state, caseIssues)
+    : [];
+  const completedQuestions =
+    state && current
+      ? getReviewHistory(state, current.id, data?.issues || [])
+      : [];
+  const documents = state && current ? activeDocs(state, current.id) : [];
+  const source = documents.find((d) => d.id === docId) || documents[0];
+  const currentCandidates =
+    state?.candidates.filter(
+      (c) =>
+        c.caseId === selectedId &&
+        documents.some(
+          (d) => d.id === c.documentId && d.version === c.documentVersion,
+        ),
+    ) || [];
+  const run = state?.handoffs
+    .filter(
+      (h) =>
+        h.caseId === selectedId &&
+        h.snapshotId === current?.approval?.snapshotId,
+    )
+    .at(-1);
+  const editable = current?.status === "review";
+  const hasPendingDrafts =
+    !!current &&
+    (Object.keys(drafts).some((key) => key.startsWith(`${current.id}:`)) ||
+      !!goodsDraft ||
+      hasDeclarationDrafts(declarationDrafts, current.id));
+  const hasPendingEmailDraft =
+    !!current &&
+    (state?.emailDrafts || []).some(
+      (draft) =>
+        draft.caseId === current.id &&
+        !!emailDraftEdits[draft.id] &&
+        (emailDraftEdits[draft.id].subject !== draft.subject ||
+          emailDraftEdits[draft.id].body !== draft.body),
+    );
+  const hasAnyPendingDrafts =
+    Object.keys(drafts).length > 0 ||
+    Object.keys(goodsDrafts).length > 0 ||
+    Object.keys(declarationDrafts).length > 0 ||
+    Object.keys(emailDraftEdits).length > 0;
+  useEffect(() => {
+    if (!hasAnyPendingDrafts && !busy) return;
+    const warnBeforeLeave = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warnBeforeLeave);
+    return () => window.removeEventListener("beforeunload", warnBeforeLeave);
+  }, [hasAnyPendingDrafts, busy]);
+  const liveCases =
+    state?.cases.filter((c) => !c.mergedInto && c.status !== "completed") || [];
 
-  return <div className="workspace-shell">
-    <aside className="sidebar">
-      <button className="brand" onClick={() => navigate("overview")} aria-label={t("AICD tổng quan")}><span className="brand-mark"><span /><span /><span /></span><span>AICD<span className="brand-dot">.</span></span></button>
-      <button className="workspace-switch" onClick={() => navigate("settings")}><span className="workspace-symbol">A</span><span><strong>AICD Workspace</strong><small>{t("Nhập khẩu · Việt Nam")}</small></span><ChevronsUpDown size={13} /></button>
-      <div className="nav-caption">{t("KHÔNG GIAN LÀM VIỆC")}</div>
-      <nav aria-label={t("Điều hướng chính")}>{NAV.map(item => <button key={item.id} onClick={() => navigate(item.id)} className={`nav-item ${view === item.id ? "active" : ""}`}><item.icon size={18} /><span>{t(item.label)}</span>{item.id === "cases" && !!liveCases.length && <span className="nav-count">{liveCases.length}</span>}{item.id === "email" && !!state?.emails.length && <span className="nav-count">{state.emails.length}</span>}</button>)}</nav>
-      <div className="sidebar-bottom"><div className="pilot-card"><span className="pilot-icon"><ShieldCheck size={17} /></span><strong>{t("Chủ động với mọi quyết định")}</strong><p>{t("Dữ liệu có nguồn. Thay đổi có dấu vết. Bạn là người phê duyệt.")}</p><span><span className="status-dot" />{t("Giai đoạn thử nghiệm")}</span></div><button className={`nav-item ${view === "settings" ? "active" : ""}`} onClick={() => navigate("settings")}><Settings2 size={18} /><span>{t("Cài đặt không gian")}</span></button><div className="profile"><span className="avatar">{initials(data?.actor.name || "AICD")}</span><span><strong>{data?.actor.name || t("Không gian làm việc")}</strong><small>{data?.role === "owner" ? t("Quản trị viên") : t("Người rà soát")}</small></span><span className="online-dot" /></div></div>
-    </aside>
-    <div className="workspace-main">
-      <header className="topbar"><div className="breadcrumbs">{t("Không gian làm việc ")}<ChevronRight size={14} /><strong>{current ? current.reference : view === "settings" ? t("Cài đặt") : t(NAV.find(n => n.id === view)?.label || "")}</strong></div><div className="topbar-right">{state && <SessionControl disabled={busy || Object.keys(drafts).length > 0 || Object.keys(goodsDrafts).length > 0} />}<label className="language-switch"><span className="sr-only">{t("Ngôn ngữ giao diện")}</span><select aria-label={t("Ngôn ngữ giao diện")} value={locale} onChange={event => setLocale(event.target.value as "vi" | "en")}><option value="vi" lang="vi">Tiếng Việt</option><option value="en" lang="en">English</option></select></label><span className="test-label"><span />{t("MÔI TRƯỜNG THỬ NGHIỆM")}</span><span className="top-divider" /><button className="icon-button" aria-label={t("Xem hoạt động gần đây")} onClick={() => setShowActivity(!showActivity)}><Bell size={18} />{!!state?.audit.length && <i className="notification-dot" />}</button></div></header>
-      <input ref={uploadInput} type="file" multiple hidden onChange={e => void upload(e.target.files)} /><input ref={replaceInput} type="file" hidden onChange={e => void upload(e.target.files, true)} />
-      {error && <div className="error-banner" role="alert"><AlertCircle size={17} /><span>{translateSystemText(error, locale)}</span><button aria-label={t("Ẩn lỗi")} onClick={() => setError("")}><X size={16} /></button></div>}
-      {conflict && <div className="conflict-banner"><GitBranch size={19} /><div><strong>{t("Hồ sơ đã được cập nhật ở nơi khác")}</strong><p>{t("Bản nhập của bạn vẫn được giữ. Nạp dữ liệu mới rồi kiểm tra trước khi lưu lại.")}</p></div><button className="button secondary" onClick={async () => { try { const r = await fetchWithSession("/api/workspace"); const body = await r.json() as ApiResponse; if (!r.ok) throw new Error(body.error); install(body); setConflict(null); conflictRef.current = false; setError(""); setToast(t("Đã nạp bản mới. Các ô bạn đang chỉnh sửa được giữ nguyên để đối chiếu.")); } catch (e) { setError(errorMessage(e)); } }}>{t("Nạp bản mới, giữ bản nhập")}</button></div>}
-      {uploadLabel && <div className="upload-progress" role="status"><Loader2 size={16} className="spin" /><div><strong>{translateSystemText(uploadLabel, locale)}</strong>{extractionCancelable && <p>{t("Nhận dạng PDF có thể mất vài phút trên thiết bị này. Tệp không được gửi đến dịch vụ OCR bên ngoài.")}</p>}</div>{extractionCancelable && <button className="button secondary small" onClick={() => uploadAbort.current?.abort()}>{t("Dừng nhận dạng")}</button>}</div>}
-      {loading ? <div className="loading-screen"><Loader2 className="spin" size={28} /><h3>{t("Đang tải không gian làm việc")}</h3><p>{t("Chuẩn bị hồ sơ và lịch sử rà soát…")}</p></div> : !state ? <AuthGate onAuthenticated={() => void load()} onRetry={() => void load()} /> : current ? <>
-        <section className="case-heading"><button className="back-button" onClick={() => setSelectedId(null)}><ArrowLeft size={16} />{t("Danh sách hồ sơ")}</button><div className="case-title-row"><div><div className="eyebrow">{current.reference} <span>•</span> {t("HỒ SƠ NHẬP KHẨU ")}{current.synthetic && <Badge tone="purple">{t("Dữ liệu giả lập")}</Badge>}</div><h1>{current.title}</h1><div className="case-subtitle"><span><Ship size={14} />{proposed(state, current, "billOfLading") || t("Chưa có số vận đơn")}</span><span>·</span><span>{documents.length} {t("chứng từ")}</span><span>·</span><span>{t("Cập nhật ")}{date(current.updatedAt)}</span><Badge tone={current.status === "review" ? "amber" : "green"}>{t(STATUS[current.status])}</Badge></div></div><div className="case-actions">{editable && <button className="button secondary" disabled={busy} onClick={() => showModal("edit_case")} title={t("Tên hồ sơ, người phụ trách và loại hình")}><Settings2 size={15} />{t("Thông tin")}</button>}<button className="button secondary" disabled={busy || hasPendingDrafts} title={hasPendingDrafts ? t("Lưu nội dung đang chỉnh sửa trước khi xuất") : t("Tải báo cáo PDF")} onClick={() => void exportPdf(current.id)}><ArrowDownToLine size={16} />{t("Báo cáo PDF")}</button>{editable ? <button className="button primary" disabled={busy || hasPendingDrafts || caseIssues.length > 0} title={caseIssues.length ? t("Xử lý các vấn đề trước khi duyệt") : t("Đóng băng phiên bản được rà soát")} onClick={() => void mutation({ type: "approve", caseId: current.id }, t("Đã duyệt nội bộ và đóng băng phiên bản"))}><CheckCheck size={17} />{t("Duyệt bản khai")}</button> : <button className="button secondary" disabled={busy} onClick={() => showModal("reopen")}><History size={16} />{t("Mở lại để chỉnh sửa")}</button>}</div></div>
-          <div className="next-action"><span className={`next-icon ${caseIssues.length ? "amber" : "green"}`}>{caseIssues.length ? <AlertTriangle size={18} /> : <Check size={18} />}</span><div><strong>{current.status === "completed" ? t("Hồ sơ đã được lưu trữ") : caseIssues.length ? t("{p0} vấn đề cần bạn rà soát", {p0: (caseIssues.length)}) : editable ? t("Đã xử lý các vấn đề dữ liệu. Sẵn sàng duyệt nội bộ.") : t("Phiên bản rà soát đã được đóng băng")}</strong><span>{current.status === "completed" ? t("Mở lại hồ sơ khi cần sửa đổi hoặc bổ sung.") : caseIssues.length ? t("Đối chiếu chứng từ và xác nhận các mục bên phải trước khi duyệt.") : editable ? t("Phê duyệt để cố định dữ liệu trước khi thử chuyển sang ECUS.") : t("Có thể thử tạo bản nháp ECUS hoặc đánh dấu hoàn tất để lưu trữ.")}</span></div><span className="legal-state">{t("Kiểm tra quy định ")}<strong>Not yet assessed</strong></span></div>
-        </section>
-        <div className="review-tabs"><div>{[{ id: "fields", label: t("Rà soát dữ liệu"), icon: ClipboardCheck }, { id: "goods", label: t("Hàng hóa ({p0})", {p0: (current.goods.length)}), icon: FileText }, { id: "report", label: t("Báo cáo rà soát"), icon: FileCheck2 }, { id: "history", label: t("Lịch sử thay đổi"), icon: History }].map(navTab => <button className={tab === navTab.id ? "active" : ""} onClick={() => setTab(navTab.id)} disabled={navTab.id === "report" && hasPendingDrafts} title={navTab.id === "report" && hasPendingDrafts ? t("Lưu nội dung đang chỉnh sửa để xem báo cáo chính xác") : undefined} key={navTab.id}><navTab.icon size={16} />{t(navTab.label)}</button>)}</div><span className="save-indicator">{busy ? <Loader2 className="spin" size={13} /> : <Check size={13} />}{busy ? t("Đang lưu…") : Object.keys(drafts).some(k => k.startsWith(current.id)) || goodsDraft ? t("Có nội dung chưa lưu") : t("Mọi thay đổi đã lưu")}</span></div>
-        {tab === "fields" || tab === "goods" ? <div className={`review-grid ${tab === "goods" ? "goods-mode" : ""}`}>
-          <aside className="source-panel"><div className="panel-heading"><h2><FileText size={16} />{t("Chứng từ nguồn ")}<span>{documents.length}</span></h2><button className="icon-button" aria-label={t("Tải thêm chứng từ")} disabled={busy || !editable} onClick={() => uploadInput.current?.click()}><Plus size={17} /></button></div><div className="document-list">{documents.map(doc => <div className={`document-item ${source?.id === doc.id ? "selected" : ""}`} key={doc.id}><input aria-label={t("Chọn {p0} để di chuyển", {p0: (doc.name)})} type="checkbox" checked={selectedDocs.includes(doc.id)} disabled={!editable} onChange={e => setSelectedDocs(v => e.target.checked ? [...v, doc.id] : v.filter(id => id !== doc.id))} /><button onClick={() => { setDocId(doc.id); setPage(1); }}><span className={`file-symbol ${doc.type === "invoice" ? "blue" : doc.type === "packing_list" ? "green" : "amber"}`}><FileText size={18} /></span><span><strong>{doc.name}</strong><small>{t(documentLabel(doc.type))} · v{doc.version}</small></span>{doc.extractionStatus !== "extracted" && <AlertTriangle size={13} className="text-amber" />}</button></div>)}</div><div className="source-tools"><button className="text-button" disabled={busy || !editable || !documents.length} onClick={() => showModal("group")}><GitBranch size={13} />{t("Gộp / tách / di chuyển")}</button>{!current.groupingConfirmed && <button className="text-button" disabled={busy || !editable} onClick={() => void mutation({ type: "confirm_grouping", caseId: current.id, reason: reviewReason || t("Đã đối chiếu chứng từ và xác nhận cùng lô hàng") }, t("Đã xác nhận phân nhóm"))}><Check size={13} />{t("Xác nhận nhóm")}</button>}</div>
-          {source && <div className="source-ai-tools"><KimiReviewButton document={source} caseId={current.id} revision={state.revision} initialPage={page} disabled={busy || !editable || hasPendingDrafts} onBusyChange={setBusy} onApplied={(response, message) => { install(response); setToast(message); }} onConflict={response => { setConflict(response); conflictRef.current = true; setError(t("Một thành viên khác đã cập nhật hồ sơ. Bản nhập của bạn được giữ lại.")); }} /></div>}
-          {source ? <><div className="source-controls"><select aria-label={t("Loại chứng từ")} value={source.type === "other" && !source.classificationConfirmed ? "" : source.type} disabled={busy || !editable} onChange={e => void mutation({ type: "classify_document", documentId: source.id, documentType: e.target.value as DocumentType }, t("Đã cập nhật loại chứng từ"))}><option value="" disabled>{t("Chọn loại chứng từ…")}</option>{Object.entries(DOCUMENT_LABELS).map(([key, label]) => <option key={key} value={key}>{t(label)}</option>)}</select><a href={`/api/documents/${source.id}`} target="_blank" rel="noreferrer" title={t("Mở tệp gốc")} aria-label={t("Mở tệp gốc")}><ArrowUpRight size={17} /></a></div><div className="source-preview-toolbar"><span><button className={sourceMode === "text" ? "active" : ""} onClick={() => setSourceMode("text")}>{t("Văn bản")}</button><button className={sourceMode === "original" ? "active" : ""} onClick={() => setSourceMode("original")}>{t("Bản gốc")}</button></span><span><button className="icon-button" disabled={page <= 1} aria-label={t("Trang trước")} onClick={() => setPage(Math.max(1, page - 1))}><ChevronLeft size={14} /></button>{sourcePage?.page || page} / {Math.max(1, source.pages.length)}<button className="icon-button" disabled={page >= source.pages.length} aria-label={t("Trang sau")} onClick={() => setPage(page + 1)}><ChevronRight size={14} /></button></span></div>
-            {sourceMode === "original" ? <div className="original-preview">{source.mime.startsWith("image/") ? <img alt={t("Bản gốc {p0}", {p0: (source.name)})} src={`/api/documents/${source.id}`} /> : source.mime === "application/pdf" ? <iframe title={source.name} src={`/api/documents/${source.id}#page=${page}`} /> : <p><a href={`/api/documents/${source.id}`} target="_blank" rel="noreferrer">{t("Mở chứng từ gốc ")}<ArrowUpRight size={14} /></a></p>}</div> : <div className="paper-wrap"><div className="source-paper"><div className="paper-topline">{sourcePage?.textSource === "ocr" ? t("VĂN BẢN NHẬN DẠNG CỤC BỘ (OCR)") : t("VĂN BẢN TỪ CHỨNG TỪ ")}<span>{t("TRANG ")}{sourcePage?.page || page}</span></div>{sourcePage?.text ? <pre>{sourcePage.text}</pre> : <div className="source-empty"><AlertCircle size={24} /><strong>{t("Chưa có văn bản để trích xuất")}</strong><p>{source.extractionError ? translateSystemText(source.extractionError, locale) : t("Không nhận dạng được nội dung đủ rõ. Kiểm tra bản gốc và chép lại nội dung để tiếp tục.")}</p><button className="button secondary small" disabled={!editable} onClick={() => showModal("transcribe")}>{t("Nhập văn bản chứng từ")}</button></div>}</div></div>}
-            <div className="source-footer"><span>v{source.version} · {Math.max(1, Math.round(source.size / 1024))} KB {source.synthetic && t("· Giả lập")}</span><div><button className="text-button" disabled={!editable || busy} onClick={() => { showModal("transcribe"); setModalText(sourcePage?.text || ""); }}>{t("Chép / sửa văn bản")}</button><button className="text-button" disabled={!editable || busy} onClick={() => { replaceId.current = source.id; replaceInput.current?.click(); }}>{t("Thay bản mới")}</button></div>{state.documents.some(d => d.caseId === current.id && !d.active) && <details className="version-history"><summary>{t("Chứng từ phiên bản trước")}</summary>{state.documents.filter(d => d.caseId === current.id && !d.active).map(d => <a key={d.id} href={`/api/documents/${d.id}`} target="_blank" rel="noreferrer">{d.name} · v{d.version}<ArrowUpRight size={10} /></a>)}</details>}</div>
-          </> : <Empty icon={FileText} title={t("Chưa có chứng từ")}><p>{t("Tải lên chứng từ để bắt đầu rà soát.")}</p><button className="button secondary" onClick={() => uploadInput.current?.click()}><Upload size={15} />{t("Tải chứng từ")}</button></Empty>}</aside>
-          <section className="data-panel"><div className="panel-heading"><h2>{tab === "goods" ? t("Danh sách hàng hóa") : t("Bản khai đề xuất")}</h2><Badge tone="green">{Object.values(current.fields).filter(f => !f.stale).length} {t("đã rà soát")}</Badge></div><div className="review-note"><ShieldCheck size={15} /><p>{t("Đề xuất từ chứng từ. Mỗi xác nhận của bạn đều được lưu cùng nguồn và lý do.")}</p></div>{editable && <div className="review-reason"><label htmlFor="review-reason">{t("Lý do rà soát / chỉnh sửa ")}<span>{t("Bắt buộc khi nhập tay")}</span></label><input id="review-reason" placeholder={t("Ví dụ: Đã xác nhận với chủ hàng…")} value={reviewReason} onChange={e => setReviewReason(e.target.value)} /></div>}
-          {tab === "fields" ? <div className="field-list">{Array.from(new Set(FIELD_DEFINITIONS.map(f => f.group))).map(group => <section className="field-group" key={group}><h3>{t(group)}</h3>{FIELD_DEFINITIONS.filter(f => f.group === group).map(field => {
-            const candidates = currentCandidates.filter(c => c.field === field.key && !c.lineId); const reviewed = current.fields[field.key]; const related = caseIssues.filter(i => i.field === field.key); const selected = candidates.find(c => c.id === reviewed?.candidateId); const candidate = selected || candidates[0]; const key = `${current.id}:${field.key}`; const value = key in drafts ? drafts[key] : (reviewed && !reviewed.stale ? reviewed.value : undefined) ?? (new Set(candidates.map(c => c.value)).size === 1 ? candidates[0]?.value : "") ?? "";
-            return <div className={`field-row ${related.length ? "has-issue" : ""} ${selectedIssue && related.some(i => i.id === selectedIssue) ? "highlight" : ""}`} id={`field-${field.key}`} key={field.key}><label htmlFor={`input-${field.key}`}>{t(field.label)}{field.required && <span className="required">*</span>}{reviewed && !reviewed.stale ? <CheckCheck size={14} className="text-green" /> : related.length ? <AlertCircle size={14} className="text-amber" /> : null}</label><div className="field-input"><input id={`input-${field.key}`} disabled={!editable} placeholder={candidates.length > 1 ? t("Chọn giá trị từ chứng từ") : t("Chưa có thông tin")} value={value} onChange={e => setDrafts(d => ({ ...d, [key]: e.target.value }))} onBlur={() => void saveField(current, field.key)} /><button className="icon-button" disabled={busy || !editable || !value} aria-label={t("Xác nhận {p0}", {p0: (t(field.label))})} title={key in drafts ? t("Lưu nội dung chỉnh sửa") : t("Xác nhận giá trị từ chứng từ")} onClick={() => { if (key in drafts) void saveField(current, field.key); else if (candidate) void acceptCandidate(current, candidate); }}><Check size={16} /></button></div><div className="field-meta">{reviewed?.stale ? <span className="text-amber">{t("Nguồn đã thay đổi · cần rà soát lại")}</span> : reviewed?.source === "manual" ? <span className="text-amber">{t("Nhập tay · ")}{reviewed.unverified ? t("chưa xác minh") : t("đã rà soát")}</span> : candidate ? <button onClick={() => evidence(candidate)}><FileText size={11} />{state.documents.find(d => d.id === candidate.documentId)?.name} · {t("tr.")} {candidate.page}</button> : <span>{t("Chưa có nguồn chứng từ")}</span>}{field.manualOnly && <Badge tone="amber">Manual / unverified</Badge>}</div>{candidates.length > 0 && <details className="candidate-details"><summary>{candidates.length} {t("nguồn đề xuất · ")}{candidate ? t(confidenceLabel[candidate.confidence]) : ""}</summary>{candidates.map(v => <div className="candidate" key={v.id}><div><strong>{v.value}</strong><span className={`confidence ${v.confidence}`}>{t(confidenceLabel[v.confidence])}</span></div><button className="evidence-link" onClick={() => evidence(v)}>{state.documents.find(d => d.id === v.documentId)?.name} · {t("trang")} {v.page} <ArrowUpRight size={11} /></button><blockquote>{v.originalText}</blockquote><small>{v.method} · {v.location}</small>{v.normalizations.map((n, index) => <p key={index} className="normalization">{n.before} → {n.after}<span>{translateSystemText(n.reason, locale)}</span></p>)}<button className="text-button" disabled={busy || !editable} onClick={() => void acceptCandidate(current, v)}><Check size={12} />{t("Sử dụng giá trị này")}</button></div>)}</details>}</div>;
-          })}</section>)}</div> : <div className="goods-editor"><div className="goods-warning"><AlertTriangle size={15} />{t("HS, xuất xứ và thuế suất được nhập tay, chưa xác minh. Không tính thuế hoặc xác nhận ưu đãi.")}</div><div className="table-scroll"><table className="goods-table"><thead><tr><th>#</th>{[t("Mô tả hàng hóa"), t("Số lượng"), t("ĐVT"), t("Đơn giá"), t("Thành tiền"), t("Mã HS*"), t("Xuất xứ*"), t("Thuế NK*"), "VAT*"].map(s => <th key={s}>{s}</th>)}<th /></tr></thead><tbody>{(goodsDraft || current.goods).map((line, index) => <tr key={line.id}><td>{index + 1}{line.reviewed && <Check size={12} className="text-green" />}</td>{(["description", "quantity", "unit", "unitPrice", "amount", "hsCode", "origin", "dutyRate", "vatRate"] as const).map(key => <td key={key}><input aria-label={t("{p0} hàng {p1}", {p0: (fieldLabel(key, locale)),p1: (index + 1)})} disabled={!editable} value={line[key]} placeholder={key === "hsCode" || key === "origin" || key === "dutyRate" || key === "vatRate" ? t("Chưa xác minh") : "—"} onChange={e => setGoodsDraft((goodsDraft || current.goods).map((g, i) => i === index ? { ...g, [key]: e.target.value, manual: true, reviewed: false } : g))} /></td>)}<td><button className="icon-button" aria-label={t("Bỏ dòng {p0}", {p0: (index + 1)})} disabled={!editable} onClick={() => setGoodsDraft((goodsDraft || current.goods).filter((_, i) => i !== index))}><X size={14} /></button></td></tr>)}</tbody></table></div>{!current.goods.length && !goodsDraft?.length && <Empty icon={FileText} title={t("Chưa có dòng hàng")}><p>{t("Nhập dòng hàng từ chứng từ và ghi rõ lý do rà soát.")}</p></Empty>}<div className="goods-actions"><button className="button secondary small" disabled={!editable} onClick={() => setGoodsDraft([...(goodsDraft || current.goods), { id: crypto.randomUUID(), description: "", quantity: "", unit: "", unitPrice: "", amount: "", hsCode: "", origin: "", dutyRate: "", vatRate: "", reviewed: false, manual: true }])}><Plus size={14} />{t("Thêm dòng hàng")}</button><button className="button primary small" disabled={busy || !editable || !(goodsDraft || current.goods).length} onClick={async () => { if (!reviewReason.trim()) { setError(t("Nhập lý do rà soát trước khi xác nhận hàng hóa.")); return; } if (await mutation({ type: "review_goods", caseId: current.id, goods: (goodsDraft || current.goods).map(g => ({ ...g, reviewed: true, reason: reviewReason })), reason: reviewReason }, t("Đã lưu và rà soát các dòng hàng"))) setGoodsDraft(null); }}><Check size={14} />{t("Lưu & xác nhận hàng hóa")}</button></div><h3 className="section-subtitle">{t("Nguồn của từng dòng")}</h3>{current.goods.map((g, i) => <div className="goods-source" key={g.id}><strong>{t("Dòng ")}{i + 1} · {g.description}</strong><p>{g.originalText || t("Người rà soát nhập tay")}</p>{g.sourceDocumentId && <button className="evidence-link" onClick={() => { setDocId(g.sourceDocumentId || ""); setPage(g.sourcePage || 1); }}>{state.documents.find(d => d.id === g.sourceDocumentId)?.name} · {t("trang")} {g.sourcePage || 1}<ArrowUpRight size={12} /></button>}</div>)}</div>}</section>
-          <aside className="issues-panel"><div className="panel-heading"><h2><AlertCircle size={16} />{t("Cần rà soát ")}<span className="issue-count">{caseIssues.length}</span></h2></div><p className="issues-intro">{t("Ưu tiên xử lý các điểm chưa thống nhất.")}</p>{caseIssues.map(issue => <div className={`issue-card ${selectedIssue === issue.id ? "expanded" : ""}`} key={issue.id}><button className="issue-title" onClick={() => { setSelectedIssue(selectedIssue === issue.id ? "" : issue.id); if (issue.field) document.getElementById(`field-${issue.field}`)?.scrollIntoView({ behavior: "smooth", block: "center" }); }}><span className={`issue-icon ${issue.severity}`}><AlertTriangle size={15} /></span><span><strong>{issue.title}</strong><small>{({ conflict: t("Mâu thuẫn dữ liệu"), missing: t("Thiếu thông tin"), uncertain: t("Cần xác minh"), grouping: t("Phân nhóm"), unsupported: t("Chưa hỗ trợ"), document: t("Chứng từ"), stale: t("Nguồn đã thay đổi"), goods: t("Dòng hàng"), transfer: t("Chuyển ECUS") })[issue.kind]}</small></span><ChevronDown size={14} /></button><p>{issue.description}</p>{selectedIssue === issue.id && <div className="issue-detail">{issue.candidateIds.map(id => state.candidates.find(c => c.id === id)).filter((c): c is Candidate => !!c).map(c => <div className="issue-candidate" key={c.id}><strong>{c.value}</strong><button className="evidence-link" onClick={() => evidence(c)}>{state.documents.find(d => d.id === c.documentId)?.name} · {t("tr.")} {c.page}<ArrowUpRight size={11} /></button><blockquote>{c.originalText}</blockquote><button className="button secondary small" disabled={busy || !editable} onClick={() => void acceptCandidate(current, c)}><Check size={13} />{t("Xác nhận giá trị")}</button></div>)}{issue.documentIds.length > 0 && !issue.candidateIds.length && issue.documentIds.map(id => <button className="evidence-link" key={id} onClick={() => { setDocId(id); setPage(1); }}>{state.documents.find(d => d.id === id)?.name}<ArrowUpRight size={11} /></button>)}{issue.kind === "grouping" ? <button className="button secondary small" disabled={busy || !editable} onClick={() => void mutation({ type: "confirm_grouping", caseId: current.id, reason: reviewReason || t("Đã đối chiếu toàn bộ chứng từ và xác nhận cùng lô hàng") }, t("Đã xác nhận nhóm chứng từ"))}><Check size={13} />{t("Xác nhận cùng lô hàng")}</button> : (['goods-total', 'weight'].some(suffix => issue.id === `${current.id}:${suffix}`) || issue.id.startsWith(`${current.id}:goods-math-`) || issue.kind === "uncertain" && !issue.field) ? <button className="text-button" disabled={busy || !editable} onClick={() => showModal("resolve", issue)}>{t("Ghi nhận quyết định xử lý ")}<ArrowRight size={12} /></button> : issue.kind === "goods" || issue.candidateIds.some(id => state.candidates.find(v => v.id === id)?.lineId) ? <button className="text-button" onClick={() => setTab("goods")}>{t("Đối chiếu bảng hàng hóa ")}<ArrowRight size={12} /></button> : issue.kind === "missing" && !issue.field ? <button className="text-button" disabled={busy || !editable} onClick={() => uploadInput.current?.click()}><Upload size={12} />{t("Bổ sung chứng từ")}</button> : issue.kind === "unsupported" ? <button className="text-button" disabled={busy || !editable} onClick={() => showModal("edit_case")}>{t("Xem loại hồ sơ và hướng xử lý ")}<ArrowRight size={12} /></button> : issue.field ? <button className="text-button" onClick={() => document.getElementById(`input-${issue.field}`)?.focus()}>{t("Chỉnh sửa giá trị và ghi căn cứ ")}<ArrowRight size={12} /></button> : <p className="issue-guidance">{t("Kiểm tra bản gốc, phân loại hoặc nhập văn bản trong khung chứng từ.")}</p>}</div>}</div>)}{!caseIssues.length && <div className="issues-clear"><span><CheckCheck size={24} /></span><h3>{t("Đã xử lý vấn đề dữ liệu")}</h3><p>{t("Không còn vấn đề phần mềm phát hiện. Quy định hải quan chưa được đánh giá.")}</p></div>}<div className="manual-check"><ShieldCheck size={19} /><strong>{t("Quyết định hải quan")}</strong><p>{t("Mã HS, xuất xứ và thuế suất cần người có chuyên môn rà soát.")}</p><Badge tone="neutral">Not yet assessed</Badge></div></aside>
-        </div> : tab === "history" ? <section className="report-wrap"><div className="section-heading"><div><h2>{t("Lịch sử có thể truy vết")}</h2><p>{t("Mọi thay đổi được ghi lại với người thực hiện và thời điểm.")}</p></div><Badge>{t("Phiên bản dữ liệu ")}{state.revision}</Badge></div><AuditList entries={state.audit.filter(a => a.caseId === current.id).slice().reverse()} /></section> : <section className="report-wrap"><div className="report-cover"><span className="eyebrow">{t("BÁO CÁO TRƯỚC KHI NỘP")}</span><h2>{current.reference} · {current.title}</h2><p>{t("Chứng từ nguồn, quyết định rà soát và các bước còn lại trong một báo cáo.")}</p><div className="report-statuses"><div><small>{t("Trạng thái AICD")}</small><strong>{t(STATUS[current.status])}</strong></div><div><small>{t("Vấn đề còn lại")}</small><strong>{caseIssues.length}</strong></div><div><small>{t("Kiểm tra quy định")}</small><strong>Not yet assessed</strong></div><div><small>{t("Phiên bản được duyệt")}</small><strong>{current.approval?.snapshotId || t("Chưa được đóng băng")}</strong></div></div></div><div className="report-columns"><ReportSection title={t("01 / Dữ kiện và quyết định rà soát")}><dl className="report-fields">{FIELD_DEFINITIONS.map(field => <div key={field.key}><dt>{t(field.label)}</dt><dd>{proposed(state, current, field.key) || t("Chưa có dữ liệu")}<small>{current.fields[field.key]?.stale ? t("Nguồn đã thay đổi · cần rà soát lại") : current.fields[field.key] ? `${current.fields[field.key].source === "manual" ? t("Nhập tay / chưa xác minh") : t("Người rà soát xác nhận")} · ${current.fields[field.key].reviewedBy}` : t("Dữ kiện đề xuất từ chứng từ")}</small><small>{currentCandidates.filter(v => v.field === field.key && !v.lineId).map(v => `${state.documents.find(d => d.id === v.documentId)?.name || t("Chứng từ")} · ${t("tr.")} ${v.page}`).filter((v, i, a) => a.indexOf(v) === i).join("; ")}</small>{current.fields[field.key]?.reason && <small>{t("Căn cứ: ")}{current.fields[field.key].reason}</small>}</dd></div>)}</dl></ReportSection><div><ReportSection title={t("02 / Việc cần làm")}>{caseIssues.length ? caseIssues.map(i => <div className="report-issue" key={i.id}><AlertCircle size={16} /><div><strong>{i.title}</strong><p>{i.description}</p></div></div>) : <p>{t("Các vấn đề dữ liệu đã được xử lý. Cần chuyên viên đánh giá quy định và các quyết định hải quan.")}</p>}</ReportSection><ReportSection title={t("03 / Chứng từ đã nhận")}>{documents.map(d => <div className="report-document" key={d.id}><FileText size={17} /><span><strong>{d.name}</strong><small>{t(documentLabel(d.type))} · v{d.version} · {d.pages.length} {t("trang")}</small></span><a href={`/api/documents/${d.id}`} target="_blank" rel="noreferrer" aria-label={t("Mở {p0}", {p0: (d.name)})}><ArrowUpRight size={15} /></a></div>)}</ReportSection><ReportSection title={t("04 / Chuẩn hóa tự động")}>{currentCandidates.some(c => c.normalizations.length) ? currentCandidates.flatMap(c => c.normalizations.map((n, i) => <div className="normalization report-normalization" key={`${c.id}-${i}`}><strong>{n.before} → {n.after}</strong><span>{translateSystemText(n.reason, locale)}</span><small>{state.documents.find(d => d.id === c.documentId)?.name} · {t("tr.")} {c.page}</small></div>)) : <p>{t("Không có chuẩn hóa tự động được ghi nhận.")}</p>}</ReportSection></div></div><ReportSection title={t("05 / Nhật ký quyết định: trước và sau")}><AuditList entries={state.audit.filter(a => a.caseId === current.id && ["review_field", "review_goods", "resolve_issue", "field_reviewed", "goods_reviewed", "issue_resolved"].includes(a.action)).slice().reverse()} /></ReportSection><div className="report-disclaimer"><ShieldCheck size={19} /><p><strong>{t("Kiểm tra phần mềm không thay thế đánh giá hải quan.")}</strong> {t("Quy tắc pháp lý, bảng mã và tính thuế chưa được triển khai. Báo cáo không chứng nhận tuân thủ hay được hải quan chấp thuận.")}</p></div></section>}
-        <section className="handoff-bar"><div className="handoff-heading"><span className="handoff-symbol"><ArrowUpRight size={20} /></span><div><h3>{t("Chuyển bản nháp sang ECUS ")}<Badge tone="purple">TEST CONNECTOR</Badge></h3><p>{run ? translateSystemText(run.message, locale) : t("Mô phỏng có kiểm soát. Chưa kết nối ECUS thực tế.")}</p></div></div><div className="handoff-status"><span>{t("Bản nháp ECUS ")}<strong className={run?.status === "succeeded" ? "text-green" : run?.status === "failed" ? "text-amber" : ""}>{run?.status === "succeeded" ? `${run.draftReference} (TEST)` : run?.status === "failed" ? t("Thất bại (TEST)") : t("Chưa tạo")}</strong></span><span>IDA <strong>{t("Chưa truyền")}</strong></span><span>IDC <strong>{t("Chưa đăng ký")}</strong></span><span>{t("Hải quan ")}<strong>{t("Chưa đánh giá")}</strong></span></div><div className="handoff-actions"><label className="checkbox-label"><input type="checkbox" checked={simulateFailure} onChange={e => setSimulateFailure(e.target.checked)} />{t("Mô phỏng lỗi")}</label><button className="button primary" disabled={busy || hasPendingDrafts || current.status !== "approved"} onClick={() => void mutation({ type: "handoff", caseId: current.id, simulateFailure }, t("Đã chạy test connector. Không có truyền dữ liệu chính thức."))}>Create ECUS draft <ArrowUpRight size={15} /></button>{current.status !== "completed" && <button className="button secondary" disabled={busy || hasPendingDrafts || current.status !== "approved" || caseIssues.length > 0 || ![data.actor.id, data.actor.name, data.actor.email].includes(current.assignedTo)} title={current.status !== "approved" ? t("Duyệt bản khai trước khi hoàn tất") : ![data.actor.id, data.actor.name, data.actor.email].includes(current.assignedTo) ? t("Chỉ người phụ trách được đánh dấu hoàn tất") : t("Hoàn tất và lưu trữ hồ sơ")} onClick={() => showModal("complete")}><Archive size={15} />{t("Hoàn tất & lưu trữ")}</button>}</div><p className="handoff-footnote">{t("Chỉ bản được duyệt mới có thể chuyển. Không ký số, không truyền IDA, không đăng ký IDC. Mỗi lần chạy gắn với phiên bản được duyệt.")}</p></section>
-      </> : view === "settings" ? <div className="content settings-content"><div className="page-title"><div><span className="eyebrow">{t("KHÔNG GIAN LÀM VIỆC")}</span><h1>{t("Cài đặt")}</h1><p>{t("Quản lý thành viên, nguồn dữ liệu và kết nối.")}</p></div></div><div className="settings-grid"><AccountSettingsCard /><AiSettingsCard /><section className="card settings-card"><div className="section-heading"><div><h2><Mail size={19} />Google Workspace / Gmail</h2><p>{t("Nguồn email của đơn vị thử nghiệm")}</p></div><Badge tone="amber">{t("Chưa kết nối")}</Badge></div><div className="connection-info"><div className="gmail-logo"><Mail size={26} /></div><div><strong>{t("Tiếp nhận email có kiểm soát")}</strong><p>{t("Nhập tệp .eml để giữ email gốc và tệp đính kèm. Kết nối hộp thư cần cấp quyền OAuth trên Google Workspace.")}</p></div></div><form onSubmit={async e => { e.preventDefault(); await mutation({ type: "settings", inboxAddress, defaultReviewer }, t("Đã lưu cài đặt")); }}><label>{t("Địa chỉ hộp thư")}<input type="email" value={inboxAddress} onChange={e => setInboxAddress(e.target.value)} placeholder="chungtu@congty.vn" /></label><label>{t("Người rà soát mặc định")}<input value={defaultReviewer} onChange={e => setDefaultReviewer(e.target.value)} placeholder={t("Tên người phụ trách")} /></label><div className="setting-note"><ShieldCheck size={15} />{t("AICD không tự động gửi email.")}</div><button className="button primary" disabled={busy || data?.role !== "owner"}>{t("Lưu cài đặt")}</button></form></section><section className="card settings-card"><div className="section-heading"><div><h2><Users size={19} />{t("Thành viên")}</h2><p>{t("Chỉ thành viên được cấp quyền truy cập hồ sơ")}</p></div><Badge>{team?.members.length || 1} {t("thành viên")}</Badge></div>{team?.members.map(member => <div className="member-row" key={member.email}><span className="avatar pale">{initials(member.email)}</span><span><strong>{member.email}</strong><small>{member.status === "invited" ? t("Đã cấp quyền · chưa đăng nhập") : t("Đang hoạt động")}</small></span><Badge>{member.role === "owner" ? t("Quản trị") : t("Rà soát")}</Badge></div>)}{team?.canManage && <form className="invite-form" onSubmit={async e => { e.preventDefault(); setBusy(true); try { const r = await fetchWithSession("/api/team", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: invite }) }); const body = await r.json() as ApiResponse; if (!r.ok) throw new Error(body.error); const fresh = await fetchWithSession("/api/team"); setTeam(await fresh.json() as TeamResponse); if (body.state) install(body); setInvite(""); setToast(t("Đã cấp quyền truy cập. Không gửi email tự động.")); } catch (e) { setError(errorMessage(e)); } finally { setBusy(false); } }}><label>{t("Cấp quyền cho người rà soát")}<input type="email" required value={invite} onChange={e => setInvite(e.target.value)} placeholder="dongnghiep@congty.vn" /></label><button className="button secondary" disabled={busy}><Plus size={15} />{t("Thêm thành viên")}</button><small>{t("Thành viên đăng nhập bằng đúng email được cấp quyền. Không gửi email mời tự động.")}</small></form>}</section><section className="card settings-card"><div className="section-heading"><h2><ArrowUpRight size={19} />{t("Kết nối ECUS")}</h2><Badge tone="purple">Test connector</Badge></div><p>{t("Chỉ mô phỏng tạo bản nháp từ phiên bản đã duyệt. Cần xác minh phiên bản ECUS, phương thức nhập và quyền truy cập máy Windows trước khi kết nối thực tế.")}</p><div className="setting-note">{t("Ký số, IDA và IDC chưa được kích hoạt.")}</div></section><section className="card settings-card"><div className="section-heading"><h2><ShieldCheck size={19} />{t("Quy định hải quan")}</h2><Badge>Not yet assessed</Badge></div><p>{t("Chờ nguồn quy định và bảng mã đã kiểm chứng. Mã HS, xuất xứ, thuế suất và ưu đãi chỉ được nhập tay với nhãn chưa xác minh.")}</p><div className="setting-note">{t("Không có quy tắc pháp lý giả định.")}</div></section><section className="card settings-card"><div className="section-heading"><h2><Sparkles size={19} />{t("Dữ liệu thực hành")}</h2><Badge tone="purple">{t("Dữ liệu giả lập")}</Badge></div><p>{t("Ba lô hàng tổng hợp để khám phá rà soát, mâu thuẫn và chứng từ thiếu. Chưa có chứng từ thật để đánh giá độ chính xác trên nhà cung cấp thực tế.")}</p><div className="setting-note">{t("Không có thông tin khách hàng thật trong bộ mẫu này.")}</div><button className="button secondary" disabled={busy || state.documents.some(d => d.synthetic)} onClick={() => void mutation({ type: "seed_demo" }, t("Đã thêm ba bộ chứng từ giả lập"))}>{state.documents.some(d => d.synthetic) ? t("Bộ mẫu đã được nạp") : t("Nạp bộ chứng từ giả lập")}</button></section></div></div> : view === "email" ? <div className="content"><div className="page-title"><div><span className="eyebrow">{t("TIẾP NHẬN CHỨNG TỪ")}</span><h1>{t("Hộp thư đầu vào")}</h1><p>{t("Email gốc và chứng từ đính kèm, được giữ cùng nhau.")}</p></div><button className="button primary" disabled={busy} onClick={() => uploadInput.current?.click()}><Upload size={16} />{t("Nhập email .eml")}</button></div><div className="email-notice"><span className="gmail-logo"><Mail size={23} /></span><div><strong>Google Workspace / Gmail <Badge tone="amber">{t("Chưa kết nối")}</Badge></strong><p>{state.settings.inboxAddress || t("Chưa cấu hình địa chỉ hộp thư")} {t("· Nhập .eml trong khi chờ cấp quyền truy cập.")}</p></div><button className="button secondary small" onClick={() => navigate("settings")}>{t("Cài đặt ")}<ArrowRight size={14} /></button></div><div className="card email-layout"><div className="email-list"><div className="panel-heading"><h2>{t("Email đã tiếp nhận")}</h2><Badge>{state.emails.length}</Badge></div>{state.emails.map(email => <button key={email.id} className={`email-row ${emailId === email.id ? "selected" : ""}`} onClick={() => setEmailId(email.id)}><span className="email-sender"><Mail size={15} />{email.sender}</span><strong>{email.subject || t("(Không có tiêu đề)")}</strong><small>{date(email.receivedAt)} · {email.documentIds.length} {t("tệp đính kèm")}</small></button>)}{!state.emails.length && <Empty title={t("Hộp thư đang trống")}><p>{t("Nhập một email .eml từ Gmail để lưu nguồn và phân nhóm các tệp đính kèm.")}</p></Empty>}</div><div className="email-detail">{selectedEmail ? <><Badge>{t("Email gốc được bảo toàn")}</Badge><h2>{selectedEmail.subject}</h2><dl><dt>{t("Người gửi")}</dt><dd>{selectedEmail.sender}</dd><dt>{t("Thời điểm")}</dt><dd>{date(selectedEmail.receivedAt)}</dd><dt>Message-ID</dt><dd>{selectedEmail.messageId}</dd><dt>{t("Tệp gốc")}</dt><dd>{selectedEmail.originalName}</dd></dl><a className="button secondary" href={`/api/emails/${selectedEmail.id}`} target="_blank" rel="noreferrer"><ArrowDownToLine size={15} />{t("Tải email gốc")}</a><h3>{t("Tệp đính kèm")}</h3>{selectedEmail.documentIds.map(id => { const d = state.documents.find(v => v.id === id); return d && <button className="email-attachment" key={id} onClick={() => { openCase(d.caseId); setDocId(d.id); }}><FileText size={19} /><span><strong>{d.name}</strong><small>{t(documentLabel(d.type))}</small></span><ArrowRight size={16} /></button>; })}</> : <Empty icon={Mail} title={t("Chọn email để xem chi tiết")}><p>{t("Người gửi, thời điểm và chứng từ gốc luôn có thể truy xuất.")}</p></Empty>}</div></div></div> : <div className="content"><div className="page-title"><div><div className="eyebrow">{view === "archive" ? t("HỒ SƠ ĐÃ HOÀN TẤT") : t("KHÔNG GIAN LÀM VIỆC CỦA BẠN")}</div><h1>{view === "overview" ? t("Mỗi lô hàng, trong tầm kiểm soát.") : view === "archive" ? t("Lưu trữ hồ sơ") : t("Hồ sơ lô hàng")}</h1><p>{view === "archive" ? t("Tra cứu hồ sơ đã hoàn tất và mở lại khi cần điều chỉnh.") : t("Từ chứng từ đầu vào đến bản khai được rà soát, cùng một nơi.")}</p></div><div className="title-actions"><button className="button secondary" disabled={busy} onClick={() => showModal("create")}><Plus size={16} />{t("Tạo hồ sơ")}</button><button className="button primary" disabled={busy} onClick={() => uploadInput.current?.click()}><Upload size={17} />{t("Tải chứng từ")}</button></div></div>
-        {view === "overview" && <div className="stats-grid"><Stat icon={FolderOpen} label={t("Hồ sơ đang xử lý")} value={liveCases.length} detail={t("Trong hàng đợi làm việc")} tone="navy" /><Stat icon={AlertTriangle} label={t("Cần rà soát")} value={issueCases.length} detail={t("{p0} vấn đề đang chờ xử lý", {p0: (unresolved.filter(i => liveCases.some(c => c.id === i.caseId)).length)})} tone="amber" /><Stat icon={ClipboardCheck} label={t("Sẵn sàng duyệt")} value={readyCases.filter(c => c.status === "review").length} detail={t("Đã xử lý vấn đề dữ liệu")} tone="green" /><Stat icon={CheckCheck} label={t("Đã duyệt nội bộ")} value={liveCases.filter(c => c.status === "approved").length} detail={t("Đã đóng băng phiên bản")} tone="blue" /></div>}
-        {state.cases.length === 0 && <div className="welcome-card"><div className="welcome-copy"><span className="mini-eyebrow"><Sparkles size={13} />{t("BẮT ĐẦU VỚI AICD")}</span><h2>{t("Bớt đối chiếu thủ công.")}<br />{t("Thêm thời gian cho quyết định.")}</h2><p>{t("Tải lên bộ chứng từ đầu tiên, hoặc khám phá quy trình với lô hàng mẫu có dữ liệu hoàn toàn giả lập.")}</p><button className="button primary" disabled={busy} onClick={() => void mutation({ type: "seed_demo" }, t("Đã nạp bộ chứng từ giả lập để thử toàn bộ quy trình"))}><Sparkles size={16} />{t("Khám phá hồ sơ mẫu ")}<ArrowRight size={15} /></button><span className="demo-disclosure">{t("Không sử dụng thông tin khách hàng thật.")}</span></div><div className="workflow-illustration" aria-hidden="true"><div className="illustration-file back"><FileText size={23} /><span>PACKING LIST</span><i /><i /><i /></div><div className="illustration-file front"><div><span className="file-mini-icon"><FileText size={17} /></span><small>COMMERCIAL INVOICE</small><Check size={14} /></div><strong>{t("Chứng từ đã được sắp xếp.")}</strong><i /><i /><i /><div className="illustration-value"><span>{t("Tổng trị giá")}</span><b>{t("Cần đối chiếu ")}<AlertCircle size={11} /></b></div></div><div className="illustration-check"><CheckCheck size={15} /><span>{t("Mỗi giá trị, một nguồn gốc.")}</span></div><div className="illustration-line" /></div></div>}
-        <section className="card queue-card"><div className="queue-top"><div><h2>{view === "archive" ? t("Hồ sơ lưu trữ") : t("Hàng đợi công việc")}<span className="count-pill">{rows.length}</span></h2><p>{view === "archive" ? t("Chỉ hồ sơ được người phụ trách đánh dấu hoàn tất.") : t("Ưu tiên các hồ sơ cần quyết định của bạn.")}</p></div><div className="queue-legend"><span className="status-dot" />{t("Cập nhật từ không gian làm việc")}</div></div><div className="queue-controls"><div className="filter-tabs">{(view === "archive" ? [{ id: "all", label: t("Tất cả hồ sơ"), count: state.cases.filter(c => c.status === "completed").length }] : [{ id: "all", label: t("Tất cả"), count: liveCases.length }, { id: "issues", label: t("Cần rà soát"), count: issueCases.length }, { id: "ready", label: t("Đã xử lý vấn đề"), count: readyCases.length }]).map(navTab => <button className={filter === navTab.id ? "active" : ""} onClick={() => setFilter(navTab.id)} key={navTab.id}>{t(navTab.label)}<span>{navTab.count}</span></button>)}</div><label className="search-field"><Search size={16} /><input aria-label={t("Tìm hồ sơ")} placeholder={t("Tìm hồ sơ, số vận đơn, đối tác…")} value={query} onChange={e => setQuery(e.target.value)} />{query && <button className="icon-button" aria-label={t("Xóa tìm kiếm")} onClick={() => setQuery("")}><X size={13} /></button>}</label></div><div className="table-scroll"><table className="queue-table"><thead><tr><th>{t("Hồ sơ / khách hàng")}</th><th>{t("Chứng từ")}</th><th>{t("Trạng thái")}</th><th>{t("Cần xử lý")}</th><th>{t("Người phụ trách")}</th><th>{t("Cập nhật ")}<ChevronDown size={11} /></th><th /></tr></thead><tbody>{rows.slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).map(c => { const issues = unresolved.filter(i => i.caseId === c.id); const docs = activeDocs(state, c.id); return <tr key={c.id} onClick={() => openCase(c.id)}><td><div className="case-cell"><span className={`shipment-icon ${issues.length ? "" : "ready"}`}><Ship size={19} /></span><div><button className="case-link" onClick={() => openCase(c.id)}>{c.title}</button><span className="case-reference">{c.reference} <span>·</span> {proposed(state, c, "importer") || t("Chưa xác định bên nhập khẩu")}</span><div className="case-tags">{c.synthetic && <span className="synthetic-tag">{t("Dữ liệu giả lập")}</span>}{!c.groupingConfirmed && <span className="grouping-tag">{t("Cần xác nhận nhóm")}</span>}</div></div></div></td><td><span className="document-count"><FileText size={14} />{docs.length} {t("chứng từ")}</span><small className="table-subtext">{docs.some(d => d.extractionStatus !== "extracted") ? t("Có tệp cần nhập tay") : t("Có nguồn đối chiếu")}</small></td><td><Badge tone={c.status === "review" ? "blue" : "green"}><span className="badge-dot" />{t(STATUS[c.status])}</Badge></td><td>{issues.length ? <span className="issue-table-count"><AlertCircle size={14} />{issues.length} {t("vấn đề")}</span> : <span className="ready-label"><Check size={14} />{t("Đã rà soát")}</span>}</td><td><span className="assignee"><span className="mini-avatar">{initials(c.assignedTo || "?")}</span>{c.assignedTo || t("Chưa phân công")}</span></td><td><span className="timestamp">{date(c.updatedAt)}</span></td><td><ChevronRight size={16} className="muted" /></td></tr>; })}</tbody></table></div>{!rows.length && <Empty icon={view === "archive" ? Archive : Search} title={query ? t("Không tìm thấy hồ sơ phù hợp") : view === "archive" ? t("Chưa có hồ sơ lưu trữ") : state.cases.length ? t("Không có hồ sơ trong bộ lọc này") : t("Hàng đợi đã sẵn sàng")}><p>{query ? t("Thử tìm bằng tên khách hàng, số hóa đơn hoặc vận đơn.") : view === "archive" ? t("Hồ sơ sẽ xuất hiện ở đây khi người phụ trách đánh dấu hoàn tất.") : t("Tải chứng từ lên hoặc mở hồ sơ mẫu để bắt đầu.")}</p></Empty>}<div className="table-footer"><span>{t("Hiển thị ")}{rows.length} {t("hồ sơ")}</span><span><ShieldCheck size={13} />{t("Kiểm tra quy định hải quan: ")}<strong>Not yet assessed</strong></span></div></section>
-        {view === "overview" && <div className="overview-bottom"><section className="card intake-card"><div className="section-heading"><h2><Inbox size={18} />{t("Nguồn chứng từ")}</h2><button className="text-button" onClick={() => navigate("email")}>{t("Xem hộp thư ")}<ArrowUpRight size={13} /></button></div><div className="source-channel"><span className="channel-icon"><Upload size={19} /></span><div><strong>{t("Tải lên trực tiếp")}</strong><p>{t("PDF, ảnh, văn bản và email .eml")}</p></div><Badge tone="green">{t("Sẵn sàng")}</Badge></div><div className="source-channel"><span className="channel-icon"><Mail size={19} /></span><div><strong>Google Workspace / Gmail</strong><p>{t("Chờ cấp quyền hộp thư của bạn")}</p></div><button className="text-button" onClick={() => navigate("settings")}>{t("Thiết lập ")}<ArrowRight size={13} /></button></div><div className="intake-note"><ShieldCheck size={14} />{t("Chứng từ gốc được giữ lại cùng lịch sử phiên bản.")}</div></section><section className="card recent-card"><div className="section-heading"><h2><Activity size={18} />{t("Hoạt động gần đây")}</h2><span className="muted">{t("Dấu vết thay đổi")}</span></div>{state.audit.length ? state.audit.slice(-3).reverse().map(a => <button className="recent-event" key={a.id} onClick={() => { if (a.caseId) { openCase(a.caseId); setTab("history"); } else setShowActivity(true); }}><span className="timeline-dot" /><div><strong>{auditActionLabel(a.action, locale)}</strong><p>{(["field_reviewed", "goods_reviewed", "issue_resolved", "case_reopened", "case_completed"].includes(a.action) ? a.reason : translateSystemText(a.reason, locale)) || (a.field ? fieldLabel(a.field, locale) : "") || t("Cập nhật không gian làm việc")}</p></div><span>{date(a.at)}</span></button>) : <div className="quiet-state"><Clock3 size={24} /><p>{t("Thay đổi đầu tiên sẽ xuất hiện tại đây.")}</p></div>}</section></div>}
-        <footer className="page-footer"><span><span className="brand-mini">AICD.</span> {t("Rõ nguồn dữ liệu. Rõ từng quyết định.")}</span><span>{t("Không ký số hoặc truyền tờ khai chính thức.")}</span></footer>
-      </div>}
-    </div>
-    {toast && <div className="toast" role="status"><CheckCheck size={18} /><span>{translateSystemText(toast, locale)}</span><button className="icon-button" aria-label={t("Ẩn thông báo")} onClick={() => setToast("")}><X size={15} /></button></div>}
-    {showActivity && <ModalShell title={t("Hoạt động của không gian làm việc")} onClose={() => setShowActivity(false)}><div className="modal-body"><AuditList entries={(state?.audit || []).slice().reverse().slice(0, 40)} /></div></ModalShell>}
-    {modal && <ModalShell title={modal.kind === "create" ? t("Tạo hồ sơ lô hàng") : modal.kind === "edit_case" ? t("Thông tin hồ sơ") : modal.kind === "group" ? t("Sắp xếp chứng từ") : modal.kind === "transcribe" ? t("Nhập văn bản từ chứng từ") : modal.kind === "complete" ? t("Hoàn tất và lưu trữ hồ sơ") : modal.kind === "reopen" ? t("Mở lại hồ sơ để điều chỉnh") : t("Ghi nhận quyết định rà soát")} onClose={() => setModal(null)}><form onSubmit={submitModal}><div className="modal-body">{modal.kind === "create" ? <><p className="muted">{t("Tạo hồ sơ nhập khẩu mới, sau đó bổ sung chứng từ và dữ liệu.")}</p><label>{t("Tên lô hàng")}<input autoFocus required value={modalText} onChange={e => setModalText(e.target.value)} placeholder={t("Ví dụ: Nhập khẩu linh kiện · tháng 10")} /></label></> : modal.kind === "edit_case" ? <><label>{t("Tên lô hàng")}<input autoFocus required value={modalText} onChange={e => setModalText(e.target.value)} /></label><label>{t("Người phụ trách")}<input required value={modalTarget} onChange={e => setModalTarget(e.target.value)} /></label><label>{t("Loại hồ sơ")}<select value={groupMode} onChange={e => setGroupMode(e.target.value)}><option value="import">{t("Nhập khẩu · phạm vi Phase 1")}</option><option value="unsupported">{t("Loại khác · cần xử lý ngoài hệ thống")}</option></select></label><p className="muted">{t("Chỉ chuyển về luồng nhập khẩu nếu phù hợp với lô hàng thực tế. Các loại hình chưa hỗ trợ sẽ có vấn đề chặn riêng.")}</p></> : modal.kind === "group" ? <><div className="segmented"><button type="button" className={groupMode === "move" ? "active" : ""} onClick={() => setGroupMode("move")}>{t("Tách / di chuyển")}</button><button type="button" className={groupMode === "merge" ? "active" : ""} onClick={() => setGroupMode("merge")}>{t("Gộp cả hồ sơ")}</button></div>{groupMode === "move" && <><p className="muted">{t("Chọn chứng từ cần chuyển. Các quyết định liên quan phải được rà soát lại.")}</p><div className="group-document-list">{documents.map(d => <label className="checkbox-label" key={d.id}><input type="checkbox" checked={selectedDocs.includes(d.id)} onChange={e => setSelectedDocs(v => e.target.checked ? [...v, d.id] : v.filter(id => id !== d.id))} />{d.name}</label>)}</div></>}<label>{t("Hồ sơ đích")}<select required={groupMode === "merge"} value={modalTarget} onChange={e => setModalTarget(e.target.value)}><option value="">{groupMode === "merge" ? t("Chọn hồ sơ để gộp vào") : t("Tạo hồ sơ mới từ chứng từ đã chọn")}</option>{state?.cases.filter(c => !c.mergedInto && c.id !== current?.id && c.status === "review").map(c => <option key={c.id} value={c.id}>{c.reference} · {c.title}</option>)}</select></label>{!modalTarget && groupMode === "move" && <label>{t("Tên hồ sơ mới")}<input required value={modalText} onChange={e => setModalText(e.target.value)} placeholder={t("Tên lô hàng được tách")} /></label>}</> : modal.kind === "transcribe" ? <><p className="muted">{t("Chép đúng nội dung trang ")}{page} {t("của ")}<strong>{source?.name}</strong>{t(". Không điền dữ kiện không có trong bản gốc. Bản chép được lưu vào lịch sử.")}</p><label>{t("Văn bản chứng từ")}<textarea autoFocus rows={14} required value={modalText} onChange={e => setModalText(e.target.value)} placeholder={t("Dán hoặc nhập văn bản từ chứng từ…")} /></label></> : <><div className="modal-context">{modal.kind === "complete" ? t("Hồ sơ sẽ rời hàng đợi và xuất hiện trong lưu trữ. Đây là quyết định của người phụ trách, không phải xác nhận thông quan.") : modal.kind === "reopen" ? t("Hồ sơ trở lại hàng đợi. Các thay đổi tiếp theo cần được duyệt lại trước khi chuyển.") : modal.issue ? translateIssue(data?.issues.find(issue => issue.id === modal.issue?.id) || modal.issue, locale).description : ""}</div><label>{t("Lý do ")}{modal.kind === "complete" ? t("hoàn tất") : modal.kind === "reopen" ? t("mở lại") : t("xử lý")}<textarea rows={4} autoFocus required minLength={3} value={modalText} onChange={e => setModalText(e.target.value)} placeholder={t("Ghi rõ quyết định và căn cứ để người khác có thể rà soát…")} /></label></>}</div><div className="modal-footer"><button type="button" className="button secondary" onClick={() => setModal(null)}>{t("Hủy")}</button><button className="button primary" disabled={busy || modal.kind === "group" && groupMode === "move" && !selectedDocs.length}>{busy && <Loader2 className="spin" size={15} />}{modal.kind === "create" ? t("Tạo hồ sơ") : modal.kind === "group" ? t("Cập nhật phân nhóm") : modal.kind === "complete" ? t("Hoàn tất & lưu trữ") : t("Lưu quyết định")}</button></div></form></ModalShell>}
-  </div>;
+  const documentPanel =
+    state && current ? (
+      <ShipmentDocuments
+        state={state}
+        shipment={current}
+        documentId={docId}
+        page={page}
+        mode={sourceMode}
+        selectedDocuments={selectedDocs}
+        onDocumentChange={setDocId}
+        onPageChange={setPage}
+        onModeChange={setSourceMode}
+        onSelectionChange={setSelectedDocs}
+        busy={busy || !!conflict}
+        hasPendingDrafts={hasPendingDrafts}
+        reviewReason={reviewReason}
+        mutation={mutation}
+        onUpload={() => uploadInput.current?.click()}
+        onGroup={() => showModal("group")}
+        onTranscribe={(text) => {
+          setModal({ kind: "transcribe", initialText: text });
+        }}
+        onReplace={(id) => {
+          replaceId.current = id;
+          replaceInput.current?.click();
+        }}
+        onBusyChange={setBusy}
+        onApplied={(response, message) => {
+          install(response);
+          setToast(message);
+        }}
+        onConflict={(response) => {
+          setConflict(response);
+          conflictRef.current = true;
+          setError(
+            t(
+              "Một thành viên khác đã cập nhật hồ sơ. Bản nhập của bạn được giữ lại.",
+            ),
+          );
+        }}
+      />
+    ) : null;
+
+  const questionsPanel =
+    state && current?.caseType === "import" ? (
+      <ShipmentIssues
+        key={current.id}
+        state={state}
+        shipment={current}
+        issues={pendingQuestions}
+        completedQuestions={completedQuestions}
+        selectedIssue={selectedIssue}
+        onIssueChange={setSelectedIssue}
+        busy={busy || !!conflict}
+        reviewReason={reviewReason}
+        mutation={mutation}
+        onAccept={acceptCandidate}
+        onEvidence={evidence}
+        onDocument={(id, page) => {
+          setDocId(id);
+          setPage(page);
+          setSourceMode("original");
+          if (tab === "declaration") setShipmentTab("documents");
+        }}
+        onDeclaration={(issue) => {
+          setDeclarationFocus(issue.field);
+          setDeclarationGoodsFocus(
+            current.declarationDraft?.fields.find(
+              (entry) =>
+                entry.fieldId === issue.field &&
+                issue.id.includes(
+                  `:declaration:${declarationEntryKey(entry.fieldId, entry.goodsLineId)}:`,
+                ),
+            )?.goodsLineId,
+          );
+          setTab("declaration");
+        }}
+        onGoods={() => setTab("goods")}
+        onResolve={(issue) => showModal("resolve", issue)}
+        onEditCase={() => showModal("edit_case")}
+        onUpload={() => uploadInput.current?.click()}
+        showReviewReason={tab === "declaration"}
+        hasPendingEmailDraft={hasPendingEmailDraft}
+        onReasonChange={setReviewReason}
+        onMessages={() => setShipmentTab("messages")}
+        onField={(field) => {
+          setTab("fields");
+          setTimeout(
+            () => document.getElementById(`input-${field}`)?.focus(),
+            0,
+          );
+        }}
+      />
+    ) : null;
+
+  return (
+    <WorkspaceShell
+      view={view}
+      shipmentReference={current?.reference}
+      actor={data?.actor}
+      role={data?.role}
+      localMode={localMode}
+      shipmentCount={liveCases.length}
+      sessionDisabled={busy || hasAnyPendingDrafts}
+      onNavigate={navigate}
+      onActivity={() => setShowActivity(true)}
+    >
+      <input
+        ref={uploadInput}
+        type="file"
+        multiple
+        hidden
+        onChange={(e) => void upload(e.target.files)}
+      />
+      <input
+        ref={replaceInput}
+        type="file"
+        hidden
+        onChange={(e) => void upload(e.target.files, true)}
+      />
+      {error && (
+        <div className="error-banner" role="alert">
+          <AlertCircle size={17} />
+          <span>{translateSystemText(error, locale)}</span>
+          <button aria-label={t("Ẩn lỗi")} onClick={() => setError("")}>
+            <X size={16} />
+          </button>
+        </div>
+      )}
+      {conflict && (
+        <div className="conflict-banner">
+          <GitBranch size={19} />
+          <div>
+            <strong>{t("Hồ sơ đã được cập nhật ở nơi khác")}</strong>
+            <p>
+              {t(
+                "Bản nhập của bạn vẫn được giữ. Nạp dữ liệu mới rồi kiểm tra trước khi lưu lại.",
+              )}
+            </p>
+          </div>
+          <button
+            className="button secondary"
+            onClick={() => void refreshConflict()}
+          >
+            {t("Nạp bản mới, giữ bản nhập")}
+          </button>
+        </div>
+      )}
+      {uploadLabel && (
+        <div className="upload-progress" role="status">
+          <Loader2 size={16} className="spin" />
+          <div>
+            <strong>{translateSystemText(uploadLabel, locale)}</strong>
+            {extractionCancelable && (
+              <p>
+                {t(
+                  "Giữ trang này mở để Kimi đọc chứng từ. Kết quả từng nhóm trang được lưu tự động.",
+                )}
+              </p>
+            )}
+          </div>
+          {extractionCancelable && (
+            <button
+              className="button secondary small"
+              onClick={() => uploadAbort.current?.abort()}
+            >
+              {t("Dừng xử lý")}
+            </button>
+          )}
+        </div>
+      )}
+      {loading ? (
+        <div className="loading-screen">
+          <Loader2 className="spin" size={28} />
+          <h3>{t("Đang tải không gian làm việc")}</h3>
+          <p>{t("Chuẩn bị hồ sơ và lịch sử rà soát…")}</p>
+        </div>
+      ) : !state ? (
+        <AuthGate
+          onAuthenticated={() => void load()}
+          onRetry={() => void load()}
+        />
+      ) : current ? (
+        <>
+          <section className="case-heading">
+            <button className="back-button" onClick={() => setSelectedId(null)}>
+              <ArrowLeft size={16} />
+              {t("Danh sách hồ sơ")}
+            </button>
+            <div className="case-title-row">
+              <div>
+                <div className="eyebrow">
+                  {current.reference} <span>•</span> {t(CASE_TYPE_LABELS[current.caseType])}
+                  {current.synthetic && (
+                    <Badge tone="purple">{t("Dữ liệu giả lập")}</Badge>
+                  )}
+                </div>
+                <h1>{current.title}</h1>
+                <div className="case-subtitle">
+                  <span>
+                    <Ship size={14} />
+                    {proposed(state, current, "houseBillOfLading") ||
+                      proposed(state, current, "billOfLading") ||
+                      proposed(state, current, "masterBillOfLading") ||
+                      t("Chưa có số vận đơn")}
+                  </span>
+                  <span>·</span>
+                  <span>
+                    {documents.length} {t("chứng từ")}
+                  </span>
+                  <span>·</span>
+                  <span>
+                    {t("Cập nhật ")}
+                    {date(current.updatedAt)}
+                  </span>
+                  <Badge tone={current.caseType === "reference" ? "neutral" : current.status === "review" ? "amber" : "green"}>
+                    {t(current.caseType === "reference" ? "Chỉ tham khảo" : STATUS[current.status])}
+                  </Badge>
+                </div>
+              </div>
+              <div className="case-actions">
+                {editable && (
+                  <button
+                    className="button secondary"
+                    disabled={busy}
+                    onClick={() => showModal("edit_case")}
+                    title={t("Tên hồ sơ, người phụ trách và loại hình")}
+                  >
+                    <Settings2 size={15} />
+                    {t("Thông tin")}
+                  </button>
+                )}
+                <button
+                  className="button secondary"
+                  disabled={busy || hasPendingDrafts}
+                  title={
+                    hasPendingDrafts
+                      ? t("Lưu nội dung đang chỉnh sửa trước khi xuất")
+                      : t("Tải báo cáo PDF")
+                  }
+                  onClick={() => setSecondary("report")}
+                >
+                  <FileCheck2 size={16} />
+                  {t("Báo cáo rà soát")}
+                </button>
+                {current.caseType === "import" && editable ? (
+                  <button
+                    className="button primary"
+                    disabled={busy || hasPendingDrafts || caseIssues.length > 0}
+                    title={
+                      caseIssues.length
+                        ? t("Xử lý các vấn đề trước khi duyệt")
+                        : t("Đóng băng phiên bản được rà soát")
+                    }
+                    onClick={() =>
+                      void mutation(
+                        { type: "approve", caseId: current.id },
+                        t("Đã duyệt nội bộ và đóng băng phiên bản"),
+                      )
+                    }
+                  >
+                    <CheckCheck size={17} />
+                    {t("Duyệt bản khai")}
+                  </button>
+                ) : !editable ? (
+                  <button
+                    className="button secondary"
+                    disabled={busy}
+                    onClick={() => showModal("reopen")}
+                  >
+                    <History size={16} />
+                    {t("Mở lại để chỉnh sửa")}
+                  </button>
+                ) : null}
+              </div>
+            </div>
+            <div className="next-action">
+              <span
+                className={`next-icon ${currentScope ? (current.caseType === "unknown" || current.caseType === "unsupported" ? "amber" : "") : caseIssues.length ? "amber" : "green"}`}
+              >
+                {currentScope ? (
+                  current.caseType === "unknown" || current.caseType === "unsupported"
+                    ? <AlertTriangle size={18} />
+                    : <FileText size={18} />
+                ) : caseIssues.length ? (
+                  <AlertTriangle size={18} />
+                ) : (
+                  <Check size={18} />
+                )}
+              </span>
+              <div>
+                <strong>
+                  {currentScope
+                    ? t(currentScope.title)
+                    : current.status === "completed"
+                    ? t("Hồ sơ đã được lưu trữ")
+                    : caseIssues.length
+                      ? t("{p0} vấn đề cần bạn rà soát", {
+                          p0: caseIssues.length,
+                        })
+                      : editable
+                        ? t(
+                            "Đã xử lý các vấn đề dữ liệu. Sẵn sàng duyệt nội bộ.",
+                          )
+                        : t("Phiên bản rà soát đã được đóng băng")}
+                </strong>
+                <span>
+                  {currentScope
+                    ? t(currentScope.description)
+                    : current.status === "completed"
+                    ? t("Mở lại hồ sơ khi cần sửa đổi hoặc bổ sung.")
+                    : caseIssues.length
+                      ? t(
+                          "Đối chiếu dữ kiện chứng từ và hàng hóa trong Rà soát & bản khai trước khi duyệt.",
+                        )
+                      : editable
+                        ? t(
+                            "Phê duyệt để cố định dữ liệu trước khi thử chuyển sang ECUS.",
+                          )
+                        : t(
+                            "Có thể thử tạo bản nháp ECUS hoặc đánh dấu hoàn tất để lưu trữ.",
+                          )}
+                </span>
+              </div>
+              {current.caseType === "import" && <span className="legal-state">
+                {t("Kiểm tra quy định ")}
+                <strong>{t("Chưa đánh giá")}</strong>
+              </span>}
+            </div>
+          </section>
+          <div className="review-tabs">
+            <div>
+              {[
+                {
+                  id: "review",
+                  label: t(current.caseType === "import" ? "Rà soát & bản khai" : "Thông tin"),
+                  icon: ClipboardCheck,
+                },
+                { id: "documents", label: t("Chứng từ"), icon: FileText },
+                { id: "messages", label: t("Trao đổi"), icon: Mail },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  className={shipmentTab === item.id ? "active" : ""}
+                  onClick={() => setShipmentTab(item.id as typeof shipmentTab)}
+                >
+                  <item.icon size={16} />
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            <span className="save-indicator">
+              {busy ? (
+                <Loader2 className="spin" size={13} />
+              ) : hasPendingDrafts || hasPendingEmailDraft ? (
+                <Clock3 size={13} />
+              ) : (
+                <Check size={13} />
+              )}{" "}
+              {busy
+                ? t("Đang lưu…")
+                : hasPendingDrafts || hasPendingEmailDraft
+                  ? t("Có nội dung chưa lưu")
+                  : t("Mọi thay đổi đã lưu")}
+            </span>
+          </div>
+          {shipmentTab === "review" && (
+            <div
+              className="review-subnavigation"
+              aria-label={t("Các bước rà soát")}
+            >
+              {[
+                { id: "declaration", label: t(current.caseType === "import" ? "Bản khai" : "Thông tin") },
+                { id: "fields", label: t("Dữ kiện chứng từ") },
+                { id: "goods", label: t("Đối chiếu hàng hóa") },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  className={tab === item.id ? "active" : ""}
+                  onClick={() => setTab(item.id)}
+                >
+                  {item.label}
+                </button>
+              ))}
+              <button
+                className="secondary-history"
+                onClick={() => setSecondary("history")}
+              >
+                <History size={14} />
+                {t("Lịch sử thay đổi")}
+              </button>
+            </div>
+          )}
+          {shipmentTab === "messages" ? (
+            <ShipmentMessages
+              key={current.id}
+              state={state}
+              shipment={current}
+              disabled={busy || !editable}
+              mutation={mutation}
+              edits={emailDraftEdits}
+              onEdit={(id, edit) =>
+                setEmailDraftEdits((previous) => ({ ...previous, [id]: edit }))
+              }
+              onSaved={(id, submitted) =>
+                setEmailDraftEdits((previous) => {
+                  const current = previous[id];
+                  if (
+                    !current ||
+                    current.subject !== submitted.subject ||
+                    current.body !== submitted.body
+                  )
+                    return previous;
+                  const next = { ...previous };
+                  delete next[id];
+                  return next;
+                })
+              }
+              onUpload={() => uploadInput.current?.click()}
+              onDocument={(id) => {
+                setDocId(id);
+                setPage(1);
+                setShipmentTab("documents");
+              }}
+            />
+          ) : shipmentTab === "documents" ? (
+            <div className="standalone-documents">{documentPanel}</div>
+          ) : (
+            <>
+              {tab === "declaration" ? (
+                <>
+                  {current.caseType === "import" && (pendingQuestions.length > 0 ||
+                    completedQuestions.length > 0) && (
+                    <div className="shipment-question-section">
+                      {questionsPanel}
+                    </div>
+                  )}
+                  <DeclarationDraftEditor
+                    key={`${current.id}:${declarationFocus || ""}:${declarationGoodsFocus || ""}`}
+                    state={state}
+                    shipment={current}
+                    issues={unresolved.filter(
+                      (issue) => issue.caseId === current.id,
+                    )}
+                    busy={busy || !!conflict}
+                    drafts={declarationDrafts}
+                    focusFieldId={declarationFocus}
+                    focusGoodsLineId={declarationGoodsFocus}
+                    onChange={(key, draft) =>
+                      setDeclarationDrafts((previous) => ({
+                        ...previous,
+                        [key]: draft,
+                      }))
+                    }
+                    onSaved={(key, submitted) =>
+                      setDeclarationDrafts((previous) =>
+                        clearSavedDeclarationDraft(previous, key, submitted),
+                      )
+                    }
+                    mutation={mutation}
+                    onManageGoods={() => setTab("goods")}
+                  />
+                </>
+              ) : tab === "fields" || tab === "goods" ? (
+                <div
+                  className={`review-grid ${tab === "goods" ? "goods-mode" : ""} ${current.caseType !== "import" ? "reference-review" : ""}`}
+                >
+                  {documentPanel}
+                  <section className="data-panel">
+                    <div className="panel-heading">
+                      <h2>
+                        {tab === "goods"
+                          ? t("Danh sách hàng hóa")
+                          : t(current.caseType === "import" ? "Bản khai đề xuất" : "Dữ kiện chứng từ")}
+                      </h2>
+                      <Badge tone="green">
+                        {
+                          tab === "goods"
+                            ? current.goods.filter((line) => line.reviewed).length
+                            : Object.values(current.fields).filter((f) => !f.stale)
+                                .length
+                        }{" "}
+                        {t("đã rà soát")}
+                      </Badge>
+                    </div>
+                    <div className="review-note">
+                      <ShieldCheck size={15} />
+                      <p>
+                        {t(
+                          "Đề xuất từ chứng từ. Mỗi xác nhận của bạn đều được lưu cùng nguồn và lý do.",
+                        )}
+                      </p>
+                    </div>
+                    {editable && (
+                      <div className="review-reason">
+                        <label htmlFor="review-reason">
+                          {t("Lý do rà soát / chỉnh sửa ")}
+                          <span>{t("Bắt buộc khi nhập tay")}</span>
+                        </label>
+                        <input
+                          id="review-reason"
+                          placeholder={t("Ví dụ: Đã xác nhận với chủ hàng…")}
+                          value={reviewReason}
+                          onChange={(e) => setReviewReason(e.target.value)}
+                        />
+                      </div>
+                    )}
+                    {tab === "fields" ? (
+                      <SourceFields
+                        state={state}
+                        shipment={current}
+                        issues={caseIssues}
+                        candidates={currentCandidates}
+                        drafts={drafts}
+                        selectedIssue={selectedIssue}
+                        busy={busy || !!conflict}
+                        onDraftChange={setDrafts}
+                        onSave={saveField}
+                        onAccept={acceptCandidate}
+                        onEvidence={evidence}
+                      />
+                    ) : (
+                      <SourceGoods
+                        state={state}
+                        shipment={current}
+                        draft={goodsDraft}
+                        busy={busy || !!conflict}
+                        reviewReason={reviewReason}
+                        onChange={setGoodsDraft}
+                        onSaved={(submittedGoods) =>
+                          setGoodsDrafts((previous) =>
+                            clearSavedGoodsDraft(
+                              previous,
+                              current.id,
+                              submittedGoods,
+                            ),
+                          )
+                        }
+                        onError={setError}
+                        onEvidence={(id, page) => {
+                          setDocId(id);
+                          setPage(page);
+                        }}
+                        mutation={mutation}
+                      />
+                    )}
+                  </section>
+                  {current.caseType === "import" && questionsPanel}
+                </div>
+              ) : null}
+
+              {current.caseType === "import" && <details className="shipment-completion">
+                <summary>{t("Hoàn tất hồ sơ & thử kết nối ECUS")}</summary>
+                <section className="handoff-bar">
+                  <div className="handoff-heading">
+                    <span className="handoff-symbol">
+                      <ArrowUpRight size={20} />
+                    </span>
+                    <div>
+                      <h3>
+                        {t("Chuyển bản nháp sang ECUS ")}
+                        <Badge tone="purple">TEST CONNECTOR</Badge>
+                      </h3>
+                      <p>
+                        {run
+                          ? translateSystemText(run.message, locale)
+                          : t(
+                              "Mô phỏng có kiểm soát. Chưa kết nối ECUS thực tế.",
+                            )}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="handoff-status">
+                    <span>
+                      {t("Bản nháp ECUS ")}
+                      <strong
+                        className={
+                          run?.status === "succeeded"
+                            ? "text-green"
+                            : run?.status === "failed"
+                              ? "text-amber"
+                              : ""
+                        }
+                      >
+                        {run?.status === "succeeded"
+                          ? `${run.draftReference} (TEST)`
+                          : run?.status === "failed"
+                            ? t("Thất bại (TEST)")
+                            : t("Chưa tạo")}
+                      </strong>
+                    </span>
+                    <span>
+                      IDA <strong>{t("Chưa truyền")}</strong>
+                    </span>
+                    <span>
+                      IDC <strong>{t("Chưa đăng ký")}</strong>
+                    </span>
+                    <span>
+                      {t("Hải quan ")}
+                      <strong>{t("Chưa đánh giá")}</strong>
+                    </span>
+                  </div>
+                  <div className="handoff-actions">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={simulateFailure}
+                        onChange={(e) => setSimulateFailure(e.target.checked)}
+                      />
+                      {t("Mô phỏng lỗi")}
+                    </label>
+                    <button
+                      className="button primary"
+                      disabled={
+                        busy ||
+                        hasPendingDrafts ||
+                        current.status !== "approved"
+                      }
+                      onClick={() =>
+                        void mutation(
+                          {
+                            type: "handoff",
+                            caseId: current.id,
+                            simulateFailure,
+                          },
+                          t(
+                            "Đã chạy test connector. Không có truyền dữ liệu chính thức.",
+                          ),
+                        )
+                      }
+                    >
+                      {t("Tạo bản nháp ECUS thử nghiệm")}{" "}
+                      <ArrowUpRight size={15} />
+                    </button>
+                    {current.status !== "completed" && (
+                      <button
+                        className="button secondary"
+                        disabled={
+                          busy ||
+                          hasPendingDrafts ||
+                          current.status !== "approved" ||
+                          caseIssues.length > 0 ||
+                          ![
+                            data.actor.id,
+                            data.actor.name,
+                            data.actor.email,
+                          ].includes(current.assignedTo)
+                        }
+                        title={
+                          current.status !== "approved"
+                            ? t("Duyệt bản khai trước khi hoàn tất")
+                            : ![
+                                  data.actor.id,
+                                  data.actor.name,
+                                  data.actor.email,
+                                ].includes(current.assignedTo)
+                              ? t("Chỉ người phụ trách được đánh dấu hoàn tất")
+                              : t("Hoàn tất và lưu trữ hồ sơ")
+                        }
+                        onClick={() => showModal("complete")}
+                      >
+                        <Archive size={15} />
+                        {t("Hoàn tất & lưu trữ")}
+                      </button>
+                    )}
+                  </div>
+                  <p className="handoff-footnote">
+                    {t(
+                      "Chỉ bản được duyệt mới có thể chuyển. Không ký số, không truyền IDA, không đăng ký IDC. Mỗi lần chạy gắn với phiên bản được duyệt.",
+                    )}
+                  </p>
+                </section>
+              </details>}
+            </>
+          )}
+        </>
+      ) : view === "settings" ? (
+        <WorkspaceSettings data={data!} busy={busy} mutation={mutation} />
+      ) : (
+        <>
+        <EmailShipmentMatches state={state} disabled={busy || !!conflict} onBusyChange={setBusy} onApplied={(response, message) => { install(response); setToast(message); }} onConflict={response => { conflictRef.current = true; setConflict(response); }} mutation={mutation} onOpen={openCase} onUpload={() => uploadInput.current?.click()} />
+        <ShipmentList
+          query={shipmentQuery}
+          filter={shipmentFilter}
+          onQueryChange={setShipmentQuery}
+          onFilterChange={setShipmentFilter}
+          state={state}
+          issues={unresolved}
+          busy={busy}
+          onOpen={openCase}
+          onCreate={() => showModal("create")}
+          onUpload={() => uploadInput.current?.click()}
+          onDemo={() =>
+            void mutation(
+              { type: "seed_demo" },
+              t("Đã nạp bộ chứng từ giả lập để thử toàn bộ quy trình"),
+            )
+          }
+        />
+        </>
+      )}
+
+      {toast && (
+        <div className="toast" role="status">
+          <CheckCheck size={18} />
+          <span>{translateSystemText(toast, locale)}</span>
+          <button
+            className="icon-button"
+            aria-label={t("Ẩn thông báo")}
+            onClick={() => setToast("")}
+          >
+            <X size={15} />
+          </button>
+        </div>
+      )}
+      {secondary && current && state && (
+        <ModalShell
+          title={
+            secondary === "history"
+              ? t("Lịch sử có thể truy vết")
+              : t("Báo cáo rà soát")
+          }
+          onClose={() => setSecondary(null)}
+          wide
+        >
+          <div className="modal-body">
+            {secondary === "history" ? (
+              <AuditList
+                entries={state.audit
+                  .filter((entry) => entry.caseId === current.id)
+                  .slice()
+                  .reverse()}
+              />
+            ) : (
+              <>
+                <button
+                  className="button secondary"
+                  disabled={busy || hasPendingDrafts}
+                  onClick={() => void exportPdf(current.id)}
+                >
+                  <ArrowDownToLine size={16} />
+                  {t("Báo cáo PDF")}
+                </button>
+                <ShipmentReport
+                  state={state}
+                  shipment={current}
+                  issues={caseIssues}
+                />
+              </>
+            )}
+          </div>
+        </ModalShell>
+      )}
+      {showActivity && (
+        <ModalShell
+          title={t("Hoạt động của không gian làm việc")}
+          onClose={() => setShowActivity(false)}
+        >
+          <div className="modal-body">
+            <AuditList
+              entries={(state?.audit || []).slice().reverse().slice(0, 40)}
+            />
+          </div>
+        </ModalShell>
+      )}
+      {modal && data && (
+        <ShipmentActionDialog
+          request={modal}
+          state={state}
+          issues={data.issues}
+          actor={data.actor}
+          shipment={current}
+          source={source}
+          page={page}
+          localMode={localMode}
+          busy={busy || !!conflict}
+          selectedDocuments={selectedDocs}
+          onSelectionChange={setSelectedDocs}
+          mutation={mutation}
+          onClose={() => setModal(null)}
+          onCreated={() => {
+            const newest = stateRef.current?.state.cases.at(-1);
+            if (newest) openCase(newest.id);
+          }}
+          onCaseOpen={openCase}
+        />
+      )}
+    </WorkspaceShell>
+  );
 }
-
-function Stat({ icon: Icon, label, value, detail, tone }: { icon: typeof FolderOpen; label: string; value: number; detail: string; tone: string }) { return <div className={`stat-card ${tone}`}><div className="stat-label"><span>{label}</span><span className="stat-icon"><Icon size={18} /></span></div><strong className="stat-value">{String(value).padStart(2, "0")}</strong><p><span className="stat-indicator" />{detail}</p></div>; }
-function ReportSection({ title, children }: { title: string; children: React.ReactNode }) { return <section className="report-section"><h3>{title}</h3>{children}</section>; }
-function AuditList({ entries }: { entries: WorkspaceState["audit"] }) { const { locale, t, date } = useLocale(); return entries.length ? <div className="audit-list">{entries.map(a => <div className="audit-entry" key={a.id}><span className="audit-marker"><History size={14} /></span><div><div className="audit-entry-heading"><strong>{auditActionLabel(a.action, locale)}{a.field && ` · ${fieldLabel(a.field, locale)}`}</strong><time>{date(a.at)}</time></div><p>{["field_reviewed", "goods_reviewed", "issue_resolved", "case_reopened", "case_completed"].includes(a.action) ? a.reason : translateSystemText(a.reason, locale)}</p><small>{a.actor}</small>{(a.before !== undefined || a.after !== undefined) && <details><summary>{t("Xem giá trị trước và sau")}</summary><div className="audit-comparison"><div><span>{t("TRƯỚC")}</span><pre>{typeof a.before === "string" ? a.before : JSON.stringify(a.before ?? "—", null, 2)}</pre></div><div><span>{t("SAU")}</span><pre>{typeof a.after === "string" ? a.after : JSON.stringify(a.after ?? "—", null, 2)}</pre></div></div></details>}</div></div>)}</div> : <Empty icon={History} title={t("Chưa có thay đổi được ghi nhận")} />; }

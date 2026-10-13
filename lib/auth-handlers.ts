@@ -1,9 +1,9 @@
 import { env } from 'cloudflare:workers';
-import { getChatGPTUser } from '@/app/chatgpt-auth';
 import { ApiError, json, readLimitedBytes, requireSameOrigin, route } from './server.ts';
-import { ACCESS_COOKIE, REFRESH_COOKIE, AuthError, authCookie, authMode, emptySchema, loginSchema, parseSession, passwordSchema, providerRequest, resetSchema, revokeCurrentSession, sessionCookies, supabaseConfig, userForToken, verifySchema, type AuthSession, type SupabaseConfig } from './auth-provider.ts';
+import { ACCESS_COOKIE, REFRESH_COOKIE, AuthError, authCookie, emptySchema, loginSchema, parseSession, passwordSchema, providerRequest, resetSchema, revokeCurrentSession, sessionCookies, supabaseConfig, userForToken, verifySchema, type AuthSession, type SupabaseConfig } from './auth-provider.ts';
 import { allowedIdentity, CONSUME_RECOVERY_SQL, hashAuthKey } from './auth-persistence.ts';
-import { authDatabase, limitAuthAttempt, requireAuthActor } from './server-auth.ts';
+import { authDatabase, limitAuthAttempt, requireAuthActor, runtimeAuthMode } from './server-auth.ts';
+import { LOCAL_DATA_PATH } from './local-auth.ts';
 import type { Actor } from './types.ts';
 
 const safeUser = (actor: Actor) => ({ email: actor.email, name: actor.name });
@@ -30,11 +30,12 @@ async function verifiedSession(config: SupabaseConfig, value: unknown): Promise<
 }
 export function authStatus(request: Request): Promise<Response> {
   return route(async () => {
-    let mode: 'sites' | 'supabase';
-    try { mode = authMode(env); } catch { return json({ mode: 'unconfigured', configured: false, authenticated: false }); }
-    if (mode === 'sites') {
-      const user = await getChatGPTUser();
-      return json({ mode, configured: true, authenticated: !!user, ...(user ? { user: { email: user.email, name: user.displayName } } : {}) });
+    let mode: 'supabase' | 'local';
+    try { mode = runtimeAuthMode(); } catch { return json({ mode: 'unconfigured', configured: false, authenticated: false }); }
+    if (mode === 'local') {
+      const actor = await requireAuthActor(request);
+      authDatabase();
+      return json({ mode, configured: true, authenticated: true, user: safeUser(actor), localOnly: true, localDataPath: LOCAL_DATA_PATH });
     }
     try { supabaseConfig(env); authDatabase(); } catch { return json({ mode, configured: false, authenticated: false }); }
     try {

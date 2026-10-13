@@ -1,3 +1,5 @@
+> Local testing now uses `npm run local`: no account setup is required. This guide describes the retained password adapter. The selected product direction is Google sign-in plus owner approval; that new flow remains to be implemented. See [local setup](local-setup.md).
+
 # Invite-only email and password authentication
 
 The standalone deployment uses Supabase Auth to verify passwords and email addresses. AICD forwards credentials over HTTPS and does not store passwords, implement password hashing, or expose Supabase session tokens to browser JavaScript. Workspace membership and document access remain in AICD's Cloudflare D1 database.
@@ -9,10 +11,11 @@ This adapter has automated tests with synthetic identities and mocked provider r
 | Setting | Behavior |
 | --- | --- |
 | `AICD_AUTH_MODE=supabase` | Standalone email/password authentication; ChatGPT identity headers are ignored. Missing provider configuration denies access. |
-| `AICD_AUTH_MODE=sites`, or absent | Existing owner-private Sites preview; the trusted hosting gateway supplies the ChatGPT identity. |
+| Absent, `unconfigured`, or obsolete `sites` | Access is denied; there is no hosting-gateway or simulated-login fallback. |
+| `AICD_AUTH_MODE=local` | Accepted only by the development-only loopback launcher and its internal request proof; unavailable in production. See the local setup guide. |
 | Any other value | Authentication fails closed. |
 
-The Sites mode depends on its trusted hosting gateway. Do not expose that mode directly on a standalone Worker. The standalone build selects Supabase mode and disables the simulated local ChatGPT login. Keep the existing hosted preview private; this feature does not remove its outer ChatGPT sign-in gate.
+The standalone build explicitly selects Supabase mode. A generic build stays unconfigured and denies data access. Local single-user access exists only through the dedicated development launcher. Google identity, AICD approval, Gmail mailbox permission and the later ECUS connection will remain separate authorization steps.
 
 ## Configure the provider and runtime
 
@@ -46,7 +49,7 @@ Treat the complete link as a credential. Do not include it in screenshots, analy
 
 For a new, empty D1 database, invite the configured owner email from the Supabase dashboard. Open that account's invitation, confirm the link and set the password. The first workspace request creates the owner workspace only after the provider has verified that exact email address.
 
-To add a teammate, the owner grants the address access in AICD's Team settings and separately issues a Supabase invitation to that same address. Team settings only add the application allowlist; they do not send email or create provider accounts. An account needs both provider verification and application membership. A verified address can claim an owner-created pending membership whose `user_id` is empty. Existing linked memberships cannot be claimed by another provider identity.
+The retained standalone adapter requires an owner-granted application membership and a separate Supabase invitation to the same address. The owner-only `/api/team` endpoint remains, but its old Settings controls have been removed. The selected Google/owner-approval interface is not implemented yet. Granting application membership does not send email or create a provider account. An account needs both provider verification and application membership. A verified address can claim an owner-created pending membership whose `user_id` is empty. Existing linked memberships cannot be claimed by another provider identity.
 
 Forgotten-password requests produce a generic response. A recovery link does not bypass the workspace allowlist. After a valid invite or recovery link, AICD records a ten-minute, one-use proof tied to the exact session token and user. The password endpoint requires that proof. A normal signed-in session cannot call it without a fresh invitation or recovery verification. If a proof expires, is consumed, or the password update fails, request a new link.
 

@@ -1,98 +1,135 @@
-# AICD — Vietnamese shipment review workspace
+# AICD — shipment review workspace
 
-A working Phase 1 pilot: upload shipment documents, inspect extracted evidence, reconcile conflicting facts, review a draft, preserve decisions and versions, export a Vietnamese or English PDF review report, archive completed cases, and exercise a **test-only** ECUS handoff.
+AICD prepares Vietnamese import declaration drafts from shipment documents. Upload a batch of files or saved emails; the application reads the attachments, groups related documents, combines their evidence, and then fills one web draft per confirmed shipment. Reviewers address missing, unclear or conflicting information and approve the saved draft.
 
-## Materials received
-
-| Material | Available | Consequence |
-| --- | --- | --- |
-| Product brief | Yes | Implementation scope and acceptance criteria |
-| Existing code / prototype | No; user confirmed | New application; no legacy components claimed or reused |
-| Real sample shipment | Six supplied PDFs, 55 pages | Local first regression: 23 selected visual checks matched; detailed packing pages remain partly unverified |
-| Pilot email provider | Google Workspace / Gmail | Email ingestion interface targets Gmail; `.eml` intake preserves original messages |
-| Regulations and current code tables | No | `Not yet assessed`; rule registry intentionally empty |
-| ECUS installation / integration specification | No | Test connector only; no real draft creation or transfer-success claim |
-
-All included examples and fixtures are explicitly synthetic. They test software behavior, not real supplier extraction accuracy. No real client documents are included.
-
-## Download, email/password and Kimi
-
-Run `npm run export:source` to create `outputs/AICD-source.zip`, a complete source ZIP with tests, migrations, bundled assets and setup guides. Installed dependencies, credentials, local databases and uploaded client files are excluded. Downloading source does not export the hosted workspace's records.
-
-The existing private Sites preview uses the hosting platform's ChatGPT login. To use invite-only email/password without that outer gate, follow [standalone setup](docs/standalone-setup.md) to deploy to your own Cloudflare account with Supabase Auth. Passwords are verified by Supabase; the application uses protected HTTP-only cookies and provider-verified, allowlisted identities. See [authentication setup](docs/authentication.md) for invitations and recovery.
-
-Optional Kimi integration uses `https://api.moonshot.ai/v1` and server-only `MOONSHOT_API_KEY` / `MOONSHOT_MODEL` settings. A reviewer explicitly selects stored text pages and confirms sending them for factual header proposals. Source-quoted proposals remain unreviewed; goods extraction and customs decisions are outside this AI integration. Without provider configuration, no Kimi request is made. Live authentication, email and model behavior require testing in your configured HTTPS environment.
+The application structure was simplified on October 11, 2026. Shipments and Settings are the main destinations. Archive is a shipment filter. A shipment contains Review & draft, Documents, and Messages; reports and history are secondary actions. All screens support Vietnamese and English.
 
 ## Run locally
 
-Requires Node.js 22.13+ and npm. Do not expose the development server to a public interface: the starter's local identity simulation exists only for loopback development and is excluded from production builds.
+Requires Node.js 22.13 or newer and npm.
 
 ```sh
-npm ci
-npm run db:generate  # only after changing db/schema.ts; the initial migration is already committed
-npm run build
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 migrations apply DB --local --config dist/server/wrangler.json --persist-to .wrangler/state
-npm run dev -- --hostname 127.0.0.1
+npm ci          # first installation only
+npm run local   # npm run dev does the same thing
 ```
 
-Apply pending migrations to a new database and after schema updates. For an existing development database whose initial migration was applied manually, apply only the new migration SQL and do not replay the initial schema. Open the URL printed by the server. Local sign-in uses the development identity supplied by the Sites starter. Choose **Khám phá hồ sơ mẫu** to load synthetic examples or upload your own files. Data persists in local D1/R2 state across server restarts. Hosted deployment uses a separate database and bucket.
+Open **http://127.0.0.1:5173**. Stop with Control+C. Restarting reopens saved work. Use `npm run local -- --port 5174` to select another local port.
+
+Local mode is a single-user development workspace, not a shared team login. It runs only on loopback. Any process that can reach that local listener shares the local actor. Do not expose it through a tunnel or public listener. The local access mechanism is excluded from production builds.
+
+Saved records and original files live in **`.aicd-local/state/`**. Keep this directory when updating source. The navigation and runtime cleanup does not change its database identity, object-storage name, or state location. [Local setup and backups](docs/local-setup.md).
+
+## Current capabilities and next work
+
+| Area | Implemented now | Next product step |
+| --- | --- | --- |
+| Documents | One batch intake for PDF/image/text/CSV and saved `.eml`; shared browser file preparation, original files, duplicate detection and evidence-based grouping | Live Gmail synchronization and background processing |
+| Extraction | Kimi-only extraction from page images or structured file text; source-linked header and commercial goods candidates | Broader layout evaluation against broker-reviewed answers |
+| Draft | Shipment-level autofill of supported typed fields after grouping; partial values, source citations, manual edits and review history | Complete verified mapping to the user's ECUS5-VNACCS 2018 build 6.0.248 |
+| Review | Targeted missing/unclear/conflicting questions, source quotations and page previews, confirmation, manual correction and Ask sender | Wider field coverage and broker-calibrated uncertainty thresholds |
+| Messages | Imported `.eml` messages, Kimi matching to shipment evidence, individual uncertain-link review and editable question drafts saved in AICD | Human-approved sending, live Gmail retrieval and timed follow-ups |
+| Access | Local single-user mode; retained standalone Supabase password adapter with server authorization | Google sign-in, owner-approved access requests and persistent team sessions |
+| ECUS | Immutable reviewed snapshots and a deterministic **test-only** adapter | Actual connection and credentials collected at connection time |
+| Regulations | Explicitly not assessed | Versioned, verified regulations and code tables when provided |
+
+Google sign-in, live Gmail OAuth/synchronization, outgoing email delivery, scheduled follow-ups and real ECUS integration are not implemented. Passing software tests does not establish extraction accuracy on every supplier layout.
+
+## The shipment workflow
+
+1. **Read the complete batch.** The browser prepares all selected files, including supported attachments inside saved emails, before submitting one intake request.
+2. **Group before filling.** The backend compares document references and corroborating facts across the batch and existing open shipments. Shared senders, vessels, contracts or master bills alone do not justify a merge. Ambiguous groups stay separate for confirmation.
+3. **Combine evidence.** Repeated totals are compared, never added. Commercial buyers/sellers stay separate from transport agents. A packing page listing one container can support a larger container set.
+4. **Fill the web draft.** Agreed values populate supported declaration components with document/version/page/quote references. Conflicting or unreadable components remain unresolved. Unknown customs, location and tax codes are not invented.
+5. **Resolve real questions.** Confirm source evidence, enter a correction, or use Ask sender to create an editable local message draft. This action never sends email or creates a draft in Gmail.
+6. **Preserve decisions when evidence arrives later.** Matching attachments join the existing shipment. Manual decisions remain, changed supporting evidence is flagged, and an approved shipment returns to review when its document set changes. Previous approval snapshots remain intact.
+
+The shipment list and its Documents section show the resulting groups. Review & draft contains the form and questions; Messages contains imported emails and local drafts. Settings contains only Gmail and ECUS connections.
+
+**Email matching** connects saved email subjects and body text to current shipment references, including replies with no attachments. When Kimi is configured, intake attempts matching after originals are saved; the shipment list's **Match emails with AI** action processes existing messages in bounded batches of up to eight. Exact source quotations and reference checks determine which links can be saved automatically. Uncertain links get individual confirm/reject questions, and later AI runs preserve human decisions. Matching correspondence does not move all attachments together or approve a declaration. [Email matching architecture and limits](docs/email-shipment-grouping.md).
+
+## How PDF extraction works today
+
+Kimi is the document extractor. For PDFs, the server counts physical pages and the browser uses PDFium only to render images; it does not extract PDF text or run OCR. The server sends those page images to Kimi, which returns page readings and source-linked shipment facts. TXT, CSV and XML content also goes through Kimi to become form values. Other office formats need a PDF export for extraction. PDF.js, Tesseract, OCR workers and language assets are removed from the active pipeline.
+
+Saved-email intake uses PostalMime in the browser to identify attachments and sends each supported attachment through the same preparation routine. The server parses the original email again, checks attachment metadata, and preserves the original message and files. Uploading a saved email is different from connecting a live Gmail account.
+
+The provider is fixed to Moonshot International with server-only `MOONSHOT_API_KEY`, default model `kimi-k2.6`, and an optional administrator `MOONSHOT_MODEL` override. End users cannot configure the provider or enter an API key. Each visual result retains its document version, page, quotation and image region. The application compares the combined shipment evidence before filling the draft. Clear, supported values without conflicts do not create a routine confirmation question; missing, unclear, contradictory or stale evidence still needs attention. No AI result approves or submits the declaration. [Extraction architecture and administrator setup](docs/kimi-vision.md).
+
+Without the server key, originals are saved and wait for Kimi; there is no local OCR or heuristic-extraction fallback. Keep the browser open during extraction. Successful batches are saved, and the document extraction action can resume unfinished pages after interruption or a rate limit. Provider calls are not blindly retried. Historical extracted records and human decisions remain preserved; installing this update does not silently rerun every sample or claim those older records were read by Kimi. Live model accuracy has not been measured without an API key.
+
+Current intake limits are 20 top-level files, 20 MiB per file, 50 pages per file and 50 attachments per saved email. The whole multipart request is capped at 22 MiB including metadata. Each Kimi call allows up to 5 pages / 24,000 text characters; each page image is limited to 2,600 pixels per side and 1.5 MiB. The workspace permits 6 provider calls per minute. Long documents can require several processing attempts. These limits are in code, not customer settings.
+
+## Code structure
+
+```text
+app/                         Routes, layout and workspace orchestration
+  api/                       Thin HTTP endpoints
+components/
+  workspace/                 Navigation, shipment list and shipment sections
+  declaration-draft.tsx      Structured declaration editor
+  account-access.tsx         Current login/session screens
+  kimi-review.tsx            Current document-level Kimi action
+hooks/                       Workspace request/session state
+lib/
+  engine.ts                  Shipment changes, reconciliation and review checks
+  shipment-grouping.ts        Batch-wide document matching and ambiguity handling
+  email-shipment-ai.ts        Bounded Kimi email-to-shipment proposals and evidence checks
+  email-grouping.ts           Current correspondence links and individual review decisions
+  server-email-grouping.ts    Authorized matching requests and guarded persistence
+  shipment-autofill.ts        Combined evidence → typed declaration components
+  review-questions.ts         Targeted review questions from current issues
+  shipment-correspondence.ts  Local editable email drafts; no send operation
+  extraction.ts              Shared field normalization and legacy-record support
+  declaration*.ts            Typed declaration schema, validation and drafts
+  client-*.ts                Browser intake, image preparation and edit helpers
+  server*.ts                 Request authorization, persistence and file handling
+  auth-*.ts                  Identity/session and membership controls
+  kimi.ts                    Bounded multimodal Kimi requests and evidence checks
+  vision.ts                  Image validation and source binding
+  client-vision.ts            Browser page rendering and resumable AI batches
+  client-pdf-raster.ts        Worker lifecycle for PDFium page rendering
+  pdf-raster*.ts              PDFium pixel rendering without text extraction
+  server-vision.ts            Authenticated private page image storage
+  intake-ai.ts                Bounded text enrichment for nonvisual intake
+  intake-metadata.ts          Batch and email-attachment metadata validation
+  i18n*.ts*                  Vietnamese/English presentation
+  report*.ts                 Review report data and PDF generation
+  vnaccs*.ts                 Internal field references and developer exports
+build/                       Application Worker and local request gate
+scripts/                     Startup, packaging and verification tools
+db/ + drizzle/               Database schema and migrations
+fixtures/ + tests/           Synthetic verification inputs and regression tests
+docs/                        Setup, architecture and learning material
+```
+
+The application no longer depends on `.openai`, Sites hosting, ChatGPT login, connector-preview scaffolding, or the unused template component library. The field-reference registry is retained internally because the declaration editor depends on it; the coverage screen has been removed.
+
+Database updates use revision checks so concurrent edits cannot silently overwrite each other. Original files remain private and their downloads require workspace access. Pending browser edits, saved drafts, internal review approval and customs submission are distinct states.
+
+The current database stores a bounded workspace JSON aggregate. A whole batch changes this record in one revision-checked commit, so the form is not filled from a partly saved batch. Original file storage is separate; failed intake attempts clean up staged objects where possible. This is not a distributed transaction across database and file storage. Normalized shipment/event storage and background workers remain future work.
+
+## Verify and download
 
 ```sh
 npm test
 npm run typecheck
 npm run build
-node scripts/smoke-api.mjs # optional: writes synthetic verification records to the running local preview
+npm run export:source
 ```
 
-The postinstall script copies PDF.js and Tesseract.js workers/cores into same-origin static assets. English and Vietnamese OCR language models are bundled from the official tessdata_fast project under Apache 2.0. Choose **Tiếng Việt / English** in the header; the preference persists in your browser and sets the PDF report language. Source text and reviewer entries remain verbatim. Noto Sans is bundled under its SIL Open Font License so PDF reports preserve Vietnamese text. Local document parsing does not call a third-party AI or OCR service; Kimi is a separate, explicit optional action.
+`outputs/AICD-source.zip` contains application source, tests, migrations, PDFium rendering/font assets, synthetic fixtures, and documentation. It excludes dependencies, generated builds, credentials, local records and uploaded customer files. It is a source download, not a shipment-data backup.
 
-## Working demo
+The integration scripts write synthetic records. Run them only in a separate, disposable checkout with its own local storage and a server on port 5174. Never target the workspace containing your shipment. The explicit environment flag is required before these scripts make requests:
 
-1. Sign in, then load the explicitly synthetic demonstration cases.
-2. Open the case with a document conflict. Compare candidate values and their original text, filename, version, page, and location.
-3. Select or enter a value with an explanation. Confirm document grouping and review the goods lines; manual HS/origin/rate decisions stay unverified.
-4. Leave and reopen the draft. Changes persist and the audit records their author, timestamp, reason, and before/after values.
-5. Approve an internally reviewed version when the software issues are addressed. Legal/customs validation remains `Not yet assessed`.
-6. Select **Create ECUS draft** in the test connector. A successful simulation creates only a `TEST-…` reference. It never contacts ECUS, signs, transmits IDA, or registers IDC. Retrying a successful snapshot cannot create another test draft; a failed simulation can be retried.
-7. View and download the report. Mark a case complete to archive it; reopen it for amendments.
-8. Upload fixtures individually or as a mixed set. Use move/split/merge, replace a document, or transcribe an unsupported scan. Replacement invalidates prior review decisions and approval.
+```sh
+AICD_SMOKE_ISOLATED=1 node scripts/smoke-api.mjs http://127.0.0.1:5174
+AICD_SMOKE_ISOLATED=1 node scripts/smoke-declaration.mjs http://127.0.0.1:5174
+AICD_SMOKE_ISOLATED=1 node scripts/smoke-shipment-intake.mjs http://127.0.0.1:5174
+AICD_SMOKE_ISOLATED=1 node scripts/smoke-review.mjs http://127.0.0.1:5174
+```
 
-## Data and security model
+The read-only boundary check can run against the regular local server: `node scripts/smoke-local-boundary.mjs http://127.0.0.1:5173`. Synthetic files in `fixtures/` are regression-test inputs; they are not loaded into your workspace automatically.
 
-- The production Site starts owner-private, behind Sites authentication. Each API resolves the signed-in identity and authorizes workspace membership. Team email allowlisting is a second restriction, not a way around the Site's private audience. Actual colleague access additionally requires explicitly configured Site sharing.
-- D1 persists case state, audit entries, immutable review snapshots and test runs. R2 stores original files and email bytes. File endpoints require membership and derive object keys from stored records.
-- Mutations require an expected workspace revision. An atomic compare-and-swap rejects stale writes with HTTP 409 rather than silently overwriting another reviewer. The client preserves pending input for deliberate retry.
-- File intake validates format signatures, sizes, extracted text limits, hashes and filenames. Same-origin mutation checks and private response caching protect browser endpoints. Credentials and signing material are absent from the browser and repository.
-- Uploaded PDF text is parsed in the browser, with its source file preserved on the server. This is reviewable extraction evidence, not cryptographic proof of a document's contents. Reviewers must inspect the original.
-- The first slice stores one versioned JSON aggregate per workspace (bounded to 1.8 MB). It is intended for pilot volume. Larger teams require normalized case/event storage and pagination before scaling. Retention, backups, malware scanning and production access policy require operational configuration.
+A generic production build denies data access until an authentication deployment is explicitly configured. The retained [standalone setup](docs/standalone-setup.md) documents the current adapter, while the intended team product will use Google sign-in and owner approval. No deployment occurs during local development or source export.
 
-## Extraction scope and honest limits
-
-PDF, TXT and CSV extraction uses modular bilingual label, spatial-row, wrapped-header and table strategies. PDF pages with little native text and uploaded images run local browser OCR with English/Vietnamese models, visible progress, cancellation and timeouts. Models and workers load from this app; source documents are never sent to a third-party OCR service. OCR values are capped at medium confidence; unreadable or weak pages retain a transcription blocker. Rotated rasters are retried in alternative orientations. Unsupported languages, complex component tables and damaged scans may still require checked transcription or manual goods entry. A learned layout model is not connected.
-
-Document type is also recorded per page, allowing an invoice and packing list in one PDF. House and master B/L identifiers and transport parties are separate; transport consignees are not assumed to be commercial importers. Package counts do not become commercial goods quantities. Every proposal retains document/version/page/text/method provenance. All original files remain unchanged.
-
-An email ingestion interface accepts saved `.eml` files and records the original message, sender, timestamp, message ID, attachments and their versions. Duplicate message IDs/hashes and duplicate attachment hashes are checked. Gmail live synchronization is not enabled until the correct pilot inbox and access are authorized. No code sends email automatically.
-
-The first delivery provides source-level evidence and software behavior tests. It does **not** establish field accuracy, unflagged-error rate, grouping accuracy, reviewer-time reduction, or real ECUS transfer success on real shipments. Add broker-reviewed fixtures before publishing those measures.
-
-## Structure
-
-- `lib/types.ts`: extensible declaration and workflow schema.
-- `lib/extraction.ts`: classification, normalization and extraction.
-- `lib/engine.ts`: grouping, reconciliation, review, versioning and audit transitions.
-- `lib/demo.ts`, `fixtures/`: explicitly synthetic examples and regression inputs.
-- `lib/server*.ts`, `app/api/`: authenticated persistence, original-file intake and downloads.
-- `lib/client-intake.ts`, `lib/client-ocr.ts`, `lib/pdf-text.ts`: local PDF text/OCR, spatial reconstruction and manual paths.
-- `lib/report.ts`: complete evidence-backed, Unicode PDF review report.
-- `lib/ecus.ts`: adapter contract and deterministic idempotent test connector.
-- `lib/rules.ts`: versioned future rule/code-table interfaces, with empty registries.
-- `docs/windows-companion.md`: attended Windows companion design and access requirements.
-- `docs/validation.md`: exact test scope, missing evidence and acceptance boundaries.
-
-## Later dependencies
-
-1. Broker-reviewed expected declarations and additional supplier layouts to measure accuracy beyond the selected checks on this sample.
-2. Authorized pilot Gmail mailbox, desired intake labels and retention policy for live synchronization.
-3. Verified regulations and current code tables to implement and version legal/customs checks.
-4. Installed ECUS version and vendor-supported interfaces or supervised Windows access to validate an actual draft. Direct database writes are prohibited.
+For the beginner explanation, start with [the code walkthrough](docs/code-walkthrough.md). See [product scope](docs/product-scope.md), [validation history](docs/validation.md), and [cleanup details](docs/cleanup-2026-10-11.md).

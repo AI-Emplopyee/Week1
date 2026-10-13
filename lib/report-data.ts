@@ -1,5 +1,7 @@
 import type { WorkspaceState } from './types.ts';
 import { getIssues } from './engine.ts';
+import { DECLARATION_CATALOG } from './declaration-catalog.ts';
+import { migrateDeclarationDraft } from './declaration.ts';
 
 export function buildReport(state: WorkspaceState, caseId: string) {
   const shipment = state.cases.find(c => c.id === caseId);
@@ -11,7 +13,10 @@ export function buildReport(state: WorkspaceState, caseId: string) {
   const open = issues.filter(i => !i.resolved).sort((a,b) => (issuePriority[a.kind] ?? 9) - (issuePriority[b.kind] ?? 9));
   const handoffs = state.handoffs.filter(h => h.caseId === caseId);
   const snapshots = state.snapshots.filter(s => s.caseId === caseId);
+  const declarationDraft = migrateDeclarationDraft(shipment.declarationDraft);
+  const declarationCoverage = DECLARATION_CATALOG.map(field => ({ field, entries: declarationDraft.fields.filter(entry => entry.fieldId === field.id) }));
   return { shipment, documents, candidates, issues, open, handoffs, snapshots,
+    declarationDraft, declarationCoverage,
     audit: state.audit.filter(a => a.caseId === caseId),
     normalizations: candidates.flatMap(c => c.normalizations.map(n => ({ ...n, field: c.field, documentId: c.documentId, page: c.page }))),
     generatedAt: new Date().toISOString(), workspaceRevision: state.revision,

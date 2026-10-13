@@ -1,16 +1,18 @@
-# AICD with email/password and Kimi
+# Retained standalone adapter: deployment reference
 
-The downloadable source belongs to you and can run in your own Cloudflare account. The current private `chatgpt.site` preview uses its hosting platform's ChatGPT sign-in layer. Adding a password form inside that preview would not remove the outer sign-in requirement. Standalone mode uses Supabase Auth and does not trust ChatGPT identity headers.
+**For testing on your Mac now, use [local setup](local-setup.md) and `npm run local`. None of the cloud accounts or deployment commands below is required. This guide is retained for a future explicitly requested deployment.**
+
+The intended product uses Google sign-in and owner-approved access requests. Those flows are not implemented yet. This document covers the existing Supabase password adapter retained during the structural cleanup. The source now uses an application-owned Worker; Sites/ChatGPT hosting and login code have been removed. This cleanup does not deploy or change any previously hosted installation.
 
 ## What is in the download
 
-`AICD-source.zip` contains application code, database migrations, tests, bundled OCR/font assets, synthetic fixtures, documentation and a SHA-256 file manifest. Unzip it, enter the `aicd` directory and run `npm ci` with Node.js 22.13 or newer. Installed dependencies, local databases, uploaded client files and credentials are excluded. The live site's database and original uploads are separate from source code; this ZIP is not a backup of live shipment records.
+`AICD-source.zip` contains application code, database migrations, tests, PDFium rendering/font assets, synthetic fixtures, documentation and a SHA-256 file manifest. Unzip it, enter the `aicd` directory and run `npm ci` with Node.js 22.13 or newer. Installed dependencies, local databases, uploaded client files and credentials are excluded. The live site's database and original uploads are separate from source code; this ZIP is not a backup of live shipment records.
 
 ## Accounts to connect
 
 1. A Cloudflare account for the application, D1 database and private R2 document storage.
 2. A Supabase project for invite-only email/password identity. Supabase handles password hashing and verification; AICD does not save passwords in its database.
-3. Your Moonshot international API key, plus the exact model ID available to your account, when you want to enable Kimi. No Kimi request is made while these are absent.
+3. Your Moonshot International API key when you want to enable Kimi. The default model is `kimi-k2.6`; an optional `MOONSHOT_MODEL` override must name a vision-capable model available to your account. No Kimi request is made while the key is absent.
 
 You can develop locally without deploying a public endpoint. Real email/password actions require HTTPS, including during testing; the plain HTTP loopback preview cannot complete real login. Use an HTTPS staging deployment to test provider login and email delivery.
 
@@ -33,7 +35,7 @@ npm run typecheck
 npm run build:standalone
 ```
 
-The standalone build sets `AICD_AUTH_MODE=supabase` and disables the local simulated ChatGPT identity. `npm run check:standalone` performs a Wrangler dry run without deployment. `npm run deploy:standalone` builds again and deploys to your Cloudflare account; it does not create those resources for you.
+The standalone build sets `AICD_AUTH_MODE=supabase` and excludes local single-user access. `npm run check:standalone` performs a Wrangler dry run without deployment. `npm run deploy:standalone` builds again and deploys to your Cloudflare account; it does not create those resources for you.
 
 Apply migrations to the new database before using the application:
 
@@ -41,7 +43,7 @@ Apply migrations to the new database before using the application:
 npx wrangler d1 migrations apply aicd-db --remote --config dist/server/wrangler.json
 ```
 
-Do not point these commands at the existing Sites database or bucket. The standalone installation is separate. Migrating existing workspaces requires an explicit data export and verified identity mapping; matching email addresses alone must not take over existing memberships.
+Use dedicated resources for this installation; do not overwrite another deployment’s database or bucket. The standalone installation is separate. Migrating existing workspaces requires an explicit data export and verified identity mapping; matching email addresses alone must not take over existing memberships.
 
 ## Configure secrets
 
@@ -67,9 +69,9 @@ The adapter uses provider-verified identities, protected cookies, same-origin mu
 
 ## Kimi document processing
 
-The first Kimi integration proposes factual header fields from text only; it does not extract goods rows or interpret images. A reviewer chooses a document and pages and confirms sending that text to Moonshot international. The server supplies the secret, limits the request and validates the returned proposals against exact source quotes. Local OCR still runs locally. Every AI proposal requires review. The application never gives the model authority to approve a declaration, assign customs decisions, send email or transmit to ECUS.
+Kimi is the only document extractor. The browser uses PDFium to render authenticated PDF pages into images, without extracting text or running OCR; the server supplies the Kimi secret and sends those bounded page images. Text-based source files use a Kimi text request. The response contains factual header and commercial goods candidates with source evidence. Ordinary application code validates and reconciles those candidates before filling an editable web draft. Users have no AI provider settings. The application never gives the model authority to approve a declaration, assign customs decisions, send email or transmit to ECUS. See [Kimi vision extraction](kimi-vision.md) for the data flow and limitations.
 
-Enabling the API does not establish that Moonshot's processing/retention terms meet every client's requirements. Review the terms relevant to your account before choosing to send confidential shipment text. No real shipment has been sent to Kimi during development, and a successful mock test does not establish live model accuracy.
+Without a key, originals are preserved and wait for Kimi; there is no PDF.js or OCR fallback. Enabling the API sends confidential page images and text to Moonshot under the terms of your account. Setup requires a private server secret, never a browser environment variable. The implementation is tested with mocked provider responses; those tests do not establish live model accuracy. Keep the browser open during the current extraction workflow; there is no durable background worker for processing after the browser closes.
 
 ## References
 

@@ -18,7 +18,9 @@ function ready() {
     const candidate = s.candidates.find(x => x.caseId === c.id && !x.lineId && x.field === field && x.value === value)!;
     s = act(s, { type: 'review_field', caseId: c.id, field, value, candidateId: candidate.id, reason: 'Đã kiểm tra chứng từ và đơn vị kg.' });
   }
-  s = act(s, { type: 'review_goods', caseId: c.id, goods: s.cases[0].goods, reason: 'Đối chiếu số lượng và trị giá với nguồn.' });
+  s = act(s, { type: 'review_goods', caseId: c.id, goods: s.cases[0].goods, reviewedLineIds: s.cases[0].goods.map(line => line.id), reason: 'Đối chiếu số lượng và trị giá với nguồn.' });
+  // This synthetic fixture supplies a manually confirmed gross-weight unit instruction.
+  s = act(s, { type: 'save_declaration_field', caseId: c.id, fieldId: '1.28', applicability: 'applicable', basis: 'Synthetic gross weight instruction.', value: { kind: 'quantity', amount: '630', unitCode: 'KG' }, provenance: [{ kind: 'manual', note: 'Synthetic broker confirms the unit; code remains unverified.' }], reason: 'Synthetic manual unit confirmation.', review: true });
   return s;
 }
 
@@ -55,7 +57,7 @@ test('bilingual labels and delimited tables retain exact source evidence and nev
 test('intake groups strong identifiers, records normalizations and does not mutate input', () => {
   const before = empty(); const s = act(before, { type: 'intake', documents: syntheticShipments()[1].documents });
   assert.equal(before.documents.length, 0); assert.equal(s.cases.length, 1); assert.equal(s.documents.length, 3); assert.equal(s.cases[0].groupingConfidence, 'high');
-  assert.ok(getIssues(s).some(i => i.kind === 'grouping')); assert.ok(getIssues(s).some(i => i.kind === 'uncertain')); assert.equal(s.revision, 1);
+  assert.equal(getIssues(s).some(i => i.kind === 'grouping'), false); assert.ok(getIssues(s).some(i => i.kind === 'uncertain')); assert.equal(s.revision, 1);
 });
 
 test('party similarity cannot override contradictory invoice identifiers', () => {
@@ -71,8 +73,8 @@ test('duplicate attachments and emails are skipped and original metadata retaine
 });
 
 test('conflicting headers are never silently proposed and require documented selection', () => {
-  const a = upload('a', 'COMMERCIAL INVOICE\nInvoice Number: INV1\nInvoice Total: 100');
-  const b = upload('b', 'PACKING LIST\nInvoice Number: INV1\nInvoice Total: 200');
+  const a = upload('a', 'COMMERCIAL INVOICE\nInvoice Number: INV1\nImporter: Synthetic Buyer\nInvoice Total: 100');
+  const b = upload('b', 'PACKING LIST\nInvoice Number: INV1\nImporter: Synthetic Buyer\nInvoice Total: 200');
   let s = act(empty(), { type: 'intake', documents: [a, b] }); const id = s.cases[0].id;
   assert.equal(getProposedFields(s, id).invoiceTotal, undefined);
   const issue = getIssues(s, id).find(i => i.field === 'invoiceTotal' && i.kind === 'conflict')!; assert.equal(issue.candidateIds.length, 2);
@@ -106,6 +108,20 @@ test('manual customs decisions are explicit, unverified and require a reason', (
   assert.equal(s.cases[0].fields.countryOfOrigin.unverified, true); assert.equal(s.cases[0].fields.countryOfOrigin.source, 'manual');
   const goods = structuredClone(s.cases[0].goods); goods[0].hsCode = '12345678';
   s = act(s, { type: 'review_goods', caseId: id, goods, reason: 'Manual reviewer decision, unverified.' }); assert.equal(s.cases[0].goods[0].manual, true);
+});
+
+test('later review invalidation cannot alter previously recorded field or goods audit payloads', () => {
+  let s = ready();
+  const fieldEntry = s.audit.find(entry => entry.action === 'field_reviewed')!;
+  const goodsEntry = s.audit.find(entry => entry.action === 'goods_reviewed')!;
+  const recordedField = structuredClone(fieldEntry);
+  const recordedGoods = structuredClone(goodsEntry);
+  const document = s.documents.find(d => d.active)!;
+  s = act(s, { type: 'classify_document', documentId: document.id, documentType: document.type });
+  assert.ok(Object.values(s.cases[0].fields).every(field => field.stale));
+  assert.ok(s.cases[0].goods.every(line => !line.reviewed));
+  assert.deepEqual(s.audit.find(entry => entry.id === fieldEntry.id), recordedField);
+  assert.deepEqual(s.audit.find(entry => entry.id === goodsEntry.id), recordedGoods);
 });
 
 test('approval freezes immutable evidence and test handoff retries are idempotent per snapshot', () => {

@@ -1,20 +1,21 @@
 import { env } from 'cloudflare:workers';
-import { getChatGPTUser } from '@/app/chatgpt-auth';
 import { ACCESS_COOKIE, AuthError, authCookie, authMode, supabaseConfig, userForToken } from './auth-provider.ts';
 import { allowedIdentity, consumeRateLimit, hashAuthKey } from './auth-persistence.ts';
 import type { Actor } from './types.ts';
+import { localActor } from './local-auth.ts';
+
+const localDevelopment = import.meta.env.DEV && import.meta.env.AICD_LOCAL_RUNTIME === true;
+export function runtimeAuthMode() { return authMode(env, localDevelopment); }
 
 export function authDatabase(): D1Database {
   if (!env.DB) throw new AuthError(503, 'Authentication storage is not available.');
   return env.DB;
 }
 export async function requireAuthActor(request: Request): Promise<Actor> {
-  if (authMode(env) === 'sites') {
-    const user = await getChatGPTUser();
-    if (!user) throw new AuthError(401, 'Sign in with ChatGPT to access this workspace.');
-    return { id: user.userId, email: user.email.toLowerCase(), name: user.displayName };
-  }
-  // Standalone mode never reads OAI proxy headers or trusts client-supplied IDs.
+  const mode = runtimeAuthMode();
+  if (mode === 'local') return localActor(request, localDevelopment, env.AICD_LOCAL_REQUEST_TOKEN);
+  // Hosted requests always verify provider tokens; client-supplied IDs and
+  // identity headers are never authentication credentials.
   const config = supabaseConfig(env);
   const access = authCookie(request, ACCESS_COOKIE);
   if (!access) throw new AuthError(401, 'Sign in to access this workspace.');

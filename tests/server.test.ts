@@ -37,7 +37,7 @@ test('upload validation checks bytes, extensions, filenames, and bounded pages',
   assert.throws(() => acceptedFile('empty.txt', new Uint8Array()));
   assert.equal(safeFilename('../../unsafe\nfile.pdf'), '.._.._unsafe_file.pdf');
   assert.throws(() => parsePages([{ page: 1, text: 'one' }, { page: 1, text: 'duplicate' }]));
-  assert.throws(() => parsePages([{ page: 51, text: 'too many' }]));
+  assert.throws(() => parsePages([{ page: 201, text: 'too many' }]));
   assert.throws(() => parsePages([{ page: 1, text: 'a'.repeat(300_000) }, { page: 2, text: 'b'.repeat(300_000) }]));
   assert.equal(parsePages([{ page: 1, text: 'a'.repeat(50_000) }]).length, 1);
 });

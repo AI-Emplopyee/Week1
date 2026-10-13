@@ -25,7 +25,7 @@ export const FIELD_ALIASES: Record<string, string[]> = {
   grossWeight: ['gross weight', 'gross weight (kg)', 'g.w.', 'g.w. (kg)', 'trọng lượng cả bì', 'trong luong ca bi'],
   netWeight: ['net weight', 'net weight (kg)', 'n.w.', 'n.w. (kg)', 'trọng lượng tịnh', 'trong luong tinh'],
 };
-const numerical = new Set(['invoiceTotal', 'packageCount', 'grossWeight', 'netWeight', 'quantity', 'unitPrice', 'amount']);
+const numerical = new Set(['invoiceTotal', 'packageCount', 'containerCount', 'grossWeight', 'netWeight', 'quantity', 'unitPrice', 'amount']);
 const keyText = (value: string) => value.trim().toLowerCase().replace(/\s+/g, ' ').replace(/[.:]+$/, '').trim();
 const aliasMap = new Map(Object.entries(FIELD_ALIASES).flatMap(([key, aliases]) => aliases.map(alias => [keyText(alias), key])));
 const goodsAliases: Record<string, string[]> = {
@@ -69,6 +69,7 @@ export function classifyDocument(name: string, text: string): DocumentType {
   return classifyPage(text);
 }
 export function pageDocumentType(document: ShipmentDocument, page: SourcePage): DocumentType {
+  if (document.extractionPipeline === 'kimi') return page.documentType ?? document.type;
   return page.documentType && page.documentType !== 'other' ? page.documentType : classifyPage(page.text) !== 'other' ? classifyPage(page.text) : document.type;
 }
 export function documentHasType(document: ShipmentDocument, type: DocumentType): boolean {
@@ -90,7 +91,7 @@ export function normalizeValue(field: string, original: string): { value: string
   update(value.trim().replace(/\s+/g, ' '), 'Trim leading/trailing whitespace and collapse repeated whitespace.');
   let confidence: Confidence = 'high';
   if (field === 'currency' && /^[A-Za-z]{3}$/.test(value)) update(value.toUpperCase(), 'Normalize the case of an explicit three-letter currency token; no code-table validation.');
-  if (['invoiceDate', 'packingListDate'].includes(field)) {
+  if (['invoiceDate', 'packingListDate', 'arrivalDate'].includes(field)) {
     const iso = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/.exec(value);
     const local = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/.exec(value);
     const named = /^(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[.,\s]+(\d{1,2})[.,\s]*(\d{4})$/i.exec(value);
@@ -193,7 +194,9 @@ function extractTables(document: ShipmentDocument, page: SourcePage, add: AddCan
 export const EXTRACTION_STRATEGIES = ['bilingual_labels', 'adjacent_label_values', 'delimited_tables', 'invoice_numeric_tail', 'transport_blocks'] as const;
 export function extractDocument(document: ShipmentDocument): { candidates: Candidate[]; goods: GoodsLine[] } {
   const candidates: Candidate[] = []; const goods: GoodsLine[] = [];
-  if (['unsupported', 'failed'].includes(document.extractionStatus)) return { candidates, goods };
+  // This legacy reader must not become a fallback through regrouping, refresh,
+  // or another caller. Kimi-only sources are interpreted exclusively by Kimi.
+  if (document.extractionPipeline === 'kimi' || document.referenceOnly || ['unsupported', 'failed'].includes(document.extractionStatus)) return { candidates, goods };
   const add: AddCandidate = (field, original, page, location, originalText, lineId, method = 'deterministic_bilingual_label', confidence) => {
     const normalized = normalizeValue(field, original);
     let certainty = confidence || normalized.confidence;
@@ -208,6 +211,24 @@ export function extractDocument(document: ShipmentDocument): { candidates: Candi
   };
   const role = transportRole(document);
   for (const page of document.pages) {
+    if (page.textSource === 'office' && /(?:^|\n)[A-Z]{1,3}\d+:/.test(page.text)) {
+      // A worksheet cell map is not a PDF reading order. Only use an explicit
+      // label/value inside one cell or an adjacent cell on that same row.
+      // In particular, never take the next row's fax/address as a party name.
+      for (const row of page.text.split(/\r?\n/)) {
+        const cells = [...row.matchAll(/(?:^| \| )([A-Z]{1,3}\d+): ([\s\S]*?)(?= \| [A-Z]{1,3}\d+: |$)/g)];
+        for (let i = 0; i < cells.length; i++) {
+          const content = cells[i][2].trim();
+          const inline = content.match(/^([^:]+):\s*(.+)$/);
+          const field = aliasMap.get(keyText(inline ? inline[1] : content));
+          if (!field) continue;
+          const value = inline?.[2]?.trim() || cells[i + 1]?.[2]?.trim();
+          if (!value || aliasMap.has(keyText(value)) || /^(?:fax|phone|tel|address|email|website)\s*:/i.test(value)) continue;
+          add(field, value, page, `${page.label || 'Worksheet'} · ${cells[i][1]}`, row, undefined, 'office_explicit_cell_label', 'medium');
+        }
+      }
+      continue;
+    }
     const pageType = pageDocumentType(document, page); const transport = ['bill_of_lading', 'air_waybill'].includes(pageType);
     const lines = page.text.split(/\r?\n/); const tableGoods = extractTables(document, page, add);
     goods.push(...tableGoods);

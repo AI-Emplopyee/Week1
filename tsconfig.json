@@ -17,6 +17,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
+    "tsBuildInfoFile": ".next/cache/tsconfig.tsbuildinfo",
     "plugins": [
       {
         "name": "next"
@@ -43,6 +44,10 @@
   ],
   "exclude": [
     "node_modules",
-    "examples"
+    "outputs",
+    "dist",
+    ".aicd-local",
+    ".wrangler",
+    "work"
   ]
 }

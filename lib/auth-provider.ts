@@ -9,9 +9,9 @@ export class AuthError extends Error {
 }
 export type AuthEnvironment = { AICD_AUTH_MODE?: string; SUPABASE_URL?: string; SUPABASE_ANON_KEY?: string; AICD_OWNER_EMAIL?: string };
 export type SupabaseConfig = { url: string; key: string; ownerEmail: string };
-export function authMode(environment: AuthEnvironment): 'sites' | 'supabase' {
-  if (environment.AICD_AUTH_MODE === undefined || environment.AICD_AUTH_MODE === 'sites') return 'sites';
+export function authMode(environment: AuthEnvironment, allowLocalDevelopment = false): 'supabase' | 'local' {
   if (environment.AICD_AUTH_MODE === 'supabase') return 'supabase';
+  if (environment.AICD_AUTH_MODE === 'local' && allowLocalDevelopment) return 'local';
   throw new AuthError(503, 'Authentication is not configured.');
 }
 export function supabaseConfig(environment: AuthEnvironment): SupabaseConfig {

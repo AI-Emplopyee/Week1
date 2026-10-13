@@ -1,6 +1,7 @@
 import { ApiError, assertWorkspaceSize, json, readJson, requireSameOrigin, response, route, workspace, type WorkspaceContext } from '@/lib/server';
-import { commitSucceeded, prepareCommit } from '@/lib/server-persistence';
+import { commitSucceeded, prepareWorkspaceCommit } from '@/lib/server-persistence';
 import { inviteSchema } from '@/lib/server-validation';
+import { runtimeAuthMode } from '@/lib/server-auth';
 export const dynamic = 'force-dynamic';
 async function team(context: WorkspaceContext) {
   const { results } = await context.db.prepare('SELECT email, role, user_id, created_at FROM workspace_members WHERE workspace_id = ? ORDER BY created_at')
@@ -12,6 +13,7 @@ export function POST(request: Request) {
   return route(async () => {
     requireSameOrigin(request);
     const context = await workspace(request);
+    if (runtimeAuthMode() === 'local') throw new ApiError(403, 'Local mode is for this Mac only. Team invitations require a configured shared deployment.');
     if (context.role !== 'owner') throw new ApiError(403, 'Only the workspace owner can grant team access.');
     const { email: providedEmail } = inviteSchema.parse(await readJson(request));
     const email = providedEmail.toLowerCase();
@@ -28,7 +30,7 @@ export function POST(request: Request) {
     // Both the access grant and its audit entry commit in the same D1 transaction.
     // The audit-id predicate makes the INSERT conditional on this exact successful revision update.
     const results = await context.db.batch([
-      prepareCommit(context.db, next, context.state.revision, context.actor),
+      ...prepareWorkspaceCommit(context.db, next, context.state.revision, context.actor),
       context.db.prepare("INSERT INTO workspace_members (workspace_id, email, user_id, role, invited_by, created_at) SELECT id, ?, NULL, 'reviewer', ?, ? FROM workspaces WHERE id = ? AND revision = ? AND json_extract(state_json, '$.audit[#-1].id') = ?")
         .bind(email, context.actor.id, at, next.id, next.revision, auditId),
     ]);

@@ -84,7 +84,54 @@ export function buildReportContent(state: WorkspaceState, caseId: string, locale
     }
     gap();
   }
-  section('04   Dòng hàng đề xuất', '04   Proposed goods lines');
+  section('04   Bản nháp chỉ tiêu khai báo có cấu trúc', '04   Structured declaration draft');
+  const editableDeclarationFields = data.declarationCoverage.filter(row => row.field.editable);
+  const partialDeclarationFields = editableDeclarationFields.filter(row => row.field.blockedComponents.length);
+  const blockedDeclarationFields = data.declarationCoverage.filter(row => !row.field.editable);
+  const reviewedDeclarationEntries = data.declarationDraft.fields.filter(entry => entry.review && !entry.stale);
+  text(t(`Phạm vi cấu trúc: ${editableDeclarationFields.length} chỉ tiêu có thể nhập (${partialDeclarationFields.length} chỉ tiêu còn phần bị chặn); ${blockedDeclarationFields.length} chỉ tiêu bị chặn. Đã lưu ${data.declarationDraft.fields.length} mục; ${reviewedDeclarationEntries.length} mục đã rà soát và chưa bị đánh dấu cũ.`, `Structural coverage: ${editableDeclarationFields.length} editable indicators (${partialDeclarationFields.length} retain blocked components); ${blockedDeclarationFields.length} blocked indicators. ${data.declarationDraft.fields.length} saved entries; ${reviewedDeclarationEntries.length} reviewed entries not marked stale.`));
+  text(t('Đây là dữ liệu chuẩn bị nội bộ, không phải tệp nhập ECUS đã xác minh. Phạm vi mô hình không phải tỷ lệ sẵn sàng khai báo. Mã và quyết định pháp lý vẫn chưa xác minh; chỉ tiêu chưa nhập không tự động được coi là bắt buộc hoặc không áp dụng.', 'These are internal preparation records, not a verified ECUS import file. Model coverage is not a filing readiness score. Codes and legal decisions remain unverified; unentered indicators are not automatically mandatory or inapplicable.'), 8, 'amber');
+  for (const { field, entries } of data.declarationCoverage) {
+    const fieldName = locale === 'en' ? field.labelEn : field.labelVi;
+    const stateLabel = !field.editable ? t('BỊ CHẶN', 'BLOCKED') : field.blockedComponents.length ? t('CẤU TRÚC MỘT PHẦN', 'PARTIAL STRUCTURE') : t('ĐÃ MÔ HÌNH CẤU TRÚC', 'STRUCTURE MODELED');
+    text(`${field.id} · ${fieldName} · ${stateLabel} · ${entries.length ? `${entries.length} ${t('mục đã lưu', 'saved entries')}` : t('chưa nhập / chưa quyết định áp dụng', 'not entered / applicability undecided')}`, 8, field.editable ? 'muted' : 'amber');
+    if (!field.editable) text(locale === 'en' ? field.blockedReasonEn || '' : field.blockedReasonVi || '', 8, 'amber');
+    for (const blocked of field.blockedComponents) text(`${blocked.sourceCell}: ${locale === 'en' ? blocked.reasonEn : blocked.reasonVi}`, 8, 'amber');
+  }
+  for (const entry of data.declarationDraft.fields) {
+    const field = data.declarationCoverage.find(row => row.field.id === entry.fieldId)?.field;
+    const fieldName = field ? locale === 'en' ? field.labelEn : field.labelVi : t('Chỉ tiêu không còn trong danh mục', 'Indicator no longer in the catalog');
+    const goods = entry.goodsLineId ? data.shipment.goods.find(line => line.id === entry.goodsLineId) : undefined;
+    gap(); text(`${entry.fieldId} · ${fieldName}${entry.goodsLineId ? ` · ${t('ID dòng hàng', 'Goods line ID')}: ${entry.goodsLineId}${goods ? ` (${goods.description})` : t(' · KHÔNG CÒN DÒNG HÀNG', ' · ORPHANED GOODS LINE')}` : ''}`, 10, 'teal');
+    const applicable = entry.applicability === 'applicable' ? t('Áp dụng', 'Applicable') : entry.applicability === 'not_applicable' ? t('Không áp dụng', 'Not applicable') : t('Chưa quyết định', 'Unresolved');
+    text(`${t('Áp dụng', 'Applicability')}: ${applicable} · ${t('Căn cứ', 'Basis')}: ${entry.basis || t('(chưa ghi)', '(not recorded)')}`, 9);
+    const values = 'rows' in entry.value ? entry.value.rows : [entry.value];
+    if (!values.length) text(t('Chưa có dòng dữ liệu.', 'No value rows entered.'), 8, 'muted');
+    values.forEach((value, index) => {
+      const record = value as unknown as Record<string, unknown>;
+      if ('rows' in entry.value) text(`${t('Dòng', 'Row')} ${index + 1} · ID ${record.id}`, 8, 'muted');
+      for (const [key, value] of Object.entries(record)) {
+        if (key === 'kind' || key === 'id') continue;
+        const component = field?.components.find(item => item.key === key);
+        const name = component ? locale === 'en' ? component.labelEn : component.labelVi : key;
+        text(`${name}: ${fmt(value) || t('(trống)', '(empty)')}`, 9);
+      }
+    });
+    text(`${t('Lý do lưu / rà soát', 'Save / review reason')}: ${entry.reason}`, 8);
+    text(`${t('Lưu bởi', 'Saved by')}: ${entry.updatedBy} · ${date(entry.updatedAt)} · ${t('Mã: chưa xác minh', 'Codes: unverified')}`, 8, 'muted');
+    if (entry.review) text(`${entry.stale ? t('RÀ SOÁT ĐÃ CŨ', 'STALE REVIEW') : t('Đã rà soát nội bộ', 'Internally reviewed')}: ${entry.review.actorName} (${entry.review.actorId}) · ${date(entry.review.at)} · ${entry.review.reason}`, 8, entry.stale ? 'amber' : 'teal');
+    else text(t('Chưa có xác nhận rà soát hiện hành.', 'No current review confirmation.'), 8, 'amber');
+    if (entry.stale) text(`${t('Cần rà soát lại', 'Review again')}: ${entry.staleReason ? sys(entry.staleReason) : '—'}`, 8, 'amber');
+    for (const provenance of entry.provenance) {
+      if (provenance.kind === 'manual') text(`${t('Căn cứ nhập tay', 'Manual evidence')}: ${provenance.note}`, 8, 'muted');
+      else {
+        const document = data.documents.find(item => item.id === provenance.documentId);
+        text(`${t('Nguồn', 'Source')}: ${document?.name || provenance.documentId} · ${provenance.documentId} · v${provenance.documentVersion} · ${t('trang', 'page')} ${provenance.page}`, 8, 'muted');
+        text(`${t('Nguyên văn', 'Exact quote')}: ${provenance.quote}`, 8, 'muted');
+      }
+    }
+  }
+  section('05   Dòng hàng đề xuất', '05   Proposed goods lines');
   if (!data.shipment.goods.length) text(t('Chưa có dòng hàng.', 'No goods lines are available.'));
   data.shipment.goods.forEach((line, index) => {
     text(`${index + 1}. ${line.description || t('(thiếu mô tả)', '(description missing)')} - ${line.reviewed ? t('đã rà soát', 'reviewed') : t('chưa rà soát', 'not reviewed')}`, 10);
@@ -96,7 +143,7 @@ export function buildReportContent(state: WorkspaceState, caseId: string, locale
     text(t('HS, xuất xứ và thuế: quyết định thủ công / chưa xác minh; không tính thuế hoặc ưu đãi FTA.', 'HS codes, origin and taxes are manual / unverified decisions; duties and FTA preferences are not calculated.'), 8, 'amber');
     if (line.reason) text(`${t('Lý do rà soát', 'Review reason')}: ${line.reason}`, 8); gap();
   });
-  section('05   Vấn đề, mâu thuẫn và cách xử lý', '05   Issues, conflicts and resolutions');
+  section('06   Vấn đề, mâu thuẫn và cách xử lý', '06   Issues, conflicts and resolutions');
   if (!data.issues.length) text(t('Không có vấn đề phần mềm được phát hiện. Phạm vi kiểm tra hạn chế; không đồng nghĩa tuân thủ.', 'No software issues were detected. Checks have limited scope; this does not establish compliance.'));
   for (const original of data.issues) {
     const issue = translateIssue(original, locale);
@@ -104,14 +151,14 @@ export function buildReportContent(state: WorkspaceState, caseId: string, locale
     for (const id of issue.candidateIds) { const candidate = data.candidates.find(item => item.id === id); if (candidate) text(`${candidate.value} ← ${source(candidate)}`, 8, 'muted'); }
     if (issue.resolution) text(`${t('Giải trình', 'Explanation')}: ${issue.resolution.reason} · ${issue.resolution.actor} · ${date(issue.resolution.at)}`, 8); gap();
   }
-  section('06   Chuẩn hóa tự động có bằng chứng', '06   Evidence-backed format normalization');
+  section('07   Chuẩn hóa tự động có bằng chứng', '07   Evidence-backed format normalization');
   if (!data.normalizations.length) text(t('Không có chuẩn hóa tự động trên các chứng từ hiện hành.', 'No automatic normalization was applied to the current documents.'));
   for (const normalization of data.normalizations) {
     const document = data.documents.find(item => item.id === normalization.documentId);
     text(`${label(normalization.field)}: “${normalization.before}” → “${normalization.after}”`);
     text(`${sys(normalization.reason)} · ${document?.name || normalization.documentId} · ${t('trang', 'page')} ${normalization.page}`, 8, 'muted');
   }
-  section('07   Nhật ký chỉnh sửa và giá trị trước / sau', '07   Audit trail and before / after values');
+  section('08   Nhật ký chỉnh sửa và giá trị trước / sau', '08   Audit trail and before / after values');
   text(t('Giá trị và lý do đã ghi được giữ nguyên ngôn ngữ gốc để bảo toàn dấu vết.', 'Recorded values and reasons retain their original language to preserve the audit trail.'), 8, 'muted');
   for (const entry of data.audit) {
     text(`${date(entry.at)} · ${entry.actor} · ${auditActionLabel(entry.action, locale)}${entry.field ? ` · ${label(entry.field)}` : ''}`, 9, 'teal');
@@ -119,7 +166,7 @@ export function buildReportContent(state: WorkspaceState, caseId: string, locale
     if (entry.after !== undefined) text(`${t('Sau', 'After')}: ${fmt(entry.after)}`, 8);
     text(`${t('Lý do đã ghi', 'Recorded reason')}: ${entry.reason || '—'}`, 8, 'muted'); gap(5);
   }
-  section('08   Lịch sử bàn giao ECUS và phiên bản cố định', '08   ECUS handoff history and frozen versions');
+  section('09   Lịch sử bàn giao ECUS và phiên bản cố định', '09   ECUS handoff history and frozen versions');
   if (!data.handoffs.length) text(t('Chưa chạy kết nối thử nghiệm. Chưa tạo hoặc kiểm tra bản nháp trên ECUS thật.', 'The test connector has not run. No draft has been created or checked in a real ECUS installation.'));
   for (const run of data.handoffs) {
     text(`TEST · ${run.status === 'succeeded' ? t('thành công', 'succeeded') : t('thất bại', 'failed')} · ${date(run.at)} · ${run.actor}`, 10);
@@ -128,7 +175,7 @@ export function buildReportContent(state: WorkspaceState, caseId: string, locale
     text(t('IDA: chưa truyền · IDC: chưa đăng ký · Hải quan: chưa đánh giá', 'IDA: not transmitted · IDC: not registered · Customs: not assessed'), 8, 'muted');
   }
   for (const snapshot of data.snapshots) text(`${t('Phiên bản cố định', 'Frozen version')} ${snapshot.id} · ${t('bản duyệt', 'approved version')} v${snapshot.version} · ${date(snapshot.createdAt)} · ${snapshot.actor} · ${t('Chưa đánh giá hải quan', 'Customs not assessed')}`, 8, 'muted');
-  section('09   Phạm vi và giới hạn', '09   Scope and limitations');
+  section('10   Phạm vi và giới hạn', '10   Scope and limitations');
   text(t('Phần mềm đối chiếu dữ kiện lặp lại và kiểm tra số học trong phạm vi được hỗ trợ. PDF có lớp văn bản được đọc theo bố cục; bản scan được OCR cục bộ trong trình duyệt. OCR có thể đọc sai chữ, số hoặc cột. Mọi dữ kiện phải được đối chiếu với bản gốc; có thể sửa bằng bản chép thủ công có nhật ký.', 'The software compares repeated facts and arithmetic within its supported scope. PDF text layers are read using page layout; scans use local browser OCR. OCR can misread characters, numbers or columns. Every fact requires comparison with the original; corrections can use an audited manual transcription.'));
   text(t('Quy tắc pháp lý, bảng mã hiện hành, định giá, thuế, HS và ưu đãi FTA chưa được nạp hoặc kiểm chứng. Không có kết nối ECUS thật. Dữ liệu tổng hợp chỉ kiểm tra hành vi phần mềm; chưa chứng minh độ chính xác trên nhiều nhà cung cấp.', 'Legal rules, current code tables, valuation, taxes, HS classifications and FTA preferences have not been loaded or verified. No real ECUS connection exists. Synthetic data tests software behavior; it does not establish accuracy across suppliers.'));
   return { data, blocks, title, subject, footer, locale };

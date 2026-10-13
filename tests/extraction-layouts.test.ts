@@ -19,7 +19,7 @@ test('mixed invoice/packing PDF has page types and packing packages never become
   assert.ok(documentHasType(d, 'invoice')); assert.ok(documentHasType(d, 'packing_list'));
   const result = extractDocument(d); assert.equal(result.goods.length, 1); assert.equal(result.goods[0].quantity, '3'); assert.equal(result.goods[0].unit, 'SET');
   assert.equal(result.candidates.filter(c => c.page === 2 && c.field === 'quantity').length, 0); assert.ok(result.candidates.some(c => c.page === 2 && c.field === 'packageCount' && c.value === '90'));
-  let state = applyAction(createEmptyWorkspace('test'), { type: 'intake', documents: [d] }, actor);
+  const state = applyAction(createEmptyWorkspace('test'), { type: 'intake', documents: [d] }, actor);
   assert.equal(getIssues(state).some(i => i.id.includes('missing-packing')), false);
   assert.equal(getIssues(state).some(i => i.title.includes('quantity')), false);
   assert.ok(state.documents[0].pages.every(p => p.documentType));
@@ -51,8 +51,8 @@ test('packing totals require explicit package and weight headers, never infer pr
 });
 
 test('house/master B/L identifiers and transport parties remain distinct from commercial parties', () => {
-  const h = doc('HBL-copy.pdf', [{ page: 1, text: 'BILL OF LADING\nB/L No.: HOUSE-DEMO-12\nManifest No.: BOOK-DEMO-12\nShipper: Demo Supplier\nConsignee: TO ORDER OF DEMO BANK', textSource: 'ocr', ocrConfidence: .9 }]);
-  const m = doc('carrier-MBL.pdf', [{ page: 1, text: 'BILL OF LADING\nB/L No.: MASTER-DEMO-77\nS/O No: BOOK-DEMO-12\nShipper: Demo Forwarder\nConsignee: Demo Destination Agent', textSource: 'pdf_text' }]);
+  const h = doc('HBL-copy.pdf', [{ page: 1, text: 'BILL OF LADING\nB/L No.: HOUSE-DEMO-12\nManifest No.: BOOK-DEMO-12\nShipper: Demo Supplier\nConsignee: TO ORDER OF DEMO BANK\nPackages: 12\nGross Weight (kg): 100\nVessel: SYNTHETIC SHIP', textSource: 'ocr', ocrConfidence: .9 }]);
+  const m = doc('carrier-MBL.pdf', [{ page: 1, text: 'BILL OF LADING\nB/L No.: MASTER-DEMO-77\nS/O No: BOOK-DEMO-12\nShipper: Demo Forwarder\nConsignee: Demo Destination Agent\nPackages: 12\nGross Weight (kg): 100\nVessel: SYNTHETIC SHIP', textSource: 'pdf_text' }]);
   const hr = extractDocument(h).candidates, mr = extractDocument(m).candidates;
   assert.equal(hr.find(c => c.field === 'houseBillOfLading')!.value, 'HOUSE-DEMO-12'); assert.equal(mr.find(c => c.field === 'masterBillOfLading')!.value, 'MASTER-DEMO-77');
   assert.equal(hr.find(c => c.field === 'houseShipper')!.value, 'Demo Supplier'); assert.equal(mr.find(c => c.field === 'masterShipper')!.value, 'Demo Forwarder');

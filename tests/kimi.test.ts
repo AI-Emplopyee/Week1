@@ -15,11 +15,12 @@ const act = (state: WorkspaceState, action: Action) => applyAction(state, action
 function seeded() { return act(createEmptyWorkspace('ws-test'), { type: 'intake', documents: [{ id: document.id, name: document.name, mime: document.mime, size: document.size, sha256: document.sha256, pages: document.pages, extractionStatus: 'extracted', synthetic: true }] }); }
 function aiAction(state: WorkspaceState, proposals = [proposal()]): Action { const d = state.documents.find(d => d.id === document.id)!; return { type: 'add_ai_candidates', caseId: d.caseId, documentId: d.id, documentVersion: d.version, model: config.model, pages: [1], proposals }; }
 
-test('Kimi configuration requires a model and key, exposes no key, and never falls back to a default', async () => {
-  assert.equal(kimiStatus({ apiKey: config.apiKey }).configured, false);
+test('Kimi uses the administrator key and default vision model without exposing secrets', async () => {
+  assert.equal(kimiStatus({ apiKey: config.apiKey }).configured, true);
+  assert.equal(kimiStatus({ apiKey: config.apiKey }).model, 'kimi-k2.6');
   assert.equal(kimiStatus({ model: config.model }).configured, false);
   assert.equal(kimiStatus({ ...config, model: 'sk-accidentally-pasted-key' }).model, null);
-  assert.equal(kimiStatus(config).scope, 'header_facts_text_only');
+  assert.equal(kimiStatus(config).scope, 'shipment_facts_and_goods_with_vision');
   assert.ok(!JSON.stringify(kimiStatus(config)).includes(config.apiKey));
   let calls = 0;
   await assert.rejects(() => extractWithKimi({}, document, [1], { fetch: async () => { calls++; return reply(); } }), (error: unknown) => error instanceof KimiError && error.status === 503);
@@ -48,7 +49,7 @@ test('one fixed-endpoint JSON request sends selected text only and copies provid
   const result = await extractWithKimi(config, document, [1], { fetch: async (url, init) => {
     calls++; assert.equal(url, `${KIMI_ENDPOINT}/chat/completions`); assert.equal(init?.redirect, 'error');
     assert.equal(new Headers(init?.headers).get('authorization'), `Bearer ${config.apiKey}`);
-    const body = JSON.parse(String(init?.body)); assert.equal(body.model, config.model); assert.deepEqual(body.response_format, { type: 'json_object' }); assert.equal(body.max_completion_tokens, KIMI_LIMITS.maxOutputTokens);
+    const body = JSON.parse(String(init?.body)); assert.equal(body.model, config.model); assert.deepEqual(body.response_format, { type: 'json_object' }); assert.equal(body.max_tokens, KIMI_LIMITS.maxOutputTokens);
     assert.match(body.messages[0].content, /untrusted data/);
     assert.deepEqual(JSON.parse(body.messages[1].content).pages, [{ page: 1, text }]);
     for (const secret of ['Private page not selected', document.blobKey!, document.name, document.caseId, document.sha256, config.apiKey]) assert.ok(!String(init?.body).includes(secret));
@@ -62,7 +63,7 @@ test('grounding rejects hallucinated quotes, inferred values, forbidden customs 
   const result = groundKimiProposals(document, selectKimiPages(document, [1]), [proposal(), ...invalid], config.model);
   assert.equal(result.candidates.length, 1); assert.equal(result.rejected, invalid.length); assert.equal(result.candidates[0].originalText, proposal().quote);
   assert.throws(() => parseKimiContent(JSON.stringify({ candidates: [{ ...proposal(), documentId: 'forged' }] })), /invalid proposal/);
-  assert.throws(() => parseKimiContent(JSON.stringify({ candidates: [{ ...proposal(), confidence: 'high' }] })), /invalid proposal/);
+  assert.throws(() => parseKimiContent(JSON.stringify({ candidates: [{ ...proposal(), confidence: 'certain' }] })), /invalid proposal/);
 });
 
 test('only existing conservative normalization changes exact raw values and weak source confidence stays low', () => {
@@ -88,7 +89,7 @@ test('timeouts abort without retries, and HTTP/auth/network failures cannot leak
   }
 });
 
-test('AI proposals preserve deterministic evidence, require review, and stale only affected fields and approval', () => {
+test('agreeing AI proposals preserve reviewed values and immutable evidence while reopening final approval', () => {
   let state = seeded(); const caseId = state.cases[0].id;
   state = act(state, { type: 'review_field', caseId, field: 'invoiceNumber', value: 'DEMO-A17', reason: 'Verified original.' });
   state = act(state, { type: 'review_field', caseId, field: 'currency', value: 'USD', reason: 'Verified original.' });
@@ -96,9 +97,9 @@ test('AI proposals preserve deterministic evidence, require review, and stale on
   state.snapshots.push({ id: 'frozen-test', caseId, createdAt: 'before', actor: actor.name, version: 1, declaration: structuredClone(state.cases[0]), candidates: structuredClone(state.candidates), documents: structuredClone(state.documents), issues: [], customsValidation: 'Not yet assessed' });
   const frozen = JSON.stringify(state.snapshots); const before = state.candidates.length;
   const changed = act(state, aiAction(state));
-  assert.equal(state.candidates.length, before); assert.equal(changed.candidates.length, before + 1); assert.equal(changed.cases[0].fields.invoiceNumber.stale, true); assert.equal(changed.cases[0].fields.currency.stale, false); assert.equal(changed.cases[0].approval, undefined); assert.equal(JSON.stringify(changed.snapshots), frozen);
+  assert.equal(state.candidates.length, before); assert.equal(changed.candidates.length, before + 1); assert.equal(changed.cases[0].fields.invoiceNumber.stale, false); assert.equal(changed.cases[0].fields.currency.stale, false); assert.equal(changed.cases[0].approval, undefined); assert.equal(JSON.stringify(changed.snapshots), frozen);
   assert.ok(changed.audit.some(entry => entry.action === 'ai_header_proposals_received' && entry.actor === actor.name));
-  assert.ok(getIssues(changed).some(issue => issue.kind === 'stale' && issue.field === 'invoiceNumber'));
+  assert.equal(getIssues(changed).some(issue => issue.kind === 'stale' && issue.field === 'invoiceNumber'), false);
   const ai = changed.candidates.find(candidate => candidate.method.startsWith('kimi:'))!;
   assert.throws(() => act(changed, { type: 'review_field', caseId, field: ai.field, value: ai.value, candidateId: ai.id, reason: '' }));
   const again = act(changed, aiAction(changed)); assert.equal(again.candidates.length, changed.candidates.length);

@@ -9,7 +9,7 @@ root = Path(__file__).resolve().parents[1]
 files = subprocess.check_output(['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard'], cwd=root).decode().split('\0')
 output = root / 'outputs' / 'AICD-source.zip'
 output.parent.mkdir(exist_ok=True)
-blocked = {'.git', 'node_modules', 'dist', 'outputs', '.wrangler', '.sites-runtime', '.codex', '.agents', 'work'}
+blocked = {'.git', 'node_modules', 'dist', '.next', '.vinext', 'outputs', '.wrangler', '.aicd-local', '.sites-runtime', '.codex', '.agents', 'work'}
 manifest = []
 with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:
     for name in sorted(set(files)):

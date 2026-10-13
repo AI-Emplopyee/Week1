@@ -12,7 +12,7 @@ export function callbackParameters(fragment: string): { tokenHash: string; type:
   return { tokenHash: valid ? tokenHash : '', type, valid };
 }
 
-export type AuthAvailability = 'sites' | 'supabase' | 'unconfigured';
+export type AuthAvailability = 'supabase' | 'local' | 'unconfigured';
 export function authAvailability(status: { mode: AuthAvailability; configured: boolean }): AuthAvailability {
   return status.configured ? status.mode : 'unconfigured';
 }

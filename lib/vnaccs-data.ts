@@ -1,0 +1,6297 @@
+import type { VnaccsField } from './vnaccs.ts';
+
+// Versioned reference transcription and implementation relationships, not executable legal rules.
+// See docs/vnaccs-coverage.md for sources, transcription notes and verification gaps.
+export const VNACCS_REFERENCE_DATA: VnaccsField[] = [
+  {
+    "id": "1.1",
+    "ordinal": 1,
+    "labelVi": "Số tờ khai",
+    "labelEn": "Declaration number",
+    "scope": "system",
+    "sourceKind": [
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "system_owned",
+      "summaryVi": "Thuộc cơ quan/hệ thống hải quan. Hệ thống cấp số; không nhập như số tham chiếu nội bộ AICD.",
+      "summaryEn": "Owned by customs officers/system. Assigned by the customs system; not the internal AICD case reference.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Hệ thống cấp số; không nhập như số tham chiếu nội bộ AICD.",
+        "en": "Assigned by the customs system; not the internal AICD case reference.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Số do hệ thống cấp; 11 ký tự đầu định danh, ký tự 12 thể hiện lần khai bổ sung theo nguồn 2018.",
+        "en": "System-assigned number; the baseline uses the first 11 characters for identity and character 12 for supplementary declarations.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "customs_system",
+    "coverage": {
+      "status": "system_owned",
+      "aicdKeys": [],
+      "noteVi": "Thuộc cơ quan/hệ thống hải quan; AICD không sinh, sửa hoặc truyền giá trị này.",
+      "noteEn": "Owned by customs officers/system; AICD does not generate, edit or transmit this value."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          139
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.1",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Không phải nhập liệu, hệ thống tự động cấp số tờ khai. Lưu ý: cơ quan Hải quan và các cơ quan khác có liên quan sử dụng 11 ký tự đầu của số tờ khai. Ký tự thứ 12 chỉ thể hiện số lần khai bổ sung."
+  },
+  {
+    "id": "1.2",
+    "ordinal": 2,
+    "labelVi": "Số tờ khai đầu tiên",
+    "labelEn": "First declaration number",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi tách lô hàng thành nhiều tờ khai, gồm số đầu tiên, thứ tự và tổng số tờ khai.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For split declarations, including the first declaration, sequence and total count.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi tách lô hàng thành nhiều tờ khai, gồm số đầu tiên, thứ tự và tổng số tờ khai.",
+        "en": "For split declarations, including the first declaration, sequence and total count.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu số đầu tiên, thứ tự và tổng số tờ khai; nguồn hướng dẫn tối đa 50 dòng hàng mỗi tờ khai.",
+        "en": "Reconcile the first number, declaration sequence and total; the baseline describes at most 50 goods lines per declaration.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          139
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.2",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Ô 1: Chỉ nhập liệu trong trường hợp lô hàng có nhiều hơn 50 dòng hàng hoặc các trường hợp phải tách tờ khai khác. Cách nhập như sau: (1) Đối với tờ khai đầu tiên: nhập vào chữ “F”; (2) Từ tờ khai thứ 2 trở đi thì nhập số tờ khai đầu tiên Ô 2: Nhập số thứ tự của tờ khai trên tổng số tờ khai của lô hàng. Ô 3: Nhập tổng số tờ khai của lô hàng."
+  },
+  {
+    "id": "1.3",
+    "ordinal": 3,
+    "labelVi": "Số tờ khai TN- TX tương ứng",
+    "labelEn": "Corresponding temporary import/export declaration number",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi tái nhập hàng tạm xuất hoặc chuyển tiêu thụ nội địa từ tạm nhập; đối chiếu tờ khai gốc còn hiệu lực.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For relevant temporary trade/re-import cases; verify the original valid declaration.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi tái nhập hàng tạm xuất hoặc chuyển tiêu thụ nội địa từ tạm nhập; đối chiếu tờ khai gốc còn hiệu lực.",
+        "en": "For relevant temporary trade/re-import cases; verify the original valid declaration.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra tờ khai liên quan và thời hạn hiệu lực, không dùng số hóa đơn thay thế.",
+        "en": "Verify the related declaration and its validity; an invoice number is not a substitute.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          139
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.3",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Chỉ nhập liệu ô này trong các trường hợp sau: (1) Trường hợp tái nhập của lô hàng tạm xuất thì nhập số tờ khai tạm xuất tương ứng. (2) Trường hợp nhập khẩu chuyển tiêu thụ nội địa của lô hàng tạm nhập thì nhập số tờ khai tạm nhập tương ứng. (3) Người mở tờ khai tạm nhập và người mở tờ khai tái xuất phải là một. (4) Tờ khai ban đầu phải còn hiệu lực (trong thời hạn được phép lưu giữ tại Việt Nam)."
+  },
+  {
+    "id": "1.4",
+    "ordinal": 4,
+    "labelVi": "Mã loại hình",
+    "labelEn": "Procedure code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "required",
+      "summaryVi": "Cần có thông tin cho trường hợp nhập khẩu tương ứng; hệ thống có thể hỗ trợ và cần xác nhận ngoại lệ. Chọn theo hồ sơ và mục đích nhập khẩu; cần bảng mã hiện hành.",
+      "summaryEn": "Information is needed for the applicable import case; system assistance and exceptions need confirmation. Select from shipment purpose and evidence using the current procedure-code table.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Chọn theo hồ sơ và mục đích nhập khẩu; cần bảng mã hiện hành.",
+        "en": "Select from shipment purpose and evidence using the current procedure-code table.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu mã loại hình, mục đích giao dịch và ngày áp dụng; chưa có danh mục mã đã xác minh trong AICD.",
+        "en": "Reconcile procedure, transaction purpose and applicability date; AICD has no verified active procedure-code dataset.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "manual_review",
+      "aicdKeys": [
+        "customsProcedure"
+      ],
+      "noteVi": "Có customsProcedure nhập tay, chưa xác minh; không có bảng mã hiện hành, gợi ý mã hay xác nhận đủ điều kiện.",
+      "noteEn": "A manual, unverified customsProcedure field exists; no current code dataset, code recommendation or eligibility decision."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          139
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.4",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Người nhập khẩu theo hồ sơ, mục đích nhập khẩu của lô hàng để chọn một trong các loại hình nhập khẩu theo hướng dẫn của Tổng cục Hải quan. Tham khảo bảng mã loại hình trên website www.customs.gov.vn"
+  },
+  {
+    "id": "1.5",
+    "ordinal": 5,
+    "labelVi": "Mã phân loại hàng hóa",
+    "labelEn": "Special goods classification code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Chỉ nhập khi thuộc nhóm hàng đặc thù được quy định; không suy ra từ mô tả hàng đơn thuần.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For specified special goods categories; do not infer solely from a goods description.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Chỉ nhập khi thuộc nhóm hàng đặc thù được quy định; không suy ra từ mô tả hàng đơn thuần.",
+        "en": "For specified special goods categories; do not infer solely from a goods description.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Chỉ chọn một giá trị thuộc nhóm quy định khi thực sự áp dụng; không tự tạo mã.",
+        "en": "Use a defined category only when it applies; do not invent a code.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          139,
+          140
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.5",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nếu hàng hóa thuộc một trong các trường hợp sau đây thì bắt buộc phải nhập mã tương ứng sau: “A”: Hàng quà biếu, quà tặng “B”: Hàng an ninh, quốc phòng “C”: Hàng cứu trợ khẩn cấp “D”: Hàng phòng chống thiên tai, dịch bệnh “E”: Hàng viện trợ nhân đạo/Hàng viện trợ không hoàn lại “F”: Hàng bưu chính, chuyển phát nhanh “G”: Hàng tài sản di chuyển “H”: Hàng hóa được sử dụng cho PTVT xuất nhập cảnh “I”: Hàng ngoại giao “J”: Hàng khác theo quy định của Chính phủ “K”: Hàng bảo quản đặc biệt Lưu ý: Chỉ sử dụng mã “J” trong trường hợp Chính phủ có văn bản riêng. Hàng hóa thông thường không chọn mã này."
+  },
+  {
+    "id": "1.6",
+    "ordinal": 6,
+    "labelVi": "Mã hiệu phương thức vận chuyển",
+    "labelEn": "Mode of transport code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "required",
+      "summaryVi": "Cần có thông tin cho trường hợp nhập khẩu tương ứng; hệ thống có thể hỗ trợ và cần xác nhận ngoại lệ. Chọn theo phương thức thực tế và các trường hợp đặc biệt như CFS, nhập khẩu tại chỗ.",
+      "summaryEn": "Information is needed for the applicable import case; system assistance and exceptions need confirmation. Use the actual transport mode and applicable CFS or on-the-spot exceptions.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Chọn theo phương thức thực tế và các trường hợp đặc biệt như CFS, nhập khẩu tại chỗ.",
+        "en": "Use the actual transport mode and applicable CFS or on-the-spot exceptions.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu mã phương thức với vận đơn và ngoại lệ CFS/tại chỗ; các chỉ tiêu vận tải khác phụ thuộc mã này.",
+        "en": "Reconcile the mode with transport evidence and CFS/on-the-spot exceptions; other transport indicators depend on it.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          140
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.6",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Căn cứ phương thức vận chuyển để lựa chọn một trong các mã sau: “1”: Đường không “2”: Đường biển (container) “3”: Đường biển (hàng rời, lỏng...) “4”: Đường bộ (xe tải) “5”: Đường sắt “6”: Đường sông “9”: Khác Lưu ý: - Chọn mã tương ứng với phương thức vận chuyển hàng nhập khẩu từ nước ngoài về cửa khẩu nhập đối với trường hợp hàng đóng chung container vào kho CFS. Ví dụ: trường hợp hàng vận chuyển đường biển đóng chung container chọn mã “3”. - Các trường hợp sử dụng mã “9”: 1. Vận chuyển hàng hóa nhập khẩu bằng các phương thức khác với các phương thức từ mã “1” đến mã “6”. Ví dụ: vận chuyển bằng đường ống, dây cáp,... 2. Nhập khẩu tại chỗ; hàng nhập vào kho ngoại quan. - Trường hợp hàng hóa mang theo người nhập cảnh qua đường hàng không, nhập mã “1”; trường hợp qua đường biển, nhập mã “3”."
+  },
+  {
+    "id": "1.7",
+    "ordinal": 7,
+    "labelVi": "Phân loại cá nhân/tổ chức",
+    "labelEn": "Individual/organization classification",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "required",
+      "summaryVi": "Cần có thông tin cho trường hợp nhập khẩu tương ứng; hệ thống có thể hỗ trợ và cần xác nhận ngoại lệ. Chọn theo loại người gửi và người nhận; không suy ra từ tên công ty chưa kiểm chứng.",
+      "summaryEn": "Information is needed for the applicable import case; system assistance and exceptions need confirmation. Select from the verified sender/recipient entity types.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Chọn theo loại người gửi và người nhận; không suy ra từ tên công ty chưa kiểm chứng.",
+        "en": "Select from the verified sender/recipient entity types.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu cặp loại chủ thể gửi/nhận với phân loại trong nguồn.",
+        "en": "Check the verified sender/recipient entity-type pair against the source classification.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          140,
+          141
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.7",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Tùy theo tính chất giao dịch, chọn một trong các mã sau: Mã “1”: Cá nhân gửi cá nhân Mã “2”: Tổ chức/công ty gửi cá nhân Mã “3”: Cá nhân gửi tổ chức/công ty Mã “4”: Tổ chức/Công ty gửi tổ chức/công ty Mã “5”: Khác"
+  },
+  {
+    "id": "1.8",
+    "ordinal": 8,
+    "labelVi": "Cơ quan Hải quan",
+    "labelEn": "Customs office",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Xác nhận cơ quan đăng ký; hệ thống có thể suy ra từ địa điểm lưu kho.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Confirm the registration office; the system may derive it from the storage location.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Xác nhận cơ quan đăng ký; hệ thống có thể suy ra từ địa điểm lưu kho.",
+        "en": "Confirm the registration office; the system may derive it from the storage location.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu mã cơ quan với địa điểm lưu kho và thẩm quyền đăng ký; không lấy tên cơ quan làm mã.",
+        "en": "Check the office code against storage location and registration jurisdiction; office name is not its code.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          141
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.8",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "(1) Nhập mã Chi cục Hải quan nơi đăng ký tờ khai hải quan theo quy định của pháp luật. Trường hợp không nhập, Hệ thống sẽ tự động xác định mã Chi cục Hải quan đăng ký tờ khai dựa trên địa điểm lưu giữ hàng chờ thông quan. (2) Tham khảo bảng “Mã Chi cục Hải quan-Đội thủ tục” trên website Hải quan: www.customs.gov.vn."
+  },
+  {
+    "id": "1.9",
+    "ordinal": 9,
+    "labelVi": "Mã bộ phận xử lý tờ khai",
+    "labelEn": "Declaration processing division code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Xác nhận đội xử lý hoặc giá trị hệ thống xác định; cần mã đơn vị hiện hành.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Confirm the processing division or system-derived value using current office codes.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Xác nhận đội xử lý hoặc giá trị hệ thống xác định; cần mã đơn vị hiện hành.",
+        "en": "Confirm the processing division or system-derived value using current office codes.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Xác nhận mã bộ phận thuộc cơ quan đăng ký hoặc giá trị hệ thống; không suy ra từ tên nhân viên.",
+        "en": "Confirm the division within the registration office or system-derived value; do not infer it from an employee name.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          141
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.9",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "(1) Nhập mã Đội thủ tục xử lý tờ khai. (2) Trường hợp không nhập, Hệ thống sẽ tự động xác định mã Đội thủ tục xử lý tờ khai dựa trên mã HS. (3) Tham khảo bảng “Mã Chi cục Hải quan-Đội thủ tục” trên website Hải quan: www.customs.gov.vn"
+  },
+  {
+    "id": "1.10",
+    "ordinal": 10,
+    "labelVi": "Thời hạn tái xuất khẩu",
+    "labelEn": "Re-export deadline",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Áp dụng khi tạm nhập; thời hạn phải có căn cứ phù hợp.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For temporary imports; the deadline requires an applicable legal basis.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Áp dụng khi tạm nhập; thời hạn phải có căn cứ phù hợp.",
+        "en": "For temporary imports; the deadline requires an applicable legal basis.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra ngày và căn cứ thời hạn tạm nhập, cùng định dạng hệ thống yêu cầu.",
+        "en": "Check date, temporary-import deadline basis and the system-required format.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          141
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.10",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Trường hợp mở tờ khai theo loại hình tạm nhập thì căn cứ quy định về thời hạn hàng tạm nhập được lưu tại Việt Nam tương ứng để nhập ngày hết hạn theo định dạng ngày/tháng/năm."
+  },
+  {
+    "id": "1.11",
+    "ordinal": 11,
+    "labelVi": "Ngày khai báo (dự kiến)",
+    "labelEn": "Expected declaration date",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Ngày dự kiến thực hiện IDC; nguồn 2018 cho phép hệ thống lấy ngày nghiệp vụ khi để trống.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Expected IDC date; the baseline allows the system operation date when omitted.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Ngày dự kiến thực hiện IDC; nguồn 2018 cho phép hệ thống lấy ngày nghiệp vụ khi để trống.",
+        "en": "Expected IDC date; the baseline allows the system operation date when omitted.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu ngày dự kiến IDC; cần xác nhận hành vi tự điền ngày hệ thống hiện tại.",
+        "en": "Reconcile the expected IDC date; confirm current system date-default behavior.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          141
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.11",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập ngày/tháng/năm dự kiến thực hiện nghiệp vụ IDC. Trường hợp không nhập, hệ thống sẽ tự động lấy ngày thực hiện nghiệp vụ này."
+  },
+  {
+    "id": "1.12",
+    "ordinal": 12,
+    "labelVi": "Mã người nhập khẩu",
+    "labelEn": "Importer code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "required",
+      "summaryVi": "Cần có thông tin cho trường hợp nhập khẩu tương ứng; hệ thống có thể hỗ trợ và cần xác nhận ngoại lệ. Mã số thuế hoặc trường hợp hệ thống điền; TT121 bổ sung bên được chỉ định nhận hàng trong nhập khẩu tại chỗ.",
+      "summaryEn": "Information is needed for the applicable import case; system assistance and exceptions need confirmation. Tax/registered identifier or system-filled value; TT121 adds the designated on-the-spot recipient.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Mã số thuế hoặc trường hợp hệ thống điền; TT121 bổ sung bên được chỉ định nhận hàng trong nhập khẩu tại chỗ.",
+        "en": "Tax/registered identifier or system-filled value; TT121 adds the designated on-the-spot recipient.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu mã số thuế với đúng người nhập khẩu/chủ kho/đại lý/người được chỉ định theo tình huống.",
+        "en": "Match the identifier to the applicable importer, warehouse operator, broker or designated recipient.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "party_master_owner",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          141
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.12",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [
+        {
+          "sourceId": "tt121-2025-gazette",
+          "section": "Phụ lục I · mục 2(a) · Mẫu số 01 · 1.12",
+          "effectiveFrom": "2026-02-01",
+          "pages": [
+            133
+          ]
+        }
+      ],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập mã số thuế của người nhập khẩu. Lưu ý: - Trường hợp người nhập khẩu đã đăng ký sử dụng VNACCS và là người thực hiện IDA thì hệ thống sẽ tự động xuất ra mã người nhập khẩu. - Trường hợp chủ hàng nước ngoài thuê kho ngoại quan thì mã người nhập khẩu là mã của chủ kho ngoại quan hoặc mã của đại lý làm thủ tục hải quan.",
+    "amendmentInstructionsVi": "Nhập mã số thuế của người nhập khẩu.\nLưu ý:\n- Trường hợp người nhập khẩu đã đăng ký sử dụng VNACCS và là người thực hiện IDA thì hệ thống sẽ tự động xuất ra mã người nhập khẩu.\n- Trường hợp chủ hàng nước ngoài thuê kho ngoại quan thì mã người nhập khẩu là mã của chủ kho ngoại quan hoặc mã của đại lý làm thủ tục hải quan.\n- Trường hợp nhập khẩu tại chỗ: Nhập mã số thuế của người được chỉ định nhận hàng tại Việt Nam"
+  },
+  {
+    "id": "1.13",
+    "ordinal": 13,
+    "labelVi": "Tên người nhập khẩu",
+    "labelEn": "Importer name",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "required",
+      "summaryVi": "Cần có thông tin cho trường hợp nhập khẩu tương ứng; hệ thống có thể hỗ trợ và cần xác nhận ngoại lệ. Tên pháp lý hoặc hệ thống điền; phải xác nhận đúng vai trò, kể cả nhập khẩu tại chỗ.",
+      "summaryEn": "Information is needed for the applicable import case; system assistance and exceptions need confirmation. Legal or system-filled name; confirm the correct role, including on-the-spot imports.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Tên pháp lý hoặc hệ thống điền; phải xác nhận đúng vai trò, kể cả nhập khẩu tại chỗ.",
+        "en": "Legal or system-filled name; confirm the correct role, including on-the-spot imports.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu tên với mã người nhập khẩu và vai trò trong hợp đồng; tên trên vận đơn không tự thay thế.",
+        "en": "Match name to importer identifier and contractual role; a transport-party name is not an automatic substitute.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "party_master_owner",
+    "coverage": {
+      "status": "source_proposal",
+      "aicdKeys": [
+        "importer"
+      ],
+      "noteVi": "Có đề xuất tên importer; chưa có mã số thuế, hồ sơ chủ thể hoặc xác định vai trò pháp lý tự động.",
+      "noteEn": "Importer-name proposals exist; no tax-identifier master data or automatic legal-role determination."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          141
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.13",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [
+        {
+          "sourceId": "tt121-2025-gazette",
+          "section": "Phụ lục I · mục 2(a) · Mẫu số 01 · 1.13",
+          "effectiveFrom": "2026-02-01",
+          "pages": [
+            133
+          ]
+        }
+      ],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập tên của người nhập khẩu. Lưu ý: - Trường hợp chủ hàng nước ngoài thuê kho ngoại quan thì tên người nhập khẩu là tên của chủ kho ngoại quan hoặc tên của đại lý làm thủ tục hải quan - Trường hợp người nhập khẩu đã đăng ký sử dụng VNACCS hoặc đã nhập “mã người nhập khẩu” thì hệ thống sẽ tự động xuất ra tên người nhập khẩu.",
+    "amendmentInstructionsVi": "Nhập tên của người nhập khẩu.\nLưu ý:\n- Trường hợp chủ hàng nước ngoài thuê kho ngoại quan thì tên người nhập khẩu là tên của chủ kho ngoại quan hoặc tên của đại lý làm thủ tục hải quan\n- Trường hợp người nhập khẩu đã đăng ký sử dụng VNACCS hoặc đã nhập “mã người nhập khẩu” thì hệ thống sẽ tự động xuất ra tên người nhập khẩu.\n- Trường hợp nhập khẩu tại chỗ: Nhập tên của người được chỉ định nhận hàng tại Việt Nam"
+  },
+  {
+    "id": "1.14",
+    "ordinal": 14,
+    "labelVi": "Mã bưu chính",
+    "labelEn": "Importer postal code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khai nếu có; không suy ra từ địa chỉ chưa đối chiếu.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Enter when available; do not infer from an unverified address.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khai nếu có; không suy ra từ địa chỉ chưa đối chiếu.",
+        "en": "Enter when available; do not infer from an unverified address.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra mã bưu chính theo hồ sơ người nhập khẩu khi có; không tự bổ sung giá trị mặc định.",
+        "en": "Check the postal code against the importer record when present; do not invent a default.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "party_master_owner",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          141
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.14",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập mã bưu chính của người nhập khẩu (nếu có)."
+  },
+  {
+    "id": "1.15",
+    "ordinal": 15,
+    "labelVi": "Địa chỉ người nhập khẩu",
+    "labelEn": "Importer address",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Nhập hoặc sửa khi dữ liệu hệ thống thiếu/sai; đối chiếu hồ sơ chủ thể.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Supply or correct missing/inaccurate system data against the party master record.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Nhập hoặc sửa khi dữ liệu hệ thống thiếu/sai; đối chiếu hồ sơ chủ thể.",
+        "en": "Supply or correct missing/inaccurate system data against the party master record.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "So khớp địa chỉ pháp lý với dữ liệu hệ thống và chứng từ cập nhật.",
+        "en": "Reconcile the legal address with system data and current documents.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "party_master_owner",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          141,
+          142
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.15",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "(1) Nhập địa chỉ của người nhập khẩu, không cần nhập trong trường hợp hệ thống tự động hiển thị. (2) Trường hợp địa chỉ của người nhập khẩu mà hệ thống hiển thị không đúng, thì nhập vào địa chỉ chính xác. (3) Trường hợp người nhập khẩu đã đăng ký sử dụng VNACCS và là người thực hiện IDA thì không cần nhập liệu."
+  },
+  {
+    "id": "1.16",
+    "ordinal": 16,
+    "labelVi": "Số điện thoại người nhập khẩu",
+    "labelEn": "Importer telephone number",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Nhập hoặc sửa khi hệ thống thiếu/sai; nguồn 2018 hướng dẫn không dùng gạch ngang.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Supply or correct missing/inaccurate system data; the baseline excludes hyphens.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Nhập hoặc sửa khi hệ thống thiếu/sai; nguồn 2018 hướng dẫn không dùng gạch ngang.",
+        "en": "Supply or correct missing/inaccurate system data; the baseline excludes hyphens.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra số liên lạc thực tế và định dạng; nguồn 2018 hướng dẫn không nhập gạch ngang.",
+        "en": "Check the actual contact number and format; the baseline says not to enter hyphens.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "party_master_owner",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          142
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.16",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "(1) Nhập số điện thoại của người nhập khẩu (không sử dụng dấu gạch ngang). Nếu hệ thống tự động hiển thị, không cần nhập liệu. (2) Trường hợp số điện thoại của người nhập khẩu mà hệ thống hiển thị không đúng, thì nhập vào số điện thoại chính xác. (3) Trường hợp người nhập khẩu đã đăng ký sử dụng VNACCS và là người thực hiện IDA thì không cần nhập liệu."
+  },
+  {
+    "id": "1.17",
+    "ordinal": 17,
+    "labelVi": "Mã người ủy thác nhập khẩu",
+    "labelEn": "Entrusting importer code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi có người ủy thác nhập khẩu; xác nhận mã số thuế của đúng chủ thể.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. When an entrusting importer exists; confirm that party's tax identifier.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi có người ủy thác nhập khẩu; xác nhận mã số thuế của đúng chủ thể.",
+        "en": "When an entrusting importer exists; confirm that party's tax identifier.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "So khớp mã số thuế bên ủy thác với hợp đồng ủy thác còn hiệu lực.",
+        "en": "Match the entrusting party's tax identifier against the valid entrustment agreement.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "party_master_owner",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          142
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.17",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập mã số thuế của người ủy thác nhập khẩu."
+  },
+  {
+    "id": "1.18",
+    "ordinal": 18,
+    "labelVi": "Tên người ủy thác nhập khẩu",
+    "labelEn": "Entrusting importer name",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi có ủy thác nhập khẩu; đối chiếu hợp đồng ủy thác.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. When import entrustment applies; verify the entrustment agreement.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi có ủy thác nhập khẩu; đối chiếu hợp đồng ủy thác.",
+        "en": "When import entrustment applies; verify the entrustment agreement.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Tên bên ủy thác phải khớp mã và hợp đồng, không thay bằng đại lý khai báo.",
+        "en": "Match the entrusting name with its identifier and contract; do not substitute the filing broker.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "party_master_owner",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          142
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.18",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập tên người ủy thác nhập khẩu."
+  },
+  {
+    "id": "1.19",
+    "ordinal": 19,
+    "labelVi": "Mã người xuất khẩu",
+    "labelEn": "Exporter code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Mã người xuất khẩu/chủ hàng kho ngoại quan nếu có; TT121 nêu mã bên được chỉ định giao hàng tại chỗ.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Exporter/bonded-warehouse owner code where available; TT121 specifies the designated domestic supplier for on-the-spot imports.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Mã người xuất khẩu/chủ hàng kho ngoại quan nếu có; TT121 nêu mã bên được chỉ định giao hàng tại chỗ.",
+        "en": "Exporter/bonded-warehouse owner code where available; TT121 specifies the designated domestic supplier for on-the-spot imports.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Xác nhận mã người xuất khẩu/chủ kho hoặc mã số thuế người giao hàng tại chỗ theo TT121.",
+        "en": "Confirm exporter/warehouse-owner code or the on-the-spot supplier's tax identifier under TT121.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "party_master_owner",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          142
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.19",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [
+        {
+          "sourceId": "tt121-2025-gazette",
+          "section": "Phụ lục I · mục 2(a) · Mẫu số 01 · 1.19",
+          "effectiveFrom": "2026-02-01",
+          "pages": [
+            133,
+            134
+          ]
+        }
+      ],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập mã người xuất khẩu hoặc mã chủ hàng nước ngoài trong trường hợp gửi kho ngoại quan (nếu có).",
+    "amendmentInstructionsVi": "Nhập mã người xuất khẩu hoặc mã chủ hàng nước ngoài trong trường hợp gửi kho ngoại quan (nếu có).\nLưu ý:\n- Trường hợp nhập khẩu tại chỗ: Nhập mã số thuế của người được chỉ định giao hàng"
+  },
+  {
+    "id": "1.20",
+    "ordinal": 20,
+    "labelVi": "Tên người xuất khẩu",
+    "labelEn": "Exporter name",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "required",
+      "summaryVi": "Cần có thông tin cho trường hợp nhập khẩu tương ứng; hệ thống có thể hỗ trợ và cần xác nhận ngoại lệ. Theo hợp đồng và vai trò thực tế; TT121 cập nhật nhập khẩu tại chỗ và chủ hàng kho ngoại quan.",
+      "summaryEn": "Information is needed for the applicable import case; system assistance and exceptions need confirmation. Follow the contract and actual party role; TT121 updates on-the-spot and bonded-warehouse cases.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Theo hợp đồng và vai trò thực tế; TT121 cập nhật nhập khẩu tại chỗ và chủ hàng kho ngoại quan.",
+        "en": "Follow the contract and actual party role; TT121 updates on-the-spot and bonded-warehouse cases.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu người bán/bên đặt gia công/người giao hàng tại chỗ; tên shipper không mặc định là người xuất khẩu.",
+        "en": "Reconcile seller, processing principal or on-the-spot supplier; shipper is not automatically exporter.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "party_master_owner",
+    "coverage": {
+      "status": "source_proposal",
+      "aicdKeys": [
+        "exporter"
+      ],
+      "noteVi": "Có đề xuất tên exporter; đã tách các vai trò trên vận đơn nhưng người khai vẫn phải chọn đúng chủ thể.",
+      "noteEn": "Exporter-name proposals exist and transport-party roles are separate; a reviewer must still identify the correct party."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          142
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.20",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [
+        {
+          "sourceId": "tt121-2025-gazette",
+          "section": "Phụ lục I · mục 2(a) · Mẫu số 01 · 1.20",
+          "effectiveFrom": "2026-02-01",
+          "pages": [
+            134
+          ]
+        }
+      ],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "(1) Nhập tên người xuất khẩu hoặc tên chủ hàng nước ngoài trong trường hợp gửi kho ngoại quan (nếu chưa đăng kí vào hệ thống). (2) Trường hợp đã đăng kí, hệ thống sẽ tự động xuất ra. Lưu ý: - Nhập tên người xuất khẩu (người bán) theo hợp đồng mua bán hàng hóa nhập khẩu (kể cả trường hợp mua bán qua bên thứ ba); - Nhập tên bên đặt gia công theo hợp đồng gia công (kể cả trường hợp nhập khẩu hàng hóa qua bên thứ ba theo chỉ định của bên đặt gia công, trong trường hợp này ghi người được chỉ định giao hàng tại ô tên người ủy thác xuất khẩu); - Trường hợp hợp đồng mua bán có điều khoản chỉ định nhận hàng tại Việt Nam (nhập khẩu tại chỗ) thì tên người xuất khẩu là tên người mua hàng tại nước ngoài; ghi người được chỉ định giao hàng (tại Việt Nam) tại ô tên người ủy thác xuất khẩu; - Trường hợp người khai hải quan là chủ hàng hóa gửi kho ngoại quan: nhập tên người bán hàng ở nước ngoài (giống tên người xuất khẩu đã khai trên tờ khai nhập khẩu gửi kho ngoại quan); - Chấp nhận tên viết tắt hoặc tên rút gọn của người xuất khẩu.",
+    "amendmentInstructionsVi": "(1) Nhập tên người xuất khẩu hoặc tên chủ hàng nước ngoài trong trường hợp gửi kho ngoại quan (nếu chưa đăng kí vào hệ thống).\n(2) Trường hợp đã đăng kí, hệ thống sẽ tự động xuất ra.\nLưu ý: \n- Nhập tên người xuất khẩu (người bán) theo hợp đồng mua bán hàng hóa nhập khẩu (kể cả trường hợp mua bán qua bên thứ ba);\n- Nhập tên bên đặt gia công theo hợp đồng gia công (kể cả trường hợp nhập khẩu hàng hóa qua bên thứ ba theo chỉ định của bên đặt gia công, trong trường hợp này ghi người được chỉ định giao hàng tại ô tên người ủy thác xuất khẩu);\n- Trường hợp nhập khẩu tại chỗ: Nhập tên của người được chỉ định giao hàng;\n- Trường hợp người khai hải quan là chủ hàng hóa gửi kho ngoại quan: nhập tên người bán hàng ở nước ngoài (giống tên người xuất khẩu đã khai trên tờ khai nhập khẩu gửi kho ngoại quan);\n- Chấp nhận tên viết tắt hoặc tên rút gọn của người xuất khẩu."
+  },
+  {
+    "id": "1.21",
+    "ordinal": 21,
+    "labelVi": "Mã bưu chính người xuất khẩu",
+    "labelEn": "Exporter postal code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Nhập nếu có thông tin của người xuất khẩu.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Enter the exporter's postal code when available.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Nhập nếu có thông tin của người xuất khẩu.",
+        "en": "Enter the exporter's postal code when available.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu mã bưu chính người xuất khẩu với hồ sơ chủ thể, khi có.",
+        "en": "Reconcile the exporter postal code with the party record when available.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "party_master_owner",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          142
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.21",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập mã bưu chính của người xuất khẩu (nếu có)"
+  },
+  {
+    "id": "1.22",
+    "ordinal": 22,
+    "labelVi": "Địa chỉ",
+    "labelEn": "Exporter address",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Gồm các ô địa chỉ, thành phố và nước; nhập/sửa nếu hệ thống không hỗ trợ hoặc sai.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Contains address, city and country subfields; supply or correct absent/inaccurate system data.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Gồm các ô địa chỉ, thành phố và nước; nhập/sửa nếu hệ thống không hỗ trợ hoặc sai.",
+        "en": "Contains address, city and country subfields; supply or correct absent/inaccurate system data.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra từng ô địa chỉ, thành phố và nước; một chuỗi địa chỉ tự do chưa đủ ánh xạ.",
+        "en": "Check each address, city and country subfield; a free-text address is not a complete mapping.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "party_master_owner",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          143
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.22",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập tên đường và số nhà/số hòm thư bưu điện (P.O.BOX). Người khai chỉ phải nhập liệu nếu hệ thống không tự động hỗ trợ. Nhập vào tên đường và số nhà/số hòm thư bưu điện chính xác nếu thông tin do hệ thống hiển thị không chính xác. Ô 2: Nhập tiếp tên đường và số nhà/số hòm thư bưu điện (P.O.BOX). Ô 3: Nhập tên thành phố. Người khai chỉ phải nhập liệu nếu hệ thống không tự động hỗ trợ. Nhập vào tên thành phố chính xác nếu thông tin do hệ thống hiển thị không đúng. Ô 4: Nhập tên nước. Người khai chỉ phải nhập liệu nếu hệ thống không tự động hỗ trợ. Nhập vào tên nước chính xác nếu thông tin do hệ thống hiển thị không đúng."
+  },
+  {
+    "id": "1.23",
+    "ordinal": 23,
+    "labelVi": "Mã nước",
+    "labelEn": "Country of consignment code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Xác định nước gửi hàng theo tuyến và giao dịch; không đồng nhất với nước xuất xứ.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Determine consignment country from the route and transactions; this is not origin country.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Xác định nước gửi hàng theo tuyến và giao dịch; không đồng nhất với nước xuất xứ.",
+        "en": "Determine consignment country from the route and transactions; this is not origin country.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Nguồn quy định mã nước 2 ký tự; xác định theo tuyến và giao dịch trung gian rồi đối chiếu bảng mã hiện hành.",
+        "en": "The source specifies a two-character country code; establish it from routing/intermediate transactions and verify the current table.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "party_master_owner",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          143
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.23",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Mã nước bao gồm 02 kí tự theo bảng mã UN LOCODE (tham khảo bảng “Mã nước” tại Cổng Thông tin điện tử của Tổng cục Hải quan: www.customs.gov.vn). Cụ thể như sau: (1) Trong trường hợp hàng hóa được vận chuyển thẳng từ nước xuất khẩu đến Việt Nam hoặc đi qua nước trung gian mà không diễn ra các hoạt động gồm mua bán, gia công, chế biến, sản xuất xuất khẩu hay hàng hóa được cơ quan hải quan nước trung gian thông quan thì nước gửi hàng là nước xuất khẩu. (2) Trong trường hợp hàng hóa từ nước xuất khẩu đến Việt Nam đi qua một hay nhiều nước trung gian thì nước gửi hàng là nước cuối cùng trước khi hàng đến Việt Nam mà tại đó diễn ra hoạt động mua bán, gia công, chế biến, sản xuất xuất khẩu hay hàng hóa được cơ quan hải quan tại nước đó thông quan. (3) Trong trường hợp không xác định được mã nước nêu trên thì nhập mã nước của người xuất khẩu."
+  },
+  {
+    "id": "1.24",
+    "ordinal": 24,
+    "labelVi": "Tên người ủy thác xuất khẩu",
+    "labelEn": "Entrusting exporter name",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi có; TT121 quy định người nước ngoài chỉ định giao hàng trong nhập khẩu tại chỗ.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. When applicable; TT121 addresses the foreign party directing on-the-spot delivery.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi có; TT121 quy định người nước ngoài chỉ định giao hàng trong nhập khẩu tại chỗ.",
+        "en": "When applicable; TT121 addresses the foreign party directing on-the-spot delivery.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Xác nhận quan hệ ủy thác hoặc người nước ngoài chỉ định giao hàng, không suy ra từ notify party.",
+        "en": "Confirm entrustment or the foreign directing party; do not infer from the notify party.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "party_master_owner",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          143
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.24",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [
+        {
+          "sourceId": "tt121-2025-gazette",
+          "section": "Phụ lục I · mục 2(a) · Mẫu số 01 · 1.24",
+          "effectiveFrom": "2026-02-01",
+          "pages": [
+            134
+          ]
+        }
+      ],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập tên người ủy thác xuất khẩu (nếu có). Trường hợp nhập khẩu tại chỗ theo chỉ định của người xuất khẩu nước ngoài thì nhập tên người được chỉ định giao hàng tại Việt Nam.",
+    "amendmentInstructionsVi": "Nhập tên người ủy thác xuất khẩu (nếu có).\nTrường hợp nhập khẩu tại chỗ: Nhập tên người nước ngoài chỉ định giao hàng tại Việt Nam (nếu có)."
+  },
+  {
+    "id": "1.25",
+    "ordinal": 25,
+    "labelVi": "Mã đại lý hải quan",
+    "labelEn": "Customs broker code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Phụ thuộc người thực hiện IDA/IDC và vai trò đại lý.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Depends on who performs IDA/IDC and the customs broker's role.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Phụ thuộc người thực hiện IDA/IDC và vai trò đại lý.",
+        "en": "Depends on who performs IDA/IDC and the customs broker's role.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu đại lý thực hiện IDA/IDC và phân quyền; không dùng mã người phụ trách hồ sơ AICD.",
+        "en": "Reconcile the broker performing IDA/IDC and authorization; the AICD case owner's identifier is unrelated.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "party_master_owner",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          143
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.25",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "(1) Trường hợp đại lý hải quan thực hiện nghiệp vụ IDA và các nghiệp vụ tiếp theo thì không phải nhập liệu. (2) Trường hợp người khai thực hiện nghiệp vụ IDA khác với người khai thực hiện nghiệp vụ IDC thì nhập mã người sử dụng thực hiện nghiệp vụ IDC."
+  },
+  {
+    "id": "1.26",
+    "ordinal": 26,
+    "labelVi": "Số vận đơn (Số B/L, số AWB v.v.)",
+    "labelEn": "Transport document number (B/L, AWB, etc.)",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Chọn vận đơn thể hiện người nhập khẩu là người nhận; không tự gộp HBL/MBL thành cùng một số.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Select the transport document naming the importer as consignee; never collapse HBL/MBL identifiers.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Chọn vận đơn thể hiện người nhập khẩu là người nhận; không tự gộp HBL/MBL thành cùng một số.",
+        "en": "Select the transport document naming the importer as consignee; never collapse HBL/MBL identifiers.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra đúng cấp vận đơn, người nhận và chuỗi số; nguồn cho phép tối đa 5 số và có cú pháp AWB riêng.",
+        "en": "Check document level, consignee and identifier; the baseline allows at most five numbers and has distinct AWB formatting.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "source_proposal",
+      "aicdKeys": [
+        "billOfLading",
+        "houseBillOfLading",
+        "masterBillOfLading"
+      ],
+      "noteVi": "Lưu riêng số vận đơn chưa rõ cấp, HBL và MBL; chưa chọn số dùng để khai VNACCS hoặc hỗ trợ nhóm 5 vận đơn.",
+      "noteEn": "Stores untyped B/L, HBL and MBL separately; it does not choose the filing identifier or implement the five-document group."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          143,
+          144
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.26",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "(1) Nhập số vận đơn bao gồm cả phần số, phần chữ và các kí tự đặc biệt (nếu có) (số B/L, AWB, vận đơn đương sắt). Lưu ý: - Người nhập khẩu đứng tên trên ô người nhận hàng ở vận đơn nào thì nhập số của vận đơn đó. Khai vận đơn thể hiện người nhận hàng là người nhập khẩu. - Đối với B/L và AWB có thể nhập đến 05 số vận đơn nhưng hàng hóa thuộc các số vận đơn này phải của cùng một người gửi hàng, cùng một người nhận hàng, cùng tên phương tiện vận tải, vận chuyển trên cùng một chuyến và có cùng ngày hàng đến. - Số AWB không được vượt quá 20 ký tự. (2) Trường hợp một vận đơn khai báo cho nhiều tờ khai hải quan, người khai hải quan thông báo tách vận đơn với cơ quan hải quan trước khi đăng ký tờ khai hải quan theo các chỉ tiêu thông tin quy định tại mẫu số 12 Phụ lục này thông qua Hệ thống xử lý dữ liệu điện tử hải quan. Hệ thống tự động tiếp nhận, kiểm tra, phản hồi việc tách vận đơn cho người khai hải quan ngay sau khi nhận được thông báo tách vận đơn. Người khai hải quan sử dụng số vận đơn nhánh đã được phản hồi để thực hiện khai tại ô này. (3) Trường hợp hàng hóa nhập khẩu không có vận đơn, người khai hải quan phải thông báo thông tin về hàng hóa theo các chỉ tiêu thông tin quy định tại mẫu số 13 Phụ lục này thông qua Hệ thống xử lý dữ liệu điện tử hải quan. Hệ thống tự động cấp số quản lý hàng hóa cho lô hàng nhập khẩu để khai tại ô này."
+  },
+  {
+    "id": "1.27",
+    "ordinal": 27,
+    "labelVi": "Số lượng",
+    "labelEn": "Package quantity",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Tổng số kiện và mã loại kiện; không phải số lượng thương mại của dòng hàng.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Total packages and package-type code; not item commercial quantity.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Tổng số kiện và mã loại kiện; không phải số lượng thương mại của dòng hàng.",
+        "en": "Total packages and package-type code; not item commercial quantity.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Nguồn yêu cầu số kiện nguyên và mã loại kiện; không thay mã loại kiện bằng đơn vị thương mại của dòng hàng.",
+        "en": "The source requires integer packages and a package-type code, distinct from the goods-line commercial unit.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "source_proposal",
+      "aicdKeys": [
+        "packageCount"
+      ],
+      "noteVi": "Chỉ có đề xuất tổng số kiện; chưa có mã loại kiện hoặc cấu trúc đủ 2 ô của VNACCS.",
+      "noteEn": "Only package-count proposals exist; no package-type code or complete two-subfield VNACCS structure."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          144
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.27",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập tổng số lượng kiện hàng hóa (căn cứ vào hóa đơn thương mại, phiếu đóng gói, vận đơn,...) Lưu ý: - Không nhập phần thập phân; - Nhập là “1” đối với hàng hóa không thể thể hiện bằng đơn vị tính (kiện, thùng,...). Ô 2: Nhập mã đơn vị tính Ví dụ: CS: thùng, BX: hộp,.... (Tham khảo bảng “Mã loại kiện” trên website Hải quan: www.customs.gov.vn)"
+  },
+  {
+    "id": "1.28",
+    "ordinal": 28,
+    "labelVi": "Tổng trọng lượng hàng (Gross)",
+    "labelEn": "Total gross weight",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Gồm trọng lượng và mã đơn vị; giới hạn số phụ thuộc phương thức vận chuyển.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Weight plus unit code; numeric limits depend on transport mode.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Gồm trọng lượng và mã đơn vị; giới hạn số phụ thuộc phương thức vận chuyển.",
+        "en": "Weight plus unit code; numeric limits depend on transport mode.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu trị số, mã đơn vị và độ chính xác theo phương thức; AICD chưa thực thi phép đổi đơn vị VNACCS.",
+        "en": "Reconcile value, unit code and mode-specific precision; AICD does not implement VNACCS unit conversion.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "source_proposal",
+      "aicdKeys": [
+        "grossWeight"
+      ],
+      "noteVi": "Có đề xuất trọng lượng cả bì theo kg; chưa có ô mã đơn vị chính thức, phép đổi hoặc giới hạn theo phương thức.",
+      "noteEn": "Gross-weight proposals use kg; no official unit-code subfield, conversion or transport-mode precision rules."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          144,
+          145
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.28",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập tổng trọng lượng hàng (căn cứ vào phiếu đóng gói, hóa đơn thương mại hoặc chứng từ vận chuyển) Lưu ý: - Trường hợp tại chỉ tiêu thông tin “Mã phương thức vận chuyển” người khai chọn mã “1”: có thể nhập 08 ký tự cho phần nguyên và 01 ký tự cho phần thập phân. Nếu vượt quá 01 ký tự phần thập phân thì nhập tổng trọng lượng chính xác vào ô “Phần ghi chú”. - Đối với các phương thức vận chuyển khác: có thể nhập 06 ký tự cho phần nguyên và 03 ký tự cho phần thập phân. - Trường hợp mã của tổng trọng lượng hàng là “LBR” (pound), hệ thống sẽ tự động chuyển đổi sang KGM (kilogram). - Không phải nhập ô này trong trường hợp tại chỉ tiêu thông tin “Mã phương thức vận chuyển” người khai chọn mã “9”. Ô 2: Nhập mã đơn vị tính của tổng trọng lượng hàng theo chuẩn UN/ECE Ví dụ: KGM: kilogram TNE: tấn LBR: pound (Tham khảo bảng “Mã đơn vị tính” trên website Hải quan: www.customs.gov.vn) - Trường hợp nhập mã đơn vị tính khác LBR, xuất ra mã trọng lượng đơn vị tính. - Trường hợp nhập là “LBR” (pound), xuất ra KGM."
+  },
+  {
+    "id": "1.29",
+    "ordinal": 29,
+    "labelVi": "Mã địa điểm lưu kho hàng chờ thông quan dự kiến",
+    "labelEn": "Expected customs-clearance storage location code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Địa điểm lưu giữ hàng khi khai báo; cần bảng địa điểm hiện hành.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Location holding goods at declaration; requires the current location-code table.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Địa điểm lưu giữ hàng khi khai báo; cần bảng địa điểm hiện hành.",
+        "en": "Location holding goods at declaration; requires the current location-code table.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra mã địa điểm hiện hành và sự phù hợp với hàng thực tế đang lưu giữ.",
+        "en": "Verify the current location code and consistency with actual storage.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          145
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.29",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Nhập mã địa điểm nơi lưu hàng hóa khi khai báo nhập khẩu. (Tham khảo bảng mã “Địa điểm lưu kho hàng chờ thông quan dự kiến, địa điểm trung chuyển cho vận chuyển bảo thuế, địa điểm đích cho vận chuyển bảo thuế” trên website Hải quan: www.customs.gov.vn) Ví dụ 1: Doanh nghiệp A đăng ký tờ khai hàng hóa nhập khẩu tại Chi cục Hải quan cửa khẩu Cảng Hải Phòng khu vực I (mã Chi cục Hải quan là 03 CC), hàng hóa hiện đang lưu giữ tại Kho bãi Tân Cảng Hải Phòng (theo thông báo hàng đến) thì khai mã của Kho bãi Tân Cảng Hải Phòng (03CCS03). Ví dụ 2: Doanh nghiệp B đăng ký tờ khai hàng hóa nhập khẩu tại Chi cục Hải quan Bắc Thăng Long (mã Chi cục Hải quan là 01NV), hàng hóa hiện đang lưu giữ tại Bãi hàng hóa nhập khẩu Tân Thanh Lạng Sơn (theo thông báo hàng đến) thì khai mã của Bãi hàng hóa nhập khẩu Tân Thanh (15E4G02)."
+  },
+  {
+    "id": "1.30",
+    "ordinal": 30,
+    "labelVi": "Ký hiệu và số hiệu",
+    "labelEn": "Marks and numbers",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Ký mã hiệu bao bì/kiện từ chứng từ hoặc kiểm tra thực tế.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Package marks and numbers from documents or physical inspection.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Ký mã hiệu bao bì/kiện từ chứng từ hoặc kiểm tra thực tế.",
+        "en": "Package marks and numbers from documents or physical inspection.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu ký mã hiệu với kiện/chứng từ; kiểm tra giới hạn trường và nội dung chuyển từ ghi chú nếu áp dụng.",
+        "en": "Match marks to packages/documents; check field length and applicable remarks overflow.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          145
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.30",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập ký hiệu và số hiệu của bao bì đóng gói hàng hóa (thể hiện trên kiện, thùng,...)."
+  },
+  {
+    "id": "1.31",
+    "ordinal": 31,
+    "labelVi": "Phương tiện vận chuyển",
+    "labelEn": "Means of transport",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Có hô hiệu và tên tàu/chuỗi chuyến bay theo phương thức; tên tàu riêng chưa đủ.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Includes call sign and vessel/flight formatting according to mode; vessel name alone is incomplete.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Có hô hiệu và tên tàu/chuỗi chuyến bay theo phương thức; tên tàu riêng chưa đủ.",
+        "en": "Includes call sign and vessel/flight formatting according to mode; vessel name alone is incomplete.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu hô hiệu, tên tàu hoặc định dạng chuyến bay/xe/tàu theo phương thức; không tự ghép chuỗi chưa xác minh.",
+        "en": "Check call sign, vessel or mode-specific flight/vehicle/train format; do not create an unverified combined string.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "source_proposal",
+      "aicdKeys": [
+        "vessel",
+        "voyage"
+      ],
+      "noteVi": "Có tên tàu và số chuyến nguồn; chưa có hô hiệu hay bộ định dạng chuyến bay/xe/tàu chính thức.",
+      "noteEn": "Source vessel and voyage fields exist; no call-sign field or official flight/vehicle/train formatter."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          145,
+          146
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.31",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập hô hiệu (call sign) trong trường hợp vận chuyển bằng đường biển/sông. Nếu thông tin cơ bản của tàu chưa được đăng kí vào hệ thống thì nhập “9999”. Ô 2: Nhập tên phương tiện vận chuyển (căn cứ vào chứng từ vận tải: B/L, AWB,...) (1) Nhập tên tàu trong trường hợp vận chuyển bằng đường biển/sông. (2) Nếu không nhập liệu, hệ thống sẽ tự động xuất ra tên tàu đã đăng kí trên hệ thống dựa trên hô hiệu đã nhập ở ô 1. (3) Trường hợp vận chuyển hàng không: nhập mã hãng hàng không (02 kí tự), số chuyến bay (04 kí tự), gạch chéo (01 kí tự), ngày/tháng (ngày: 02 kí tự, tháng 03 kí tự viết tắt của các tháng bằng tiếng Anh). Ví dụ: AB0001/01JAN (4) Trường hợp vận chuyển đường bộ: nhập số xe tải. (5) Trường hợp vận chuyển đường sắt: nhập số tàu. (6) Không phải nhập trong trường hợp tại chỉ tiêu “Mã hiệu phương thức vận chuyển”, người khai chọn mã “9” và trong trường hợp hệ thống hỗ trợ tự động xuất ra tên phương tiện vận chuyển."
+  },
+  {
+    "id": "1.32",
+    "ordinal": 32,
+    "labelVi": "Ngày hàng đến",
+    "labelEn": "Arrival date",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Ngày dự kiến đến cửa khẩu theo vận tải hoặc thông báo hàng đến.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Expected border arrival date from transport evidence or arrival notice.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Ngày dự kiến đến cửa khẩu theo vận tải hoặc thông báo hàng đến.",
+        "en": "Expected border arrival date from transport evidence or arrival notice.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra ngày dự kiến đến trên thông báo/vận đơn; không dùng ngày hóa đơn.",
+        "en": "Verify expected arrival against transport/arrival evidence, not invoice date.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          146
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.32",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập ngày dự kiến hàng hóa đến cửa khẩu theo chứng từ vận tải hoặc Thông báo hàng đến (Arrival notice) của người vận chuyển gửi cho người nhận hàng."
+  },
+  {
+    "id": "1.33",
+    "ordinal": 33,
+    "labelVi": "Địa điểm dỡ hàng",
+    "labelEn": "Unloading location",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Mã và tên địa điểm; có ngoại lệ theo phương thức và loại giao dịch.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Location code and name, with transport-mode and transaction exceptions.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Mã và tên địa điểm; có ngoại lệ theo phương thức và loại giao dịch.",
+        "en": "Location code and name, with transport-mode and transaction exceptions.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu mã và tên địa điểm dỡ; các mã dự phòng và ngoại lệ cần người có chuyên môn xác nhận.",
+        "en": "Match unloading code and name; fallback codes and exceptions require qualified confirmation.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "source_proposal",
+      "aicdKeys": [
+        "portOfDischarge"
+      ],
+      "noteVi": "Có tên cảng dỡ từ nguồn; chưa đối chiếu mã địa điểm hiện hành hoặc ngoại lệ khai báo.",
+      "noteEn": "Source unloading-port names exist; current location-code mapping and filing exceptions are not implemented."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          146
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.33",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập mã địa điểm dỡ hàng: (1) Nhập mã cảng dỡ hàng (đường không, đường biển) theo vận đơn (B/L, AWB,...); (2) Nhập mã ga (đường sắt); (3) Nhập mã cửa khẩu (đường bộ, đường sông); (4) Bắt buộc nhập liệu trừ trường hợp tại chỉ tiêu “Mã hiệu phương thức vận chuyển” người khai chọn mã “9”. (Tham khảo các bảng mã “Cảng-ICD trong nước”, “Cửa khẩu đường bộ - Ga đường sắt” và “Sân bay trong nước” trên website Hải quan: www.customs.gov.vn) Ô 2: Nhập tên địa điểm dỡ hàng: hệ thống hỗ trợ xuất ra tên địa điểm dỡ hàng dựa trên mã địa điểm. Trường hợp không có mã địa điểm dỡ hàng thì phải nhập tên địa điểm dỡ hàng. Lưu ý: - Trường hợp nhập khẩu tại chỗ: nhập tên kho hàng của công ty nhập khẩu. - Không phải nhập trong các trường hợp hàng hóa nhập khẩu từ các khu phi thuế quan, từ kho ngoại quan."
+  },
+  {
+    "id": "1.34",
+    "ordinal": 34,
+    "labelVi": "Địa điểm xếp hàng",
+    "labelEn": "Loading location",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Mã và tên địa điểm xếp hàng; xác minh mã nước/địa điểm và ngoại lệ.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Loading-location code and name; verify country/location codes and exceptions.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Mã và tên địa điểm xếp hàng; xác minh mã nước/địa điểm và ngoại lệ.",
+        "en": "Loading-location code and name; verify country/location codes and exceptions.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu mã và tên địa điểm xếp; kiểm tra nước gửi hàng và quy tắc trường hợp trung gian.",
+        "en": "Match loading code and name; verify consignment country and intermediate-routing rules.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "source_proposal",
+      "aicdKeys": [
+        "portOfLoading"
+      ],
+      "noteVi": "Có tên cảng xếp từ nguồn; chưa đối chiếu mã địa điểm hiện hành hoặc ngoại lệ khai báo.",
+      "noteEn": "Source loading-port names exist; current location-code mapping and filing exceptions are not implemented."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          146,
+          147
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.34",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập mã địa điểm xếp hàng theo UN LOCODE. (Tham khảo các bảng mã “Địa điểm nước ngoài”, “Sân bay nước ngoài” trên website Hải quan: www.customs.gov.vn). Lưu ý: - Trường hợp không có mã trong các bảng mã nêu trên: nhập “Mã nước (02 kí tự) + “ZZZ”. - Trường hợp nhập khẩu tại chỗ: nhập “VNZZZ”. Trừ trường hợp hàng hóa từ các khu phi thuế quan gửi kho ngoại quan; hàng hóa từ kho ngoại quan nhập khẩu vào nội địa: nhập “ZZZZZ”. Ô 2: Nhập tên địa điểm xếp hàng lên phương tiện vận tải: Lưu ý: - Không bắt buộc phải nhập trong trường hợp hệ thống hỗ trợ tự động. - Trường hợp vận chuyển đường sắt, nhập tên ga. -Trường hợp nhập khẩu tại chỗ, hàng từ nội địa vào kho ngoại quan: nhập tên kho hàng của công ty xuất khẩu. - Trường hợp hàng từ các khu phi thuế quan gửi kho ngoại quan: nhập tên khu phi thuế quan. - Trường hợp hàng hóa từ kho ngoại quan nhập khẩu vào nội địa: nhập tên kho ngoại quan."
+  },
+  {
+    "id": "1.35",
+    "ordinal": 35,
+    "labelVi": "Số lượng container",
+    "labelEn": "Container count",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi sử dụng container và theo trường hợp nguồn; danh sách số container/HYS là dữ liệu khác.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For applicable container transport; the container identifier list/HYS attachment is separate.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi sử dụng container và theo trường hợp nguồn; danh sách số container/HYS là dữ liệu khác.",
+        "en": "For applicable container transport; the container identifier list/HYS attachment is separate.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Xác nhận số container hoặc trường hợp không khai; danh sách số container phải theo nghiệp vụ/định dạng HYS riêng.",
+        "en": "Confirm container count or non-entry exception; container identifiers require a separate HYS workflow/format.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Trường container của mô hình dữ kiện chứa số hiệu, không phải số lượng; chưa thực hiện nghiệp vụ HYS. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. The original container fact holds identifiers, not a count; HYS is not implemented. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          147
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.35",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập số lượng container: (1) Hệ thống tự động xuất ra số lượng container nếu đã được đăng kí trước đó. (2) Trường hợp vận chuyển hàng hóa bằng đường không, phương thức khác không sử dụng container, hàng nhập khẩu đóng chung container từ kho CFS thì không phải nhập. (3) Người khai hải quan sử dụng nghiệp vụ HYS để khai danh sách container (số hiệu, ký hiệu, số seal). Lưu ý: danh sách container khai bằng file excel theo định dạng của cơ quan Hải quan."
+  },
+  {
+    "id": "1.36",
+    "ordinal": 36,
+    "labelVi": "Mã kết quả kiểm tra nội dung",
+    "labelEn": "Pre-declaration content inspection result code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi người khai xem hàng trước đăng ký; phản ánh kết quả thực tế.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. When the declarant inspects goods before registration; reflects actual findings.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi người khai xem hàng trước đăng ký; phản ánh kết quả thực tế.",
+        "en": "When the declarant inspects goods before registration; reflects actual findings.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Chỉ phản ánh kết quả xem hàng thực tế trước đăng ký; không tự suy ra từ tình trạng OCR.",
+        "en": "Reflect actual pre-registration inspection only, not OCR status.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          147
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.36",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Trường hợp người khai hải quan xem hàng trước khi đăng kí tờ khai, nhập một trong các mã sau: “A”: không có bất thường “B”: có bất thường “C”: cần tham vấn ý kiến cơ quan Hải quan Lưu ý: nhập mã “C” khi người khai hải quan có yêu cầu cơ quan hải quan tiến hành kiểm tra thực tế lô hàng."
+  },
+  {
+    "id": "1.37",
+    "ordinal": 37,
+    "labelVi": "Mã văn bản pháp quy khác",
+    "labelEn": "Other regulatory document code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi thuộc quản lý chuyên ngành; mã văn bản khác với số giấy phép.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For applicable specialized controls; a regulatory code differs from the permit number.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi thuộc quản lý chuyên ngành; mã văn bản khác với số giấy phép.",
+        "en": "For applicable specialized controls; a regulatory code differs from the permit number.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu đối tượng quản lý và mã văn bản pháp quy; số giấy phép thuộc chỉ tiêu khác.",
+        "en": "Check regulated scope and regulatory-document code; permit number belongs to a different indicator.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          147,
+          148
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.37",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Nhập mã văn bản pháp luật quy định về quản lý mặt hàng nhập khẩu khai trên tờ khai như: giấy phép nhập khẩu, kết quả kiểm dịch, kiểm tra an toàn thực phẩm, kiểm tra chất lượng... (Tham khảo mã văn bản pháp quy tại bảng “Mã văn bản pháp quy khác và phân loại giấy phép” trên website Hải quan: www.customs.gov.vn) Lưu ý: - Đối với hàng hóa chịu sự quản lý của các cơ quan quản lý chuyên ngành bắt buộc phải nhập ô này. - Có thể nhập được tối đa 05 mã (tương ứng với 05 ô) nhưng không được trùng nhau."
+  },
+  {
+    "id": "1.38",
+    "ordinal": 38,
+    "labelVi": "Giấy phép nhập khẩu",
+    "labelEn": "Import permit",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi giấy phép, kiểm tra, danh mục hoặc văn bản có liên quan; TT121 mở rộng hướng dẫn và các mã nêu trong nguồn.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For applicable permits, inspections, lists or decisions; TT121 expands the instructions and referenced codes.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi giấy phép, kiểm tra, danh mục hoặc văn bản có liên quan; TT121 mở rộng hướng dẫn và các mã nêu trong nguồn.",
+        "en": "For applicable permits, inspections, lists or decisions; TT121 expands the instructions and referenced codes.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra mã phân loại, số/ngày và căn cứ của giấy phép; TT121 nêu tối đa 5 loại, các ví dụ không phải bảng mã đầy đủ.",
+        "en": "Check category, reference/date and permit basis; TT121 permits at most five types and its examples are not a complete code table.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          148
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.38",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [
+        {
+          "sourceId": "tt121-2025-gazette",
+          "section": "Phụ lục I · mục 2(a) · Mẫu số 01 · 1.38",
+          "effectiveFrom": "2026-02-01",
+          "pages": [
+            134,
+            135,
+            136
+          ]
+        }
+      ],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Nhập trong các trường hợp: hàng hóa phải có giấy phép nhập khẩu, kết quả kiểm tra chuyên ngành trước khi thông quan; hàng hóa nhập khẩu thuộc Danh mục trừ lùi; Danh mục đầu tư miễn thuế đăng ký ngoài hệ thống; Danh mục thiết bị đồng bộ; Danh mục hàng hóa nhập khẩu ở dạng nguyên chiếc tháo rời phải nhập nhiều lần, nhiều chuyến; Danh mục vật tư thiết bị nhập khẩu để phục vụ đóng mới, sửa chữa, bảo dưỡng đầu máy toa xe; Danh mục vật tư thiết bị nhập khẩu phục vụ sản xuất cơ khí trọng điểm; Văn bản xác định trước trị giá, văn bản xác định trước mã và văn bản xác định xuất xứ; số tiếp nhận hợp đồng/phụ lục hợp đồng gia công. Ô 1: Nhập mã phân loại giấy phép nhập khẩu. (tham khảo thông tin mã giấy phép nhập khẩu tại bảng “Mã văn bản pháp quy khác và phân loại giấy phép” trên website Hải quan: www.customs.gov.vn) Ô 2: Nhập số giấy phép nhập khẩu hoặc số văn bản thông báo kết quả kiểm tra chuyên ngành hoặc số Danh mục trừ lùi hoặc số văn bản xác định trước mã số/trị giá/xuất xứ (nếu có) hoặc số tiếp nhận hợp đồng, phụ lục hợp đồng gia công do hệ thống phản hồi khi người khai hải quan thực hiện thông báo hợp đồng, phụ lục hợp đồng gia công. (nhập tối đa 05 loại giấy phép)",
+    "amendmentInstructionsVi": "Nhập trong các trường hợp: hàng hóa phải có giấy phép nhập khẩu, kết quả kiểm tra chuyên ngành trước khi thông quan; hàng hóa nhập khẩu thuộc Danh mục trừ lùi; Danh mục đầu tư miễn thuế đăng ký ngoài hệ thống; Danh mục thiết bị đồng bộ; Danh mục hàng hóa nhập khẩu ở dạng nguyên chiếc tháo rời phải nhập nhiều lần, nhiều chuyến; Danh mục vật tư thiết bị nhập khẩu để phục vụ đóng mới, sửa chữa, bảo dưỡng đầu máy toa xe; Danh mục vật tư thiết bị nhập khẩu phục vụ sản xuất cơ khí trọng điểm; Văn bản xác định trước trị giá, văn bản xác định trước mã số và văn bản xác định xuất xứ; số tiếp nhận hợp đồng/Phụ lục hợp đồng gia công. Giấy phép nhập khẩu, Thông báo miễn thuế đối với hàng hóa nhập khẩu phục vụ trực tiếp cho ANQP.\nÔ 1: Nhập mã phân loại giấy phép nhập khẩu. Nhập mã xác định trước, mã danh mục trừ lùi (nếu có); Nhập “QPGP” đối với Giấy phép nhập khẩu, nhập “MTTB” đối với Thông báo miễn thuế hàng hóa nhập khẩu phục vụ trực tiếp cho ANQP.\n(tham khảo thông tin mã giấy phép nhập khẩu tại bảng “Mã văn bản pháp quy khác và phân loại giấy phép” trên website của Cục Hải quan: www.customs.gov.vn)\nÔ 2: Nhập số giấy phép nhập khẩu hoặc số văn bản thông báo kết quả kiểm tra chuyên ngành hoặc số Danh mục trừ lùi hoặc số văn bản xác định trước mã số/trị giá/xuất xứ (nếu có) hoặc số tiếp nhận hợp đồng, Phụ lục hợp đồng gia công do hệ thống phản hồi khi người khai hải quan thực hiện thông báo hợp đồng, Phụ lục hợp đồng gia công. Nhập số, ngày tháng năm của Giấy phép nhập khẩu, nhập số, ngày tháng năm của Thông báo miễn thuế đối với hàng hóa nhập khẩu phục vụ trực tiếp cho ANQP (nhập tối đa 05 loại giấy phép).\nVí dụ: \n+ Giấy phép nhập khẩu số 06/GP-TC ngày 17/3/2025 của Cục Tài chính-Bộ Quốc Phòng, khai như sau:\nQPGP 06GP17032025\n\n+ Thông báo miễn thuế số 08/TB-CHQ ngày 18/6/2025 của Cục Hải quan, khai như sau:\nMTTB 08TB18062025."
+  },
+  {
+    "id": "1.39",
+    "ordinal": 39,
+    "labelVi": "Phân loại hình thức hóa đơn",
+    "labelEn": "Invoice form classification",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Nguồn 2018 phân loại hóa đơn/chứng từ; phải đối chiếu hướng dẫn triển khai mới hơn trước khi áp dụng.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. The baseline classifies invoice/equivalent documents; later implementation guidance must be reconciled first.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Nguồn 2018 phân loại hóa đơn/chứng từ; phải đối chiếu hướng dẫn triển khai mới hơn trước khi áp dụng.",
+        "en": "The baseline classifies invoice/equivalent documents; later implementation guidance must be reconciled first.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Không kích hoạt lựa chọn mã từ nguồn 2018 cho đến khi đối chiếu hướng dẫn triển khai mới hơn.",
+        "en": "Do not activate baseline code choices until later implementation guidance has been reconciled.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          148
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.39",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập vào một trong các mã phân loại hình thức hóa đơn sau đây: “A”: hóa đơn thương mại “B”: chứng từ có giá trị tương đương hóa đơn thương mại trong trường hợp người mua phải thanh toán cho người bán hoặc Bảng kê hóa đơn thương mại theo mẫu số 02/BKHĐ/GSQL Phụ lục V ban hành kèm Thông tư này hoặc không có hóa đơn thương mại “D”: hóa đơn điện tử (trong trường hợp đăng kí hóa đơn điện tử trên VNACCS) Lưu ý: Trong trường hợp lập bảng kê hóa đơn theo mẫu số 02/BKHĐ/GSQL Phụ lục V thì chọn mã “B”"
+  },
+  {
+    "id": "1.40",
+    "ordinal": 40,
+    "labelVi": "Số tiếp nhận hóa đơn điện tử",
+    "labelEn": "Electronic invoice acceptance number",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Theo nguồn 2018 chỉ nhập khi loại hóa đơn D; hướng dẫn mới hơn chưa được đối chiếu đầy đủ.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Baseline permits entry only for invoice category D; later guidance is not fully reconciled.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Theo nguồn 2018 chỉ nhập khi loại hóa đơn D; hướng dẫn mới hơn chưa được đối chiếu đầy đủ.",
+        "en": "Baseline permits entry only for invoice category D; later guidance is not fully reconciled.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Không tự tạo số tiếp nhận; xác nhận điều kiện loại hóa đơn và hướng dẫn triển khai mới hơn.",
+        "en": "Never generate an acceptance number; confirm invoice-category conditions and later implementation guidance.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          148
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.40",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "(1) Nếu Phân loại hình thức hóa đơn là \"D\" thì bắt buộc phải nhập số tiếp nhận hóa đơn điện tử. (2) Nếu Phân loại hình thức hóa đơn không phải là \"D\" thì không thể nhập được chỉ tiêu thông tin này."
+  },
+  {
+    "id": "1.41",
+    "ordinal": 41,
+    "labelVi": "Số hóa đơn",
+    "labelEn": "Invoice number",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Theo hóa đơn/chứng từ thay thế phù hợp; có trường hợp không có hóa đơn.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Use the applicable invoice/equivalent document number; no-invoice cases exist.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Theo hóa đơn/chứng từ thay thế phù hợp; có trường hợp không có hóa đơn.",
+        "en": "Use the applicable invoice/equivalent document number; no-invoice cases exist.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Giữ đúng số chứng từ và phân loại hóa đơn tương ứng; xử lý trường hợp không có hóa đơn theo căn cứ.",
+        "en": "Preserve the source identifier and corresponding invoice category; handle no-invoice cases from a verified basis.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "source_proposal",
+      "aicdKeys": [
+        "invoiceNumber"
+      ],
+      "noteVi": "Có số hóa đơn đề xuất và duyệt nguồn; chưa bao phủ mọi chứng từ thay thế hoặc trường hợp không hóa đơn.",
+      "noteEn": "Invoice-number proposals and source review exist; equivalent-document and no-invoice scenarios are not fully covered."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          148,
+          149
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.41",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập vào số hóa đơn thương mại hoặc số của Chứng từ có giá trị tương đương hóa đơn thương mại trong trường hợp người mua phải thanh toán cho người bán hoặc Bảng kê hóa đơn thương mại theo mẫu số 02/BKHĐ/GSQL. Phụ lục V ban hành kèm Thông tư này. Trường hợp không có hóa đơn thương mại thì người khai hải quan không phải nhập liệu vào ô này. Trường hợp hàng hóa gửi kho ngoại quan nhập vào nội địa nhiều lần thì nhập số hóa đơn thương mại do người bán nước ngoài phát hành khi nhập khẩu vào nội địa."
+  },
+  {
+    "id": "1.42",
+    "ordinal": 42,
+    "labelVi": "Ngày phát hành",
+    "labelEn": "Issue date",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Ngày hóa đơn/chứng từ; nguồn 2018 có quy tắc ngày IDA khi không có hóa đơn.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Invoice/equivalent-document date; the baseline has an IDA-date rule for no-invoice cases.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Ngày hóa đơn/chứng từ; nguồn 2018 có quy tắc ngày IDA khi không có hóa đơn.",
+        "en": "Invoice/equivalent-document date; the baseline has an IDA-date rule for no-invoice cases.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra ngày hóa đơn/chứng từ và định dạng yêu cầu; trường hợp không hóa đơn có quy tắc riêng.",
+        "en": "Check document date and required format; no-invoice cases have a separate rule.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "source_proposal",
+      "aicdKeys": [
+        "invoiceDate"
+      ],
+      "noteVi": "Có ngày hóa đơn đề xuất; ngày mơ hồ cần duyệt và chưa có ánh xạ định dạng ngày VNACCS đã xác minh.",
+      "noteEn": "Invoice-date proposals exist; ambiguous dates require review and verified VNACCS date-format mapping is absent."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          149
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.42",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập vào ngày phát hành hóa đơn thương mại hoặc ngày lập Chứng từ có giá trị tương đương hóa đơn thương mại trong trường hợp người mua phải thanh toán cho người bán hoặc ngày lập Bảng kê hóa đơn thương mại theo mẫu số 02/BKHĐ/GSQL Phụ lục V ban hành kèm Thông tư này. (Ngày/tháng/năm). Lưu ý: Trường hợp không có hóa đơn thương mại thì nhập ngày thực hiện nghiệp vụ IDA."
+  },
+  {
+    "id": "1.43",
+    "ordinal": 43,
+    "labelVi": "Phương thức thanh toán",
+    "labelEn": "Payment method",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Theo thỏa thuận giao dịch và mã được chấp nhận; hình thức hỗn hợp cần giải trình.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Use the transaction terms and accepted code; mixed methods require explanation.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Theo thỏa thuận giao dịch và mã được chấp nhận; hình thức hỗn hợp cần giải trình.",
+        "en": "Use the transaction terms and accepted code; mixed methods require explanation.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Xác nhận mã thanh toán và chi tiết cho hình thức hỗn hợp/khác; chưa kích hoạt danh sách mã cũ.",
+        "en": "Confirm payment code and details for mixed/other methods; the old code list is not activated.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "valuation_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          149
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.43",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập vào một trong các mã phương thức thanh toán sau: “BIENMAU”: Biên mậu “DA”: Nhờ thu chấp nhận chứng từ “CAD”: Trả tiền lấy chứng từ “CANTRU”: Cấn trừ, bù trừ “CASH”: Tiền mặt “CHEQUE”: Séc “DP”: Nhờ thu kèm chứng từ “GV”: Góp vốn “H-D-H”: Hàng đổi hàng “H-T-N”: Hàng trả nợ “HPH”: Hối phiếu “KHONGTT”: Không thanh toán “LC”: Tín dụng thư “LDDT”: Liên doanh đầu tư “OA”: Mở tài khoản thanh toán “TTR”: Chuyển tiền bồi hoàn bằng điện. “KC”: Khác (bao gồm cả thanh toán bằng hình thức TT) Lưu ý: - Trường hợp thanh toán các hình thức khác hoặc kết hợp nhiều hình thức thì nhập mã “KC” đồng thời nhập phương thức thanh toán thực tế vào ô “Chi tiết khai trị giá”; - Trường hợp người khai hải quan là chủ hàng hóa gửi kho ngoại quan thì phương thức thanh toán khai “Khong TT”."
+  },
+  {
+    "id": "1.44",
+    "ordinal": 44,
+    "labelVi": "Tổng trị giá hóa đơn",
+    "labelEn": "Total invoice value",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Gồm phân loại giá, điều kiện giao hàng, đồng tiền và trị giá; TT121 bổ sung DPU và tình huống đặc biệt.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Includes price category, delivery terms, currency and value; TT121 adds DPU and special-case instructions.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Gồm phân loại giá, điều kiện giao hàng, đồng tiền và trị giá; TT121 bổ sung DPU và tình huống đặc biệt.",
+        "en": "Includes price category, delivery terms, currency and value; TT121 adds DPU and special-case instructions.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra đủ 4 ô con, làm tròn theo đồng tiền và FOC/không hóa đơn; DPU có chỉ dẫn DAT khi hệ thống chưa có mã.",
+        "en": "Check all four subfields, currency precision and FOC/no-invoice conditions; DPU has a DAT fallback instruction when the system lacks DPU.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "valuation_reviewer",
+    "coverage": {
+      "status": "source_proposal",
+      "aicdKeys": [
+        "invoiceTotal",
+        "currency",
+        "incoterm"
+      ],
+      "noteVi": "Có tổng tiền, đồng tiền và Incoterm; thiếu mã phân loại giá và quy tắc 4 ô theo tình huống, không tự tính trị giá hải quan.",
+      "noteEn": "Invoice total, currency and Incoterm exist; price category and scenario rules across all four subfields are missing. Customs value is not derived."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          149,
+          150,
+          151,
+          152
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.44",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [
+        {
+          "sourceId": "tt121-2025-gazette",
+          "section": "Phụ lục I · mục 2(a) · Mẫu số 01 · 1.44",
+          "effectiveFrom": "2026-02-01",
+          "pages": [
+            136,
+            137,
+            138,
+            139,
+            140
+          ]
+        }
+      ],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập mã phân loại giá hóa đơn/ chứng từ thay thế hóa đơn: “A”: Giá hóa đơn cho hàng hóa phải trả tiền “B”: Giá hóa đơn cho hàng hóa không phải trả tiền (FOC/hàng khuyến mại) “C”: Giá hóa đơn cho hàng hóa bao gồm phải trả tiền và không phải trả tiền “D”: Các trường hợp khác (bao gồm cả trường hợp không có hóa đơn thương mại) Ô 2: Nhập một trong các điều kiện giao hàng theo Incoterms: (1) CIF (2) CIP (3) FOB (4) FCA (5) FAS (6) EXW (7) C&F (CNF) (8) CFR (9) CPT (10) DDP (11) DAP (12) DAT (13) C&I (14) DAF (15) DDU (16) DES (17) DEQ Trường hợp nhập khẩu hàng hóa theo loại hình gia công, người khai sử dụng hóa đơn bên thứ ba mà điều kiện giá hóa đơn không phù hợp với điều kiện giao hàng trên hợp đồng hoặc trường hợp không có hóa đơn thương mại thì khai ô “Điều kiện giá hóa đơn” là CIF. Ô 3: Nhập mã đơn vị tiền tệ của hóa đơn theo chuẩn UN/LOCODE (tham khảo bảng mã đơn vị tiền tệ trên website Hải quan: www.customs.gov.vn) Ô 4: Tổng trị giá hóa đơn: (1) Nhập tổng trị giá trên hóa đơn. (2) Trường hợp lô hàng gồm nhiều hóa đơn có chung vận đơn, hồ sơ lô hàng có hóa đơn tổng của các hóa đơn đó hoặc được lập chứng từ thay thế hóa đơn theo hướng dẫn thì nhập tổng trị giá ghi trên hóa đơn tổng, đồng thời trước khi đăng ký tờ khai, khai chi tiết danh sách hóa đơn, chứng từ thay thế hóa đơn bằng nghiệp vụ HYS. (3) Trường hợp điều kiện giao hàng là CIF, CFR, DDU, DDP, DAP, DAF.. nhưng trên hóa đơn phần tổng trị giá tách riêng theo từng mục, gồm tổng Trị giá hàng hóa theo điều kiện EXW hoặc FOB, phí vận chuyển, phí đóng gói... ; phần chi tiết từng mặt hàng ghi trị giá hóa đơn của từng mặt hàng theo điều kiện EXW hoặc FOB (chưa có phí vận chuyển, phí đóng gói...), nếu phân bổ các khoản phí vận chuyển, phí đóng gói...theo tỷ lệ về trị giá thì khai như sau: - Ô “Điều kiện giao hàng” khai EXW hoặc FOB tương ứng với tổng trị giá hóa đơn (chưa cộng trừ các khoản điều chỉnh) - Ô “Tổng trị giá hóa đơn” khai tổng trị giá tương ứng điều kiện EXW hoặc FOB. - Khai phí vận chuyển vào ô “Phí vận chuyển”; - Khai phí đóng gói, các khoản điều chỉnh khác (nếu có) vào ô các khoản điều chỉnh; - Khai điều kiện giao hàng vào ô “chi tiết khai trị giá”; - Ô “Tổng hệ số phân bổ trị giá” khai tổng trị giá hóa đơn tương ứng điều kiện EXW hoặc FOB (chưa cộng trừ các khoản điều chỉnh) - Ô “Trị giá hóa đơn” của từng mặt hàng” khai trị giá của từng mặt hàng đó ghi trên hóa đơn (chưa cộng trừ các khoản điều chỉnh) (4) Trường hợp nhập khẩu hàng hóa giữa doanh nghiệp trong khu phi thuế quan/kho ngoại quan với doanh nghiệp nội địa: Nếu điều kiện giao hàng thuộc nhóm E, F thì: - Khai ô “Điều kiện giao hàng” là CIF; - Khai ô “Tổng trị giá hóa đơn” như hướng dẫn tại điểm (1). (5) Trường hợp hóa đơn bao gồm cả hàng phải trả tiền và hàng FOC/hàng khuyến mại: Nhập Tổng trị giá hóa đơn, đồng thời phần Detail nhập liệu như sau: - Đối với hàng trả tiền: nhập các chỉ tiêu bình thường như hướng dẫn (hệ thống vẫn hỗ trợ tự động phân bổ tính toán trị giá tính thuế); - Đối với hàng FOC/hàng khuyến mại: nhập tổng trị giá hóa đơn, đồng thời tại ô “Chi tiết khai trị giá” nêu rõ dòng hàng thứ mấy thuộc phần Detail là hàng FOC/hàng khuyến mại. + Ô “Trị giá hóa đơn”, ô “đơn giá hóa đơn”: để trống; + Ô “trị giá tính thuế”: nhập trị giá tính thuế của mặt hàng. (6) Trường hợp toàn bộ lô hàng là hàng FOC/hàng khuyến mại hoặc hàng không có hóa đơn thương mại: - Ô “Tổng trị giá hóa đơn” nhập tổng phí vận tải, bảo hiểm (nếu có) của lô hàng; - Ô “Trị giá hóa đơn”, ô “Đơn giá hóa đơn”: để trống; - Ô “Trị giá tính thuế” nhập trị giá tính thuế của mặt hàng. Lưu ý đối với trường hợp (5) và (6): Ô “Mã biểu thuế nhập khẩu”: chọn Biểu tương ứng. Nếu là đối tượng không chịu thuế thì chọn, B30, đồng thời nhập 0% tại ô “Thuế suất” và nhập mã miễn/giảm/không chịu thuế tương ứng. (7) Có thể nhập đến 04 chữ số thập phân sau dấu phẩy nếu mã đồng tiền không phải là [VND]. Nếu mã đồng tiền là [VND] thì không thể nhập các số sau dấu phẩy thập phân. Lưu ý: - Trường hợp tổng trị giá hóa đơn vượt quá giới hạn hệ thống thì thực hiện khai trên tờ khai hải quan giấy. - Trường hợp không có hóa đơn và người khai hải quan không nhập liệu vào ô “Số hóa đơn” thì không khai tiêu chí này.",
+    "amendmentInstructionsVi": "Ô 1: Nhập mã phân loại giá hóa đơn/ chứng từ thay thế hóa đơn:\n“A”: Giá hóa đơn cho hàng hóa phải trả tiền.\n“B”: Giá hóa đơn cho hàng hóa không phải trả tiền (FOC/hàng khuyến mại).\n“C”: Giá hóa đơn cho hàng hóa bao gồm phải trả tiền và không phải trả tiền.\n“D”: Các trường hợp khác (bao gồm cả trường hợp không có hóa đơn thương mại).\nÔ 2: Nhập một trong các điều kiện giao hàng theo Incoterms:\n(1) CIF\n(2) CIP\n(3) FOB\n(4) FCA\n(5) FAS\n(6) EXW\n(7) C&F (CNF)\n(8) CFR\n(9) CPT\n(10) DDP\n(11) DAP\n(12) DAT\n(13) C&I\n(14) DAF\n(15) DDU\n(16) DES\n(17) DEQ\n(18) DPU\nTrường hợp không khai được điều kiện DPU thì khai ô điều kiện giao hàng là DAT, đồng thời nhập điều kiện giao hàng DPU tại ô “Chi tiết khai trị giá”. \nTrường hợp nhập khẩu hàng hóa theo loại hình gia công, người khai sử dụng hóa đơn bên thứ ba mà điều kiện giá hóa đơn không phù hợp với điều kiện giao hàng trên hợp đồng hoặc trường hợp không có hóa đơn thương mại thì khai ô “Điều kiện giá hóa đơn” là CIF.\nÔ 3: Nhập mã đơn vị tiền tệ của hóa đơn theo chuẩn UN/LOCODE.\n(tham khảo bảng mã đơn vị tiền tệ trên website của Cục Hải quan: www.customs.gov.vn)\nÔ 4: Tổng trị giá hóa đơn:\n(1) Nhập tổng trị giá trên hóa đơn.\n(2)Trường hợp lô hàng gồm nhiều hóa đơn có chung vận đơn, hồ sơ lô hàng có hóa đơn tổng của các hóa đơn đó hoặc được lập chứng từ thay thế hóa đơn theo hướng dẫn thì nhập tổng trị giá ghi trên hóa đơn tổng, đồng thời trước khi đăng ký tờ khai, khai chi tiết danh sách hóa đơn, chứng từ thay thế hóa đơn bằng nghiệp vụ HYS.\n(3) Trường hợp điều kiện giao hàng là CIF, CFR, DDU, DDP, DAP, DAF.. nhưng trên hóa đơn phần tổng trị giá tách riêng theo từng mục, gồm tổng Trị giá hàng hóa theo điều kiện EXW hoặc FOB, phí vận chuyển, phí đóng gói… ; phần chi tiết từng mặt hàng ghi trị giá hóa đơn của từng mặt hàng theo điều kiện EXW hoặc FOB (chưa có phí vận chuyển, phí đóng gói…), nếu phân bổ các khoản phí vận chuyển, phí đóng gói…theo tỷ lệ về trị giá thì khai như sau:\n- Ô “Điều kiện giao hàng” khai EXW hoặc FOB tương ứng với tổng trị giá hóa đơn (chưa cộng trừ các khoản điều chỉnh).\n- Ô “Tổng trị giá hóa đơn” khai tổng trị giá tương ứng điều kiện EXW hoặc FOB.\n- Khai phí vận chuyển vào ô “Phí vận chuyển”.\n- Khai phí đóng gói, các khoản điều chỉnh khác (nếu có) vào ô các khoản điều chỉnh.\n- Khai điều kiện giao hàng vào ô “chi tiết khai trị giá”.\n- Ô “Tổng hệ số phân bổ trị giá” khai tổng trị giá hóa đơn tương ứng điều kiện EXW hoặc FOB (chưa cộng trừ các khoản điều chỉnh).\n- Ô “Trị giá hóa đơn” của từng mặt hàng” khai trị giá của từng mặt hàng đó ghi trên hóa đơn (chưa cộng trừ các khoản điều chỉnh) \n(4) Trường hợp nhập khẩu hàng hóa giữa doanh nghiệp trong khu phi thuế quan/kho ngoại quan với doanh nghiệp nội địa: Nếu điều kiện giao hàng thuộc nhóm E, F thì:\n- Khai ô “Điều kiện giao hàng” là CIF;\n- Khai ô “Tổng trị giá hóa đơn” như hướng dẫn tại điểm (1).\n(5) Trường hợp hóa đơn bao gồm cả hàng phải trả tiền và hàng FOC/hàng khuyến mại: Nhập Tổng trị giá hóa đơn, đồng thời phần Detail nhập liệu như sau:\n- Đối với hàng trả tiền: nhập các chỉ tiêu bình thường như hướng dẫn (hệ thống vẫn hỗ trợ tự động phân bổ tính toán trị giá tính thuế);\n- Đối với hàng FOC/hàng khuyến mại: nhập tổng trị giá hóa đơn, đồng thời tại ô “Chi tiết khai trị giá” nêu rõ dòng hàng thứ mấy thuộc phần Detail là hàng FOC/hàng khuyến mại.\n   + Ô “Trị giá hóa đơn”, ô “đơn giá hóa đơn”: để trống;\n   + Ô “trị giá tính thuế”: nhập trị giá tính thuế của mặt hàng. \n(6) Trường hợp toàn bộ lô hàng là hàng FOC/hàng khuyến mại hoặc hàng không có hóa đơn thương mại:\n- Ô “Tổng trị giá hóa đơn” nhập tổng phí vận tải, bảo hiểm (nếu có) của lô hàng;\n- Ô “Trị giá hóa đơn”, ô “Đơn giá hóa đơn”: để trống;\n- Ô “Trị giá tính thuế” nhập trị giá tính thuế của mặt hàng.\nLưu ý đối với trường hợp (5) và (6): Ô “Mã biểu thuế nhập khẩu”:chọn Biểu tương ứng. Nếu là đối tượng không chịu thuế thì chọn B30, đồng thời nhập 0% tại ô “Thuế suất” và nhập mã miễn/giảm/không chịu thuế tương ứng.\n(7) Có thể nhập đến 04 chữ số thập phân sau dấu phẩy nếu mã đồng tiền không phải là [VND]. Nếu mã đồng tiền là [VND] thì không thể nhập các số sau dấu phẩy thập phân.\nLưu ý: \n- Trường hợp tổng trị giá hóa đơn vượt quá giới hạn hệ thống thì thực hiện khai trên tờ khai hải quan giấy.\n- Trường hợp không có hóa đơn và người khai hải quan không nhập liệu vào ô “Số hóa đơn” thì không khai tiêu chí này."
+  },
+  {
+    "id": "1.45",
+    "ordinal": 45,
+    "labelVi": "Mã phân loại khai trị giá",
+    "labelEn": "Valuation declaration classification code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Chọn phương pháp trị giá theo căn cứ; không suy ra tự động từ invoice total.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Choose a supported valuation method from its legal basis, not automatically from invoice total.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Chọn phương pháp trị giá theo căn cứ; không suy ra tự động từ invoice total.",
+        "en": "Choose a supported valuation method from its legal basis, not automatically from invoice total.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Người có chuyên môn xác nhận phương pháp trị giá và điều kiện áp dụng trước khi chọn mã.",
+        "en": "A qualified reviewer confirms valuation method and applicability before selecting its code.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "valuation_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          152,
+          153
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.45",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập một trong các mã phân loại khai trị giá sau: “1”: Xác định trị giá tính thuế theo phương pháp trị giá giao dịch của hàng hóa giống hệt “2”: Xác định trị giá tính thuế theo phương pháp giá giao dịch của hàng hóa tương tự “3”: Xác định giá tính thuế theo phương pháp khấu trừ “4”: Xác định giá tính thuế theo phương pháp tính toán “6”: Áp dụng phương pháp trị giá giao dịch “7”: Áp dụng phương pháp trị giá giao dịch trong trường hợp có mối quan hệ đặc biệt nhưng không ảnh hưởng tới trị giá giao dịch “8”: Áp dụng phương pháp trị giá giao dịch nhưng phân bổ khoản điều chỉnh tính trị giá tính thuế thủ công, nhập bằng tay vào ô trị giá tính thuế của từng dòng hàng “9”: Xác định trị giá theo phương pháp suy luận “T”: Xác định trị giá trong trường hợp đặc biệt Chú ý: - Trường hợp 1 lô hàng sử dụng nhiều phương pháp xác định trị giá khác nhau, thì khai mã đại diện là mã phương pháp áp dụng nhiều nhất. - Các mã “0”, “5”, “Z” là các mã liên quan đến tờ khai trị giá tổng hợp nên không áp dụng cho đến khi có hướng dẫn cụ thể. - Chỉ khai mã “6”, “7” trong trường hợp lô hàng đủ điều kiện áp dụng phương pháp trị giá giao dịch. - Sử dụng mã “T” đối với các trường hợp quy định tại Điều 17 Thông tư số 39/2015/TT-BTC và hàng hóa nhập khẩu để gia công cho thương nhân nước ngoài."
+  },
+  {
+    "id": "1.46",
+    "ordinal": 46,
+    "labelVi": "Số tiếp nhận tờ khai trị giá tổng hợp",
+    "labelEn": "Comprehensive valuation declaration acceptance number",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Nguồn 2018 yêu cầu chưa nhập cho đến khi có hướng dẫn; tình trạng triển khai hiện tại chưa xác minh.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. The baseline defers entry pending guidance; current implementation status is unverified.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Nguồn 2018 yêu cầu chưa nhập cho đến khi có hướng dẫn; tình trạng triển khai hiện tại chưa xác minh.",
+        "en": "The baseline defers entry pending guidance; current implementation status is unverified.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Tình trạng triển khai phải được xác minh; không nhập số hoặc giả định trường đã hoạt động từ mô tả năm 2018.",
+        "en": "Verify deployment status; do not enter a number or assume activation from the 2018 description.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "valuation_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          153
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.46",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Ô 1: Không nhập dữ liệu cho đến khi có hướng dẫn mới Ô 2: Không nhập dữ liệu cho đến khi có hướng dẫn mới Ô 3: Không nhập dữ liệu cho đến khi có hướng dẫn mới"
+  },
+  {
+    "id": "1.47",
+    "ordinal": 47,
+    "labelVi": "Phí vận chuyển",
+    "labelEn": "Freight charge",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Tùy điều kiện giá, phân bổ và FOC; cần loại phí, đồng tiền và số tiền.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Depends on delivery terms, allocation and FOC cases; requires category, currency and amount.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Tùy điều kiện giá, phân bổ và FOC; cần loại phí, đồng tiền và số tiền.",
+        "en": "Depends on delivery terms, allocation and FOC cases; requires category, currency and amount.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra mã phí, đồng tiền, số tiền và quan hệ với điều kiện giao hàng/phân bổ; không cộng trùng.",
+        "en": "Check charge category, currency, amount and delivery/allocation terms; avoid double counting.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "valuation_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          153,
+          154
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.47",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập một trong các mã phân loại phí vận chuyển sau: “A”: Khai trong trường hợp chứng từ vận tải ghi Tổng số tiền cước phí chung cho tất cả hàng hóa trên chứng từ. “B”: Khai trong trường hợp: - Hóa đơn lô hàng có cả hàng trả tiền và hàng F.O.C/hàng khuyến mại; - Tách riêng phí vận tải của hàng trả tiền với hàng FOC/hàng khuyến mại trên chứng từ vận tải. Tương ứng với mã này tại ô phí vận chuyển chỉ nhập phí của hàng phải trả tiền (ô 3) để hệ thống tự động phân bổ, đối với các mặt hàng FOC/hàng khuyến mại người khai hải quan tự cộng cước phí vận tải để tính toán trị giá tính thuế rồi điền vào ô trị giá tính thuế của dòng hàng FOC/hàng khuyến mại. “C”: Khai trong trường hợp tờ khai chỉ nhập khẩu một phần hàng hóa của lô hàng trên chứng từ vận tải. “D”: Phân bổ cước phí vận tải theo tỷ lệ trọng lượng, dung tích. Khi khai mã này, người khai hải quan phải khai tờ khai trị giá để phân bổ các khoản điều chỉnh/ tính toán trị giá tính thuế của từng mặt hàng, lấy kết quả tính toán trị giá tính thuế trên tờ khai trị giá để nhập vào ô tương ứng trên tờ khai nhập khẩu của hệ thống VNACCS. “E”: Khai trong trường hợp trị giá hóa đơn của hàng hóa đã có phí vận tải (ví dụ: CIF, C&F, CIP) nhưng cước phí thực tế vượt quá cước phí trên hóa đơn (phát sinh thêm phí vận tải khi hàng về cảng nhập khẩu: tăng cước phí do giá nhiên liệu tăng, do biến động tiền tệ, do tắc tàu tại cảng...). “F”: Khai trong trường hợp có cước vượt cước và chỉ nhập khẩu 1 phần hàng hóa của lô hàng. Ô 2: Nhập mã đơn vị tiền tệ của phí vận chuyển. Ô 3: Nhập số tiền phí vận chuyển: (1) Trường hợp mã đồng tiền khác \"VND\", có thể nhập đến 4 chữ số sau dấu thập phân. (2) Trường hợp mã đồng tiền là \"VND\", không thể nhập số có dấu phẩy thập phân. (3) Trường hợp mã điều kiện giá hóa đơn là “C&F” hoặc “CIF” và cước phí vận chuyển thực tế lớn hơn cước phí trên hóa đơn cước vận chuyển thì nhập số cước phí chênh lệch vào ô này (tương ứng với mã “E” tại ô 2). Lưu ý: - Trường hợp không có hóa đơn và người khai hải quan không nhập liệu vào ô “Số hóa đơn” thì không khai tiêu chí này."
+  },
+  {
+    "id": "1.48",
+    "ordinal": 48,
+    "labelVi": "Phí bảo hiểm",
+    "labelEn": "Insurance charge",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Tùy điều kiện giá và loại bảo hiểm; có trường hợp không được nhập theo nguồn.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Depends on delivery terms and insurance category; the source identifies prohibited-entry cases.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Tùy điều kiện giá và loại bảo hiểm; có trường hợp không được nhập theo nguồn.",
+        "en": "Depends on delivery terms and insurance category; the source identifies prohibited-entry cases.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra loại bảo hiểm, đồng tiền, trị giá và trường hợp cấm nhập; không mặc định bằng 0.",
+        "en": "Check insurance category, currency, amount and prohibited-entry cases; do not default to zero.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "valuation_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          154
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.48",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập một trong các mã phân loại bảo hiểm sau: “Nhập một trong các mã phân loại bảo hiểm sau: “A”: Bảo hiểm riêng “D”: Không bảo hiểm Nếu trong mục điều kiện giá Invoice đã được nhập là giá CIF, CIP hay C&I, DDU, DDP, DAP, DAF, DAT thí không thể nhập được. Lưu ý: Mã “B” là bảo hiểm tổng hợp, chưa áp dụng cho đến khi có hướng dẫn. Ô 2: Nhập mã đơn vị tiền tệ phí bảo hiểm trong trường hợp phân loại bảo hiểm được nhập là Bảo hiểm riêng (mã “A”). Ô 3: Nhập số tiền phí bảo hiểm trong trường hợp phân loại bảo hiểm được nhập là “A”: (1) Trường hợp mã đồng tiền khác \"VND\", có thể nhập đến 4 chữ số sau dấu thập phân. (2) Trường hợp mã đồng tiền là \"VND\", không thể nhập số có dấu phẩy thập phân. Ô 4: Không nhập cho đến khi có hướng dẫn mới Lưu ý: - Trường hợp không có hóa đơn và người khai hải quan không nhập liệu vào ô “Số hóa đơn” thì không khai tiêu chí này."
+  },
+  {
+    "id": "1.49",
+    "ordinal": 49,
+    "labelVi": "Mã, tên khoản điều chỉnh",
+    "labelEn": "Valuation adjustment code and name",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi có khoản điều chỉnh; gồm loại, cộng/trừ, đồng tiền, trị giá và hệ số phân bổ.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For adjustments; contains category, addition/deduction, currency, amount and allocation basis.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi có khoản điều chỉnh; gồm loại, cộng/trừ, đồng tiền, trị giá và hệ số phân bổ.",
+        "en": "For adjustments; contains category, addition/deduction, currency, amount and allocation basis.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra mã khoản điều chỉnh, cộng/trừ, đồng tiền và hệ số phân bổ theo chứng từ; không suy ra bằng chênh lệch tổng.",
+        "en": "Check adjustment category, sign, currency and allocation basis against evidence; do not infer from a totals difference.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "valuation_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          154,
+          155,
+          156
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.49",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập các mã tương ứng với các khoản điều chỉnh như sau: “A”: Phí hoa hồng bán hàng, phí môi giới (AD). “B”: Chi phí bao bì được coi là đồng nhất với hàng hóa nhập khẩu (AD). “C”: Chi phí đóng gói hàng hóa (AD). “D”: Khoản trợ giúp (AD). “E”: Phí bản quyền, phí giấy phép (AD). “P”: Các khoản tiền mà người nhập khẩu phải trả từ số tiền thu được sau khi bán lại, định đoạt, sử dụng hàng hóa nhập khẩu (AD). “Q”: Các khoản tiền người mua phải thanh toán nhưng chưa tính vào giá mua trên hóa đơn, gồm: tiền trả trước, ứng trước, tiền đặt cọc (AD). “K”: khoản tiền người mua thanh toán cho người thứ ba theo yêu cầu của người bán (AD) “M”: khoản tiền được thanh toán bằng cách bù trừ nợ (AD). “U”: Chi phí cho những hoạt động phát sinh sau khi nhập khẩu hàng hóa bao gồm các chi phí về xây dựng, kiến trúc, lắp đặt, bảo dưỡng hoặc trợ giúp kỹ thuật, tư vấn kỹ thuật, chi phí giám sát và các chi phí tương tự (SB). “V”: Phí vận tải phát sinh sau khi hàng hóa được vận chuyển đến cửa khẩu nhập đầu tiên (SB). “H”: Phí bảo hiểm phát sinh sau khi hàng hóa được vận chuyển đến cửa khẩu nhập đầu tiên (SB). “T”: Các khoản thuế, phí, lệ phí phải nộp ở Việt Nam đã nằm trong giá mua hàng nhập khẩu (SB). “G”: Khoản giảm giá (SB). S: Các chi phí do người mua chịu liên quan đến tiếp thị hàng hóa nhập khẩu (SB) “L”: Khoản tiền lãi tương ứng với mức lãi suất theo thỏa thuận tài chính của người mua và có liên quan đến việc mua hàng hóa nhập khẩu (SB). “N”: Khác Lưu ý: - Trường hợp giảm giá theo số lượng không nhập mã “G” tại ô này, nhưng tại ô “Chi tiết khai trị giá” nhập rõ hàng được giảm giá theo số lượng và trị giá được giảm hoặc tỷ lệ giảm giá. Khi hoàn thành việc nhập khẩu toàn bộ lô hàng, thực hiện xét giảm giá theo quy định tại Thông tư số 205. Ô 2: Nhập mã phân loại điều chỉnh trị giá tương ứng với các trường hợp sau: “AD”: cộng thêm số tiền điều chỉnh. “SB”: Trừ đi số tiền điều chỉnh. “IP”: Trị giá tính thuế là trị giá hóa đơn. “DP”: Nhập vào tổng giá tính thuế được tính bằng tay. Ô 3: Nhập mã đơn vị tiền tệ của khoản điều chỉnh. Ô 4: Nhập trị giá khoản điều chỉnh tương ứng với Mã tên khoản điều chỉnh và mã phân loại khoản điều chỉnh. (1) Có thể nhập đến 04 chữ số sau dấu phẩy nếu mã đồng tiền không phải là “VND”. (2) Nếu mã đồng tiền là “VND” thì không thể nhập các số thập phân sau dấu phẩy. Ô 5: Nhập tổng hệ số phân bổ trị giá khoản điều chỉnh. (1) Trường hợp khoản điều chỉnh được phân bổ cho hàng hóa của 2 tờ khai trở lên thì nhập vào tổng trị giá hóa đơn của các dòng hàng được phân bổ khoản điều chỉnh ở tất cả các tờ khai. (2) Trường hợp khoản điều chỉnh chỉ phân bổ cho hàng hóa của một tờ khai thì không cần nhập ô này. (3) Có thể nhập đến 04 chữ số sau dấu phẩy. (4) Giá trị cột \"Tổng hệ số phân bổ số tiền điều chỉnh\" ≤ cột \"Tổng hệ số phân bổ trị giá tính thuế\". Lưu ý: - Trường hợp không có hóa đơn và người khai hải quan không nhập liệu vào ô “Số hóa đơn” thì không khai tiêu chí này."
+  },
+  {
+    "id": "1.50",
+    "ordinal": 50,
+    "labelVi": "Chi tiết khai trị giá",
+    "labelEn": "Valuation declaration details",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Chi tiết/căn cứ trị giá, ngày vận đơn, hợp đồng và đề nghị tham vấn; TT121 sửa hướng dẫn.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Valuation details/basis, transport-document date, contract and consultation requests; TT121 changes instructions.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Chi tiết/căn cứ trị giá, ngày vận đơn, hợp đồng và đề nghị tham vấn; TT121 sửa hướng dẫn.",
+        "en": "Valuation details/basis, transport-document date, contract and consultation requests; TT121 changes instructions.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "TT121 hướng dẫn ngày vận đơn DDMMYYYY#&, căn cứ trị giá và nội dung tham vấn; số hợp đồng đơn lẻ chưa đủ.",
+        "en": "TT121 specifies transport date DDMMYYYY#&, valuation basis and consultation details; contract number alone is incomplete.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "valuation_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. contractNumber chỉ là bằng chứng nguồn, không thay thế nội dung chi tiết khai trị giá. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. contractNumber is only source evidence and cannot replace valuation details. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          156
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.50",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [
+        {
+          "sourceId": "tt121-2025-gazette",
+          "section": "Phụ lục I · mục 2(a) · Mẫu số 01 · 1.50",
+          "effectiveFrom": "2026-02-01",
+          "pages": [
+            140
+          ]
+        }
+      ],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "1) Nhập ngày vận đơn theo định dạng DDMMYYYY#&. (2) Nhập vào các chi tiết của tờ khai trị giá. Ví dụ: khoản phí hoa hồng bằng 5% trị giá hóa đơn thì: tính ra số tiền phí hoa hồng, nhập vào ô số tiền điều chỉnh tương ứng, đồng thời ghi \"phí hoa hồng bằng 5% trị giá hóa đơn\" vào ô này. (3) Nhập các lưu ý, ghi chú về việc khai báo trị giá. (4) Nhập theo hướng dẫn tại ô “Tổng trị giá hóa đơn” và các ô có liên quan. (5) Trường hợp người khai hải quan chưa có đủ thông tin, tài liệu xác định trị giá hải quan, người khai hải quan đề nghị cơ quan hải quan xác định trị giá làm căn cứ giải phóng hàng. (6) Trường hợp hàng hóa xuất khẩu, nhập khẩu chưa có giá chính thức tại thời điểm đăng ký tờ khai, người khai hải quan khai báo giá tạm tính. (7) Khai báo khoản giảm giá (nếu có) nhưng chưa thực hiện điều chỉnh trừ. (8) Nhập số hợp đồng mua bán hàng hóa (nếu có). (9) Trường hợp đề nghị tham vấn 1 lần, sử dụng kết quả tham vấn nhiều lần, người khai hải quan nhập nội dung “đề nghị tham vấn 1 lần, sử dụng kết quả tham vấn nhiều lần” và ghi rõ nội dung (số thứ tự hàng hóa, số/ngày Biên bản tham vấn, mã Cục Hải quan/Chi cục Hải quan đã thực hiện tham vấn).",
+    "amendmentInstructionsVi": "(1) Nhập ngày vận đơn theo định dạng DDMMYYYY#&.\n(2) Nhập vào các chi tiết của tờ khai trị giá.\nVí dụ: khoản phí hoa hồng bằng 5% trị giá hóa đơn thì: tính ra số tiền phí hoa hồng, nhập vào ô số tiền điều chỉnh tương ứng, đồng thời ghi \"phí hoa hồng bằng 5% trị giá hóa đơn\" vào ô này.\n(3) Nhập các lưu ý, ghi chú về việc khai báo trị giá.\n(4) Nhập theo hướng dẫn tại ô “Tổng trị giá hóa đơn” và các ô có liên quan.\n(5) Trường hợp người khai hải quan chưa có đủ thông tin, tài liệu xác định trị giá hải quan, người khai hải quan đề nghị cơ quan hải quan xác định trị giá làm căn cứ giải phóng hàng.\n(6) Trường hợp hàng hóa xuất khẩu, nhập khẩu chưa có giá chính thức tại thời điểm đăng ký tờ khai, người khai hải quan khai báo giá tạm tính.\n(7) Khai báo khoản giảm giá (nếu có) nhưng chưa thực hiện điều chỉnh trừ.\n(8) Nhập số hợp đồng mua bán hàng hóa (nếu có).\n(9) Trường hợp người khai hải quan đề nghị áp dụng tham vấn 1 lần, sử dụng kết quả nhiều lần thì ghi đề nghị và ghi rõ nội dung (số thứ tự hàng hóa,  Số/ngày Thông báo Trị giá hải quan, mã Chi cục Hải quan khu vực đã thực hiện tham vấn).\n(10) Trường hợp người khai hải quan lựa chọn hình thức tham vấn gián tiếp thì ghi đề xuất “tham vấn gián tiếp”."
+  },
+  {
+    "id": "1.51",
+    "ordinal": 51,
+    "labelVi": "Tổng hệ số phân bổ trị giá tính thuế",
+    "labelEn": "Total customs-value allocation factor",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi phân bổ, đặc biệt một hóa đơn nhiều tờ khai; không mặc định bằng tổng hóa đơn trong mọi trường hợp.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For allocation, especially one invoice across declarations; not always interchangeable with invoice total.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi phân bổ, đặc biệt một hóa đơn nhiều tờ khai; không mặc định bằng tổng hóa đơn trong mọi trường hợp.",
+        "en": "For allocation, especially one invoice across declarations; not always interchangeable with invoice total.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra tổng trị giá trước điều chỉnh và hệ số phân bổ; một hóa đơn nhiều tờ khai có điều kiện bắt buộc riêng.",
+        "en": "Check pre-adjustment value and allocation factors; one invoice across declarations has a specific entry requirement.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "valuation_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          156,
+          157
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.51",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "(1) Nhập tổng trị giá hóa đơn trước khi điều chỉnh. (2) Có thể nhập đến 04 chữ số tại phần thập phân. (3) Trường hợp một hóa đơn - nhiều tờ khai, bắt buộc nhập vào ô này. (4) Trường hợp không nhập, hệ thống sẽ tự động tính giá trị của ô này bằng cách cộng tất cả trị giá hóa đơn của các dòng hàng trên tờ khai. (5) Giá trị cột \"Tổng hệ số phân bổ trị giá tính thuế\" ≥ cột “Tổng hệ số phân bổ số tiền điều chỉnh”. Lưu ý: - Trường hợp không có hóa đơn và người khai hải quan không nhập liệu vào ô “Số hóa đơn” thì không khai tiêu chí này."
+  },
+  {
+    "id": "1.52",
+    "ordinal": 52,
+    "labelVi": "Người nộp thuế",
+    "labelEn": "Taxpayer",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Xác định người nhập khẩu hay đại lý nộp thuế theo trường hợp.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Identify whether importer or broker pays tax in the applicable case.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Xác định người nhập khẩu hay đại lý nộp thuế theo trường hợp.",
+        "en": "Identify whether importer or broker pays tax in the applicable case.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Xác nhận chủ thể thực tế nộp thuế và mã tương ứng; người nhập khẩu không luôn là người thao tác khai báo.",
+        "en": "Confirm the actual taxpayer and code; importer and filing operator are not necessarily the same.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          157
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.52",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập một trong các mã sau: “1”: người nộp thuế là người nhập khẩu “2”: người nộp thuế là đại lý hải quan"
+  },
+  {
+    "id": "1.53",
+    "ordinal": 53,
+    "labelVi": "Mã lý do đề nghị BP",
+    "labelEn": "Reason for provisional release (BP)",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi đề nghị giải phóng hàng theo cơ sở tương ứng; cần người có thẩm quyền quyết định.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For applicable provisional-release requests; requires an authorized human decision.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi đề nghị giải phóng hàng theo cơ sở tương ứng; cần người có thẩm quyền quyết định.",
+        "en": "For applicable provisional-release requests; requires an authorized human decision.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra căn cứ giải phóng hàng và lý do BP; AICD không quyết định đủ điều kiện giải phóng.",
+        "en": "Check provisional-release basis and BP reason; AICD does not decide release eligibility.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          157
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.53",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "- Trường hợp đề nghị giải phóng hàng trên cơ sở bảo lãnh, người khai hải quan nhập một trong các mã sau: “A”: chờ xác định mã số hàng hóa “B”: chờ xác định trị giá tính thuế “C”: trường hợp khác - Trường hợp đề nghị giải phóng hàng trên cơ sở nộp thuế thì người khai hải quan khai đề nghị giải phóng hàng tại ô “Chi tiết khai trị giá”"
+  },
+  {
+    "id": "1.54",
+    "ordinal": 54,
+    "labelVi": "Mã ngân hàng trả thuế thay",
+    "labelEn": "Bank paying tax on behalf code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi sử dụng hạn mức ngân hàng trả thuế; kiểm tra người được cấp và hiệu lực.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. When using a bank tax-payment facility; verify beneficiary and validity.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi sử dụng hạn mức ngân hàng trả thuế; kiểm tra người được cấp và hiệu lực.",
+        "en": "When using a bank tax-payment facility; verify beneficiary and validity.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra mã ngân hàng, hạn mức còn hiệu lực, người được cấp và cơ quan áp dụng.",
+        "en": "Check bank code, valid facility, beneficiary and applicable customs office.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          157
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.54",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Nhập mã ngân hàng do Ngân hàng Nhà nước cấp (tham khảo bảng “Mã Ngân hàng” trên website Hải quan: www.customs.gov.vn), trường hợp ký hiệu và số chứng từ hạn mức đã được đăng ký, hệ thống sẽ kiểm tra những thông tin sau: (1) Người sử dụng hạn mức phải là người nhập khẩu hoặc hạn mức được cấp đích danh cho đại lý hải quan. (2) Ngày tiến hành nghiệp vụ này phải thuộc thời hạn còn hiệu lực của hạn mức ngân hàng đã đăng ký."
+  },
+  {
+    "id": "1.55",
+    "ordinal": 55,
+    "labelVi": "Năm phát hành hạn mức",
+    "labelEn": "Bank facility issue year",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Bắt buộc theo điều kiện đã nhập mã ngân hàng trả thuế thay.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Conditionally required when the tax-paying bank code is entered.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Bắt buộc theo điều kiện đã nhập mã ngân hàng trả thuế thay.",
+        "en": "Conditionally required when the tax-paying bank code is entered.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu năm phát hành với chứng thư hạn mức; yêu cầu liên kết với mã ngân hàng.",
+        "en": "Reconcile issue year with the facility certificate and linked bank code.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          157
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.55",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập năm phát hành của chứng từ hạn mức. Là chỉ tiêu bắt buộc nếu người khai đã nhập liệu tại chỉ tiêu \"Mã ngân hàng trả thuế thay\"."
+  },
+  {
+    "id": "1.56",
+    "ordinal": 56,
+    "labelVi": "Kí hiệu chứng từ hạn mức",
+    "labelEn": "Bank facility document symbol",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Theo chứng thư hạn mức khi khai ngân hàng trả thuế thay.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. From the facility certificate when declaring the tax-paying bank.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Theo chứng thư hạn mức khi khai ngân hàng trả thuế thay.",
+        "en": "From the facility certificate when declaring the tax-paying bank.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Giữ đúng ký hiệu chứng thư hạn mức, phân biệt với số chứng thư.",
+        "en": "Preserve the facility document symbol, distinct from its document number.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          157
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.56",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập ký hiệu của chứng từ hạn mức trên chứng thư hạn mức do ngân hàng cấp (tối đa 10 kí tự). Là chỉ tiêu bắt buộc nếu người khai đã nhập liệu tại chỉ tiêu \"Mã ngân hàng trả thuế thay\"."
+  },
+  {
+    "id": "1.57",
+    "ordinal": 57,
+    "labelVi": "Số chứng từ hạn mức",
+    "labelEn": "Bank facility document number",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Theo chứng thư hạn mức khi khai ngân hàng trả thuế thay.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. From the facility certificate when declaring the tax-paying bank.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Theo chứng thư hạn mức khi khai ngân hàng trả thuế thay.",
+        "en": "From the facility certificate when declaring the tax-paying bank.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Giữ đúng số chứng thư hạn mức và đối chiếu người hưởng, giá trị và thời hạn.",
+        "en": "Preserve the facility document number and verify beneficiary, value and validity.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          157
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.57",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập số chứng từ hạn mức trên chứng thư hạn mức do ngân hàng cung cấp (tối đa 10 kí tự). Là chỉ tiêu bắt buộc nếu người khai đã nhập liệu tại chỉ tiêu \"Mã ngân hàng trả thuế thay\"."
+  },
+  {
+    "id": "1.58",
+    "ordinal": 58,
+    "labelVi": "Mã xác định thời hạn nộp thuế",
+    "labelEn": "Tax payment deadline category code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Chọn theo bảo lãnh/thời hạn/nộp ngay; không tự quyết định từ giá trị thuế.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Select from guarantee/payment-deadline circumstances, not inferred from tax amount.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Chọn theo bảo lãnh/thời hạn/nộp ngay; không tự quyết định từ giá trị thuế.",
+        "en": "Select from guarantee/payment-deadline circumstances, not inferred from tax amount.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra mã thời hạn nộp, loại bảo lãnh và điều kiện chấp nhận; không tự chọn từ trạng thái hoàn tất hồ sơ.",
+        "en": "Check payment-deadline code, guarantee type and acceptance conditions; case completion is not a basis.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          157,
+          158
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.58",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập một trong các mã tương ứng như sau: “A”: trường hợp được áp dụng thời hạn nộp thuế do sử dụng bảo lãnh riêng. “B”: trường hợp được áp dụng thời hạn nộp thuế do sử dụng bảo lãnh chung. “C”: trường hợp được áp dụng thời hạn nộp thuế mà không sử dụng bảo lãnh. “D”: trong trường hợp nộp thuế ngay. Lưu ý: Nhập mã “D” trong trường hợp khai báo bổ sung để được cấp phép thông quan sau khi thực hiện quy trình tạm giải phóng hàng."
+  },
+  {
+    "id": "1.59",
+    "ordinal": 59,
+    "labelVi": "Mã ngân hàng bảo lãnh",
+    "labelEn": "Guarantee bank code",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi sử dụng bảo lãnh; xác nhận người thụ hưởng, thời hạn và nơi áp dụng.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. When using a guarantee; verify beneficiary, validity and applicable office.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi sử dụng bảo lãnh; xác nhận người thụ hưởng, thời hạn và nơi áp dụng.",
+        "en": "When using a guarantee; verify beneficiary, validity and applicable office.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Xác nhận ngân hàng và chứng thư bảo lãnh hiện hành; không dùng mã ngân hàng thanh toán thay thế.",
+        "en": "Verify the bank and valid guarantee; do not substitute the payment bank code.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          158
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.59",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Nhập mã ngân hàng do Ngân hàng Nhà nước cấp (tham khảo bảng “Mã Ngân hàng” trên website Hải quan: www.customs.gov.vn), trường hợp ký hiệu và số chứng từ hạn mức đã được đăng ký, hệ thống sẽ kiểm tra những thông tin sau: (1) Người sử dụng chứng từ bảo lãnh phải là người nhập khẩu hoặc là chứng từ bảo lãnh được cấp đích danh cho đại lý hải quan. (2) Ngày tiến hành nghiệp vụ này phải thuộc thời hạn còn hiệu lực của chứng từ bảo lãnh đã đăng ký. (3) Trường hợp sử dụng chứng từ bảo lãnh riêng, chứng từ phải được sử dụng tại Chi cục Hải quan đã đăng ký. (4) Nếu không thuộc trường hợp (1), mã của người được phép sử dụng chứng từ bảo lãnh đã đăng ký trong cơ sở dữ liệu phải khớp với mã của người đăng nhập sử dụng nghiệp vụ này. (5) Trường hợp đăng ký chứng từ bảo lãnh riêng trước khi có tờ khai dựa trên số vận đơn hoặc/và số hóa đơn, số vận đơn hoặc/và số hóa đơn phải tồn tại trong cơ sở dữ liệu bảo lãnh riêng. (6) Mã loại hình đã được đăng ký trong dữ liệu chứng từ bảo lãnh riêng phải khớp với mã loại hình khai báo. (7) Ngày khai báo dự kiến nếu đã được đăng ký trong dữ liệu chứng từ bảo lãnh riêng phải khớp với ngày đăng ký khai báo dự kiến. (8) Trường hợp đăng ký chứng từ bảo lãnh riêng sau khi hệ thống cấp số tờ khai, số tờ khai đã đăng ký trong cơ sở dữ liệu của bảo lãnh phải khớp với số tờ khai hệ thống đã cấp."
+  },
+  {
+    "id": "1.60",
+    "ordinal": 60,
+    "labelVi": "Năm phát hành bảo lãnh",
+    "labelEn": "Guarantee issue year",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Bắt buộc theo điều kiện đã nhập mã ngân hàng bảo lãnh.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Conditionally required when the guarantee bank code is entered.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Bắt buộc theo điều kiện đã nhập mã ngân hàng bảo lãnh.",
+        "en": "Conditionally required when the guarantee bank code is entered.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu năm trên bảo lãnh với chứng thư và mã ngân hàng đã khai.",
+        "en": "Match guarantee issue year with the certificate and declared bank code.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          158
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.60",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập năm phát hành của chứng từ bảo lãnh (bao gồm 04 ký tự). Là chỉ tiêu bắt buộc nếu người khai đã nhập liệu tại chỉ tiêu \"Mã ngân hàng bảo lãnh\"."
+  },
+  {
+    "id": "1.61",
+    "ordinal": 61,
+    "labelVi": "Ký hiệu chứng từ bảo lãnh",
+    "labelEn": "Guarantee document symbol",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Theo chứng thư bảo lãnh khi khai ngân hàng bảo lãnh.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. From the guarantee certificate when declaring the guarantee bank.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Theo chứng thư bảo lãnh khi khai ngân hàng bảo lãnh.",
+        "en": "From the guarantee certificate when declaring the guarantee bank.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Giữ đúng ký hiệu chứng thư bảo lãnh; đối chiếu bộ năm/ký hiệu/số.",
+        "en": "Preserve guarantee document symbol; reconcile the year/symbol/number set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          158,
+          159
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.61",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập ký hiệu của chứng từ bảo lãnh do ngân hàng cung cấp trên chứng thư bảo lãnh (tối đa 10 kí tự). Là chỉ tiêu bắt buộc nếu người khai đã nhập liệu tại chỉ tiêu \"Mã ngân hàng bảo lãnh\"."
+  },
+  {
+    "id": "1.62",
+    "ordinal": 62,
+    "labelVi": "Số chứng từ bảo lãnh",
+    "labelEn": "Guarantee document number",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Theo chứng thư bảo lãnh khi khai ngân hàng bảo lãnh.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. From the guarantee certificate when declaring the guarantee bank.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Theo chứng thư bảo lãnh khi khai ngân hàng bảo lãnh.",
+        "en": "From the guarantee certificate when declaring the guarantee bank.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Giữ đúng số chứng thư bảo lãnh và hiệu lực; không tạo số từ hồ sơ AICD.",
+        "en": "Preserve guarantee number and validity; never generate it from an AICD case.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          159
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.62",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập số của chứng từ bảo lãnh do ngân hàng cung cấp trên chứng thư bảo lãnh (tối đa 10 kí tự). Là chỉ tiêu bắt buộc nếu người khai đã nhập liệu tại chỉ tiêu \"Mã ngân hàng bảo lãnh\"."
+  },
+  {
+    "id": "1.63",
+    "ordinal": 63,
+    "labelVi": "Số đính kèm khai báo điện tử",
+    "labelEn": "Electronic attachment reference",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi dùng HYS: mã loại đính kèm và số hệ thống phản hồi.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For HYS: attachment category and system-issued reference.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi dùng HYS: mã loại đính kèm và số hệ thống phản hồi.",
+        "en": "For HYS: attachment category and system-issued reference.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra mã loại đính kèm và số HYS do hệ thống trả về; mã tệp AICD không phải số này.",
+        "en": "Check attachment category and system-returned HYS reference; an AICD file ID is not that reference.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          159
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.63",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập mã phân loại đính kèm khai báo điện tử trong trường hợp sử dụng nghiệp vụ HYS. (Tham khảo bảng “Mã phân loại khai báo đính kèm điện tử” trên website Hải quan: www.customs.gov.vn) Ô 2: Nhập số đính kèm khai báo điện tử do hệ thống cấp tại nghiệp vụ HYS."
+  },
+  {
+    "id": "1.64",
+    "ordinal": 64,
+    "labelVi": "Ngày được phép nhập kho đầu tiên",
+    "labelEn": "First permitted warehouse entry date",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Ngày nhập kho đầu tiên hoặc quy tắc loại hình liên quan; cần kiểm tra tình huống.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. First warehouse-entry date or procedure-specific rule; verify applicability.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Ngày nhập kho đầu tiên hoặc quy tắc loại hình liên quan; cần kiểm tra tình huống.",
+        "en": "First warehouse-entry date or procedure-specific rule; verify applicability.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu ngày nhập kho đầu tiên và ngoại lệ loại hình; nguồn 2018 có quy tắc A41 cần xác nhận hiện hành.",
+        "en": "Verify first warehouse-entry date and procedure exceptions; the baseline A41 instruction needs current confirmation.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          159
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.64",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập ngày nhập kho; Trường hợp có nhiều ngày được phép đưa hàng vào kho thì nhập ngày đầu tiên Trường hợp người khai hải quan sử dụng mã loại hình A41 thì nhập ngày thực hiện IDC."
+  },
+  {
+    "id": "1.65",
+    "ordinal": 65,
+    "labelVi": "Ngày khởi hành vận chuyển",
+    "labelEn": "Transport departure date",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Chỉ khi khai vận chuyển kết hợp theo nguồn.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Only for combined transport declarations under the source instructions.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Chỉ khi khai vận chuyển kết hợp theo nguồn.",
+        "en": "Only for combined transport declarations under the source instructions.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra ngày khởi hành và điều kiện khai vận chuyển kết hợp; không dùng ngày tàu rời cảng một cách mặc định.",
+        "en": "Check departure date and combined-transport applicability; do not default to vessel departure date.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          159
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.65",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập ngày khởi hành vận chuyển hàng hóa chịu sự giám sát hải quan theo định dạng Ngày/tháng/năm. Chỉ nhập ô này trong trường hợp khai vận chuyển kết hợp."
+  },
+  {
+    "id": "1.66",
+    "ordinal": 66,
+    "labelVi": "Thông tin trung chuyển",
+    "labelEn": "Transit information",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi có trung chuyển bảo thuế: địa điểm, ngày đến và ngày đi.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For bonded transit: location, arrival date and departure date.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi có trung chuyển bảo thuế: địa điểm, ngày đến và ngày đi.",
+        "en": "For bonded transit: location, arrival date and departure date.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu từng địa điểm/ngày đến/ngày đi và thứ tự tuyến trung chuyển bảo thuế.",
+        "en": "Reconcile each location/arrival/departure and bonded-transit sequence.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          159
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.66",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập địa điểm trung chuyển cho vận chuyển bảo thuế. (Tham khảo bảng mã “Địa điểm lưu kho hàng chờ thông quan dự kiến, địa điểm trung chuyển cho vận chuyển bảo thuế, địa điểm đích cho vận chuyển bảo thuế” trên website Hải quan: www.customs.gov.vn) Ô 2: Nhập ngày đến địa điểm trung chuyển. Ô 3: Nhập ngày rời khỏi địa điểm trung chuyển."
+  },
+  {
+    "id": "1.67",
+    "ordinal": 67,
+    "labelVi": "Địa điểm đích cho vận chuyển bảo thuế (khai báo gộp)",
+    "labelEn": "Bonded transport destination (combined declaration)",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi khai vận chuyển kết hợp: mã đích và ngày dự kiến đến.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For combined transport: destination code and expected arrival date.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi khai vận chuyển kết hợp: mã đích và ngày dự kiến đến.",
+        "en": "For combined transport: destination code and expected arrival date.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu mã đích vận chuyển bảo thuế và ngày dự kiến đến, cần bảng địa điểm hiện hành.",
+        "en": "Reconcile bonded destination and expected arrival date using the current location table.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          159
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.67",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập địa điểm đích cho vận chuyển bảo thuế (áp dụng khi khai báo vận chuyển kết hợp). (Tham khảo bảng mã “Địa điểm lưu kho hàng chờ thông quan dự kiến, địa điểm trung chuyển cho vận chuyển bảo thuế, địa điểm đích cho vận chuyển bảo thuế” trên website Hải quan: www.customs.gov.vn) Ô 2: Nhập ngày dự kiến đến địa điểm đích."
+  },
+  {
+    "id": "1.68",
+    "ordinal": 68,
+    "labelVi": "Phần ghi chú",
+    "labelEn": "Remarks",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Theo các tình huống cần ghi chú; TT121 sửa thông tin tại chỗ, giải phóng hàng và cách xử lý giới hạn ký tự.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For applicable remarks; TT121 updates on-the-spot, provisional-release and character-overflow handling.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Theo các tình huống cần ghi chú; TT121 sửa thông tin tại chỗ, giải phóng hàng và cách xử lý giới hạn ký tự.",
+        "en": "For applicable remarks; TT121 updates on-the-spot, provisional-release and character-overflow handling.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra cú pháp từng tình huống, dấu phân cách và nội dung tràn trường theo TT121; không tự cắt dữ liệu.",
+        "en": "Check scenario syntax, separators and TT121 overflow handling; never silently truncate.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          159,
+          160
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.68",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [
+        {
+          "sourceId": "tt121-2025-gazette",
+          "section": "Phụ lục I · mục 2(a) · Mẫu số 01 · 1.68",
+          "effectiveFrom": "2026-02-01",
+          "pages": [
+            140,
+            141,
+            142
+          ]
+        }
+      ],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "(1) Trường hợp chuyển tiêu thụ nội địa hàng nhập SXXK, GC, ưu đãi đầu tư thì nhập số tờ khai nhập khẩu theo cách thức: #&số tờ khai nhập khẩu (11 ký tự đầu). VD: #&10000567897 (2) Trường hợp lô hàng có C/O để hưởng ưu đãi đặc biệt về thuế thì nhập số C/O, ngày cấp. (3) Trường hợp mã loại hình không hỗ trợ khai báo vận chuyển kết hợp thì khai các thông tin sau: thời gian, tuyến đường, cửa khẩu đi và đến, mã địa điểm đích cho vận chuyển bảo thuế. (4) Nhập số và ngày hóa đơn giá trị gia tăng hoặc hóa đơn bán hàng đối với trường hợp mua bán hàng hóa giữa doanh nghiệp nội địa và doanh nghiệp chế xuất, doanh nghiệp trong khu phi thuế quan. (5) Trường hợp chuyển mục đích sử dụng, chuyển tiêu thụ nội địa, người khai hải quan khai số tờ khai hải quan cũ tại ô này. (6) Trường hợp người khai hải quan là chủ hàng hóa gửi kho ngoại quan, người khai hải quan khai cụ thể “Hàng hóa nhập khẩu thuộc tờ khai nhập kho ngoại quan số....ngày....”. Lưu ý: - Trường hợp vượt quá giới hạn cho phép (100 ký tự) thì các nội dung tiếp theo được ghi vào ô “Số hiệu, ký hiệu”, “Khai chi tiết trị giá”, “Mô tả hàng hóa”. - Trường hợp vượt quá giới hạn ký tự tại các ô nêu trên thì sử dụng nghiệp vụ HYS để đính kèm các nội dung cần khai báo tiếp. - Trường hợp có nhiều nội dung cần ghi chú tại ô này thì mỗi nội dung được ngăn cách bởi dấu “;”",
+    "amendmentInstructionsVi": "(1) Trường hợp chuyển tiêu thụ nội địa hàng nhập SXXK, GC, ưu đãi đầu tư thì nhập số tờ khai nhập khẩu theo cách thức: #&số tờ khai nhập khẩu (11 ký tự đầu).\nVD: #&10000567897\n(2) Trường hợp lô hàng có C/O để hưởng ưu đãi đặc biệt về thuế thì nhập số C/O, ngày cấp. \n(3) Trường hợp mã loại hình không hỗ trợ khai báo vận chuyển kết hợp thì khai các thông tin sau: thời gian, tuyến đường, cửa khẩu đi và đến, mã địa điểm đích cho vận chuyển bảo thuế.\n(4) Nhập số và ngày hóa đơn giá trị gia tăng hoặc hóa đơn bán hàng đối với trường hợp mua bán hàng hóa giữa doanh nghiệp nội địa và doanh nghiệp chế xuất, doanh nghiệp trong khu phi thuế quan.\n(5) Trường hợp chuyển mục đích sử dụng, chuyển tiêu thụ nội địa, người khai hải quan khai số tờ khai hải quan cũ tại ô này.\n(6) Trường hợp người khai hải quan là chủ hàng hóa gửi kho ngoại quan, người khai hải quan khai khai cụ thể “Hàng hóa nhập khẩu thuộc tờ khai nhập kho ngoại quan số….ngày….”.\n(7) Trường hợp nhập khẩu tại chỗ: Nhập tên, địa chỉ của người nước ngoài chỉ định nhận hàng tại Việt Nam.\n(8) Trường hợp người khai hải quan nhập khẩu hàng hóa có cùng tên hàng, thành phần, cấu tạo, tính chất lý hóa, tính năng, công dụng, quy cách đóng gói, cùng nhà sản xuất và của chính người khai hải quan trước đó đã được lấy mẫu, đang chờ kết quả phân tích phân loại, kiểm định hoặc giám định, thử nghiệm thì khai “đề nghị giải phóng hàng, stt ... giống stt ... tại tk ... đang chờ KQPTPL” tại chỉ tiêu “Ghi chú” trên tờ khai hải quan.\nLưu ý: \n- Trường hợp vượt quá giới hạn cho phép (100 ký tự) thì các nội dung tiếp theo được ghi vào ô “Số hiệu, ký hiệu”, “Khai chi tiết trị giá”, “Mô tả hàng hóa”.\n- Trường hợp vượt quá giới hạn ký tự tại các ô nêu trên thì sử dụng nghiệp vụ HYS để đính kèm các nội dung cần khai báo tiếp.\n- Trường hợp có nhiều nội dung cần ghi chú tại ô này thì mỗi nội dung được ngăn cách bởi dấu “;”."
+  },
+  {
+    "id": "1.69",
+    "ordinal": 69,
+    "labelVi": "Số quản lý của nội bộ doanh nghiệp",
+    "labelEn": "Enterprise internal management reference",
+    "scope": "header",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Không phải số AICD; gồm cú pháp nghiệp vụ theo tình huống, được sửa tại TT121.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Not the AICD case reference; includes scenario-specific filing syntax amended by TT121.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Không phải số AICD; gồm cú pháp nghiệp vụ theo tình huống, được sửa tại TT121.",
+        "en": "Not the AICD case reference; includes scenario-specific filing syntax amended by TT121.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu chuỗi nghiệp vụ TT121 và tờ khai liên quan; không dùng số hồ sơ AICD làm giá trị thay thế.",
+        "en": "Reconcile TT121 workflow syntax and related declarations; never substitute the AICD case reference.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Số tham chiếu hồ sơ AICD không phải số quản lý doanh nghiệp VNACCS. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. An AICD case reference is not the VNACCS business reference. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          160,
+          161
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.69",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [
+        {
+          "sourceId": "tt121-2025-gazette",
+          "section": "Phụ lục I · mục 2(a) · Mẫu số 01 · 1.69",
+          "effectiveFrom": "2026-02-01",
+          "pages": [
+            142,
+            143
+          ]
+        }
+      ],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "- Trường hợp nhập khẩu tại chỗ: khai #&NKTC#&số tờ khai xuất khẩu tại chỗ tương ứng (11 ký tự đầu); Ví dụ: #&NKTC#&30001234567 - Trường hợp doanh nghiệp nội địa nhận gia công cho DNCX hoặc doanh nghiệp nội địa thuê DNCX gia công: Khai #&GCPTQ; - Đối với hàng hóa nhập khẩu khác: + Trường hợp tạm nhập hàng hóa của cá nhân được nhà nước Việt Nam cho miễn thuế ghi #&1; + Trường hợp tạm nhập hàng hóa là dụng cụ, nghề nghiệp, phương tiện làm việc có thời hạn của cơ quan, tổ chức, của người nhập cảnh ghi #&2; + Trường hợp tạm nhập phương tiện chứa hàng hóa theo phương thức quay vòng khác (kệ, giá, thùng, lọ...) ghi #&3; + Trường hợp hàng hóa là quà biếu, quà tặng của tổ chức, cá nhân ở Việt Nam gửi cho tổ chức, cá nhân ở nước ngoài ghi #&4; + Trường hợp hàng hóa của cơ quan đại diện ngoại giao, tổ chức quốc tế tại Việt Nam và những người làm việc tại các cơ quan, tổ chức này #&5; + Trường hợp hàng hóa viện trợ nhân đạo, viện trợ không hoàn lại#&6; + Trường hợp hàng hóa là hàng mẫu không thanh toán ghi #&7; + Trường hợp hàng hóa là tài sản di chuyển của tổ chức, cá nhân ghi #&8; + Trường hợp hàng hóa là hành lý cá nhân của người nhập cảnh gửi theo vận đơn, hàng hóa mang theo người nhập cảnh vượt tiêu chuẩn miễn thuế#&9.",
+    "amendmentInstructionsVi": "- Trường hợp nhập khẩu tại chỗ: Nhập #&NKTC#&số tờ khai xuất khẩu tại chỗ hoặc số tờ khai xuất khẩu tại chỗ đầu tiên (số tờ khai chỉ nhập 11 ký tự đầu);\nVí dụ: #&NKTC#&30001234567.\n- Trường hợp doanh nghiệp nội địa nhận gia công cho DNCX hoặc doanh nghiệp nội địa thuê DNCX gia công: Khai #&GCPTQ;\n- Trường hợp mua bán, thuê mượn, gia công giữa DNCX với nội địa, doanh nghiệp nhập khẩu ghi “#&NKPTQ #& Số tờ khai xuất khẩu tương ứng của doanh nghiệp nhập khẩu.\n- Đối với hàng hóa nhập khẩu khác:\n+ Trường hợp tạm nhập hàng hóa của cá nhân được nhà nước Việt Nam cho miễn thuế ghi #&1;\n+ Trường hợp tạm nhập hàng hóa là dụng cụ, nghề nghiệp, phương tiện làm việc có thời hạn của cơ quan, tổ chức, của người nhập cảnh ghi #&2;\n+ Trường hợp tạm nhập phương tiện chứa hàng hóa theo phương thức quay vòng khác (kệ, giá, thùng, lọ…) ghi #&3;\n+ Trường hợp hàng hóa là quà biếu, quà tặng của tổ chức, cá nhân ở nước ngoài gửi cho tổ chức, cá nhân ở Việt Nam ghi #&4;\n+ Trường hợp hàng hóa của cơ quan đại diện ngoại giao, tổ chức quốc tế tại Việt Nam và những người làm việc tại các cơ quan, tổ chức này ghi #&5;\n+ Trường hợp hàng hóa viện trợ nhân đạo, viện trợ không hoàn lại ghi #&6;\n+ Trường hợp hàng hóa là hàng mẫu không thanh toán ghi #&7;\n+ Trường hợp hàng hóa là tài sản di chuyển của tổ chức, cá nhân ghi #&8;\n+ Trường hợp hàng hóa là hành lý cá nhân của người nhập cảnh gửi theo vận đơn, hàng hóa mang theo người nhập cảnh vượt tiêu chuẩn miễn thuế ghi #&9.\nTrường hợp hàng hóa vừa thuộc loại hình nhập khẩu tại chỗ, vừa thuộc hàng hóa nhập khẩu khác thì khai thông tin hàng hóa nhập khẩu khác vào chỉ tiêu 1.50 - Chi tiết khai trị giá."
+  },
+  {
+    "id": "1.70",
+    "ordinal": 70,
+    "labelVi": "Phân loại chỉ thị của Hải quan",
+    "labelEn": "Customs instruction classification",
+    "scope": "system",
+    "sourceKind": [
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "system_owned",
+      "summaryVi": "Thuộc cơ quan/hệ thống hải quan. Phần dành cho công chức hải quan; AICD không tự tạo chỉ thị.",
+      "summaryEn": "Owned by customs officers/system. Reserved for customs officers; AICD must not generate an instruction.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Phần dành cho công chức hải quan; AICD không tự tạo chỉ thị.",
+        "en": "Reserved for customs officers; AICD must not generate an instruction.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Chỉ tiếp nhận chỉ thị của hải quan; không ghi mã A/B bằng quyết định của người khai.",
+        "en": "Only receive customs instructions; the declarant must not generate A/B instructions.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "customs_system",
+    "coverage": {
+      "status": "system_owned",
+      "aicdKeys": [],
+      "noteVi": "Thuộc cơ quan/hệ thống hải quan; AICD không sinh, sửa hoặc truyền giá trị này.",
+      "noteEn": "Owned by customs officers/system; AICD does not generate, edit or transmit this value."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          161
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.70",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "(Phần dành cho công chức hải quan) Nhập mã phân loại thông báo của công chức hải quan: “A”: Hướng dẫn sửa đổi “B”: Thay đổi khai báo nhập khẩu"
+  },
+  {
+    "id": "1.71",
+    "ordinal": 71,
+    "labelVi": "Ngày",
+    "labelEn": "Customs instruction date",
+    "scope": "system",
+    "sourceKind": [
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "system_owned",
+      "summaryVi": "Thuộc cơ quan/hệ thống hải quan. Phần dành cho công chức hải quan.",
+      "summaryEn": "Owned by customs officers/system. Reserved for customs officers.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Phần dành cho công chức hải quan.",
+        "en": "Reserved for customs officers.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Ngày phải thuộc thông báo của công chức hải quan; không dùng ngày duyệt AICD.",
+        "en": "Date belongs to the customs officer's notice, not AICD approval time.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "customs_system",
+    "coverage": {
+      "status": "system_owned",
+      "aicdKeys": [],
+      "noteVi": "Thuộc cơ quan/hệ thống hải quan; AICD không sinh, sửa hoặc truyền giá trị này.",
+      "noteEn": "Owned by customs officers/system; AICD does not generate, edit or transmit this value."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          161
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.71",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "(Phần dành cho công chức hải quan) Nhập ngày/tháng/năm công chức hải quan thông báo tới người khai hải quan."
+  },
+  {
+    "id": "1.72",
+    "ordinal": 72,
+    "labelVi": "Tên",
+    "labelEn": "Customs instruction subject",
+    "scope": "system",
+    "sourceKind": [
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "system_owned",
+      "summaryVi": "Thuộc cơ quan/hệ thống hải quan. Tên/trích yếu thông báo của công chức hải quan; không phải tên người khai.",
+      "summaryEn": "Owned by customs officers/system. Customs notification subject, not the declarant's name.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Tên/trích yếu thông báo của công chức hải quan; không phải tên người khai.",
+        "en": "Customs notification subject, not the declarant's name.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Trích yếu phải thuộc thông báo hải quan; không dùng tên người phụ trách hoặc tiêu đề hồ sơ.",
+        "en": "Subject belongs to the customs notice, not case title or reviewer name.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "customs_system",
+    "coverage": {
+      "status": "system_owned",
+      "aicdKeys": [],
+      "noteVi": "Thuộc cơ quan/hệ thống hải quan; AICD không sinh, sửa hoặc truyền giá trị này.",
+      "noteEn": "Owned by customs officers/system; AICD does not generate, edit or transmit this value."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          161
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.72",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "(Phần dành cho công chức hải quan) Nhập trích yếu nội dung thông báo."
+  },
+  {
+    "id": "1.73",
+    "ordinal": 73,
+    "labelVi": "Nội dung",
+    "labelEn": "Customs instruction content",
+    "scope": "system",
+    "sourceKind": [
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "system_owned",
+      "summaryVi": "Thuộc cơ quan/hệ thống hải quan. Nội dung thông báo của công chức hải quan.",
+      "summaryEn": "Owned by customs officers/system. Content of the customs officer's notification.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Nội dung thông báo của công chức hải quan.",
+        "en": "Content of the customs officer's notification.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Giữ nội dung thông báo chính thức và nguồn; AICD không tạo nội dung chỉ thị.",
+        "en": "Preserve official notice content and provenance; AICD does not create customs instructions.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "customs_system",
+    "coverage": {
+      "status": "system_owned",
+      "aicdKeys": [],
+      "noteVi": "Thuộc cơ quan/hệ thống hải quan; AICD không sinh, sửa hoặc truyền giá trị này.",
+      "noteEn": "Owned by customs officers/system; AICD does not generate, edit or transmit this value."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          161
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.73",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "(Phần dành cho công chức hải quan) Nhập nội dung thông báo của công chức hải quan."
+  },
+  {
+    "id": "1.74",
+    "ordinal": 74,
+    "labelVi": "Mã số hàng hóa",
+    "labelEn": "Goods classification code (HS)",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "required",
+      "summaryVi": "Cần có thông tin cho trường hợp nhập khẩu tương ứng; hệ thống có thể hỗ trợ và cần xác nhận ngoại lệ. Cần phân loại có căn cứ và danh mục hiện hành; TT121 bổ sung trường hợp phần mềm điều khiển nhập trước thiết bị.",
+      "summaryEn": "Information is needed for the applicable import case; system assistance and exceptions need confirmation. Requires supported classification and current nomenclature; TT121 adds control software imported before equipment.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Cần phân loại có căn cứ và danh mục hiện hành; TT121 bổ sung trường hợp phần mềm điều khiển nhập trước thiết bị.",
+        "en": "Requires supported classification and current nomenclature; TT121 adds control software imported before equipment.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu danh mục/biểu thuế hiện hành và căn cứ phân loại; TT121 có quy tắc Chương 98 và phần mềm trước thiết bị.",
+        "en": "Check current nomenclature/tariffs and classification basis; TT121 includes Chapter 98 and pre-equipment software cases.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "classification_origin_reviewer",
+    "coverage": {
+      "status": "manual_review",
+      "aicdKeys": [
+        "goods.hsCode"
+      ],
+      "noteVi": "Có goods.hsCode nhập tay; AICD không phân loại HS hay xác minh danh mục/biểu thuế hiện hành.",
+      "noteEn": "A manual goods.hsCode field exists; AICD does not classify goods or verify current nomenclature/tariffs."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          161
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.74",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [
+        {
+          "sourceId": "tt121-2025-gazette",
+          "section": "Phụ lục I · mục 2(a) · Mẫu số 01 · 1.74",
+          "effectiveFrom": "2026-02-01",
+          "pages": [
+            143
+          ]
+        }
+      ],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "(1) Nhập đầy đủ mã số hàng hóa quy định tại Danh mục hàng hóa xuất nhập khẩu Việt Nam, Biểu thuế xuất khẩu, nhập khẩu ưu đãi và các Biểu thuế nhập khẩu ưu đãi, đặc biệt do Bộ Tài chính ban hành. (2) Trường hợp hàng hóa thuộc Chương 98 của Biểu thuế nhập khẩu ưu đãi thì nhập mã số hàng hóa của 97 Chương tương ứng tại Danh mục hàng hóa xuất nhập khẩu Việt Nam và ghi mã số Chương 98 vào ô “Mô tả hàng hóa”.",
+    "amendmentInstructionsVi": "(1) Nhập đầy đủ mã số hàng hóa quy định tại Danh mục hàng hóa xuất nhập khẩu Việt Nam do Bộ Tài chính ban hành, các Biểu thuế nhập khẩu do Chính phủ ban hành.\n (2) Trường hợp hàng hóa thuộc Chương 98 của Biểu thuế nhập khẩu ưu đãi thì nhập mã số hàng hóa của 97 Chương tương ứng tại Danh mục hàng hóa xuất nhập khẩu Việt Nam và ghi mã số Chương 98 vào ô “Mô tả hàng hóa”.\n(3) Trường hợp phần mềm điều khiển, vận hành nhập khẩu trước khi nhập khẩu máy móc, thiết bị: khai báo mã số hàng hóa của máy móc, thiết bị dự kiến nhập khẩu."
+  },
+  {
+    "id": "1.75",
+    "ordinal": 75,
+    "labelVi": "Mã quản lý riêng",
+    "labelEn": "Special management code",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Số thứ tự trong danh mục thiết bị đồng bộ hoặc danh mục trừ lùi đã đăng ký.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Item sequence in a registered equipment or deduction list.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Số thứ tự trong danh mục thiết bị đồng bộ hoặc danh mục trừ lùi đã đăng ký.",
+        "en": "Item sequence in a registered equipment or deduction list.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu số thứ tự với danh mục đã đăng ký; không dùng ID nội bộ dòng hàng AICD.",
+        "en": "Check sequence against the registered list; never use the AICD goods-line ID.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "classification_origin_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. ID dòng hàng AICD không phải mã quản lý riêng của danh mục đã đăng ký. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. An AICD goods-line ID is not the registered-list management code. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          161
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.75",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập số thứ tự của mặt hàng trong Danh mục máy móc thiết bị đồng bộ thuộc chương 84, 85, 90 hoặc số thứ tự của mặt hàng trong danh mục trừ lùi khác đã được đăng ký với cơ quan Hải quan."
+  },
+  {
+    "id": "1.76",
+    "ordinal": 76,
+    "labelVi": "Thuế suất",
+    "labelEn": "Import duty rate",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Hệ thống có thể xác định theo HS/biểu thuế; nhập tay chỉ theo tình huống và căn cứ hợp lệ.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. The system may derive the rate from HS/tariff code; manual entry needs an applicable basis.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Hệ thống có thể xác định theo HS/biểu thuế; nhập tay chỉ theo tình huống và căn cứ hợp lệ.",
+        "en": "The system may derive the rate from HS/tariff code; manual entry needs an applicable basis.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu HS, mã biểu thuế, ngày áp dụng và căn cứ nhập tay; tỷ lệ nhập trong AICD chưa được xác minh pháp lý.",
+        "en": "Reconcile HS, tariff code, date and manual-entry basis; an AICD rate is legally unverified.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "manual_review",
+      "aicdKeys": [
+        "goods.dutyRate"
+      ],
+      "noteVi": "Có goods.dutyRate nhập tay; chưa xác minh mức thuế, hiệu lực, mã biểu thuế hay cơ chế VNACCS tự điền.",
+      "noteEn": "A manual goods.dutyRate field exists; rate, validity, tariff code and VNACCS derivation are unverified."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          161
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.76",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Hệ thống hỗ trợ tự động xác định mức thuế suất nhập khẩu tương ứng với mã số hàng hóa và mã biểu thuế đã nhập. Trường hợp hệ thống phản hồi lại một trong các lỗi tương ứng với các mã lỗi: E1004, E1006, E1008, E1009 thì người khai hải quan nhập thủ công mức thuế suất thuế nhập khẩu vào ô này. Nhập “0” trong trường hợp “Mã biểu thuế nhập khẩu” nhập mã B30."
+  },
+  {
+    "id": "1.77",
+    "ordinal": 77,
+    "labelVi": "Mức thuế tuyệt đối",
+    "labelEn": "Specific duty amount/rate",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi chịu thuế tuyệt đối; gồm mức, đơn vị và đồng tiền, có thể hệ thống hỗ trợ.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For specific duty; includes rate, unit and currency with possible system assistance.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi chịu thuế tuyệt đối; gồm mức, đơn vị và đồng tiền, có thể hệ thống hỗ trợ.",
+        "en": "For specific duty; includes rate, unit and currency with possible system assistance.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra mức thuế, đơn vị và đồng tiền theo bảng áp dụng; không chuyển thành phần trăm tùy ý.",
+        "en": "Check amount/rate, unit and currency against the applicable table; do not arbitrarily convert to a percentage.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          161,
+          162
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.77",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập mức thuế tuyệt đối: Hệ thống tự động xác định mức thuế tuyệt đối tương ứng với mã áp dụng mức thuế tuyệt đối đã nhập. Trường hợp hệ thống không tự xác định, người khai hải quan có thể nhập thủ công mức thuế tuyệt đối vào ô này. Trường hợp nhập thủ công mức thuế tuyệt đối thì không phải nhập vào ô “mã áp dụng mức thuế tuyệt đối” dưới đây. Ô 2: Nhập mã đơn vị tính thuế tuyệt đối: (1) Trường hợp đã nhập mức thuế tuyệt đối thì phải nhập đơn vị tính thuế tuyệt đối tương ứng quy định tại văn bản hiện hành. (2) Mã đơn vị tính thuế tuyệt đối (tham khảo “Mã đơn vị tính” trên website Hải quan: www.customs.gov.vn) Ô 3: Nhập mã đồng tiền của mức thuế tuyệt đối. (tham khảo bảng mã tiền tệ trên website Hải quan: www.customs.gov.vn)"
+  },
+  {
+    "id": "1.78",
+    "ordinal": 78,
+    "labelVi": "Mô tả hàng hóa",
+    "labelEn": "Goods description",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "required",
+      "summaryVi": "Cần có thông tin cho trường hợp nhập khẩu tương ứng; hệ thống có thể hỗ trợ và cần xác nhận ngoại lệ. Mô tả đủ đặc tính phân loại; TT121 mở rộng thuộc tính, nhà sản xuất và trường hợp thiết bị.",
+      "summaryEn": "Information is needed for the applicable import case; system assistance and exceptions need confirmation. Describe classification-relevant characteristics; TT121 expands attributes, manufacturer and equipment cases.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Mô tả đủ đặc tính phân loại; TT121 mở rộng thuộc tính, nhà sản xuất và trường hợp thiết bị.",
+        "en": "Describe classification-relevant characteristics; TT121 expands attributes, manufacturer and equipment cases.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu đủ đặc tính/nhà sản xuất và cú pháp tình huống TT121; mô tả thương mại trích xuất chỉ là nguồn ban đầu.",
+        "en": "Verify required attributes/manufacturer and TT121 scenario syntax; an extracted commercial description is only initial evidence.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "classification_origin_reviewer",
+    "coverage": {
+      "status": "source_proposal",
+      "aicdKeys": [
+        "goods.description"
+      ],
+      "noteVi": "Có mô tả thương mại từng dòng; chưa đảm bảo đủ thuộc tính kỹ thuật, nhà sản xuất hoặc cú pháp theo TT121.",
+      "noteEn": "Commercial item descriptions exist; technical attributes, manufacturer and TT121 scenario syntax are not guaranteed."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          162,
+          163
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.78",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [
+        {
+          "sourceId": "tt121-2025-gazette",
+          "section": "Phụ lục I · mục 2(a) · Mẫu số 01 · 1.78",
+          "effectiveFrom": "2026-02-01",
+          "pages": [
+            143,
+            144,
+            145
+          ]
+        }
+      ],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "(1) Ghi rõ tên hàng, nhãn hiệu, quy cách phẩm chất, thông số kĩ thuật, thành phần cấu tạo, model, kí/mã hiệu, đặc tính, công dụng của hàng hóa theo hợp đồng thương mại và tài liệu khác liên quan đến lô hàng. Trường hợp hàng hóa là giống cây trồng phải ghi rõ tên giống cây trồng đó. Lưu ý: - Tên hàng hóa được khai bằng tiếng Việt hoặc tiếng Anh. - Trường hợp hàng hóa nhập khẩu là nguyên liệu, vật tư gia công, sản xuất xuất khẩu khai: Mã nguyên liệu, vật tư, linh kiện#&tên hàng hóa, quy cách, phẩm chất. Trường hợp hàng hóa là sản phẩm gia công đặt gia công ở nước ngoài khai: Mã sản phẩm#&tên hàng hóa, quy cách, phẩm chất. - Trường hợp khai gộp mã HS theo quy định tại khoản 2 Điều 18 Thông tư này thì mô tả khái quát hàng hóa (nêu những đặc điểm khái quát cơ bản của hàng hóa, ví dụ: linh kiện ô tô các loại, vải các loại,...). - Trường hợp hàng hóa nhập khẩu là máy móc, thiết bị được phân loại theo bộ phận chính hoặc máy thực hiện chức năng chính hoặc nhóm phù hợp với chức năng xác định của máy hoặc hàng hóa ở dạng chưa lắp ráp hoặc tháo rời được phân loại theo nguyên chiếc thì ngoài khai như quy định tại điểm (1) cần phải ghi rõ tên chi tiết từng máy móc/thiết bị... đã đăng ký trong Danh mục máy móc, thiết bị là tổ hợp, dây chuyền hoặc tên từng chi tiết, linh kiện rời đối với hàng hóa ở dạng chưa lắp ráp hoặc tháo rời tương ứng với mã số hàng hóa của máy chính hoặc của hàng hóa ở dạng nguyên chiếc. Trường hợp không thể tách được trị giá từng máy móc/bộ phận/chi tiết/linh kiện/phụ tùng thì khai kèm theo Danh mục tên, số lượng máy móc/bộ phận/chi tiết/linh kiện/phụ tùng bằng nghiệp vụ HYS. (2) Trường hợp hàng hóa đáp ứng điều kiện áp dụng thuế suất thuế nhập khẩu ưu đãi tại Chương 98 thì ngoài dòng mô tả hàng hóa, người khai nhập thêm mã số tại Chương 98 Biểu thuế nhập khẩu ưu đãi vào ô này. (3) Trường hợp áp dụng kết quả phân tích, phân loại của lô hàng cùng tên hàng, thành phần, tính chất lý hóa, tính năng, công dụng, nhập khẩu từ cùng một nhà sản xuất đã được thông quan trước đó thì ghi số văn bản thông báo.",
+    "amendmentInstructionsVi": "(1) Ghi rõ tên hàng, nhãn hiệu, quy cách phẩm chất, thông số kĩ thuật, thành phần, hàm lượng, tính chất lý hóa, cấu tạo, model, kí/mã hiệu, đặc tính, công dụng quy cách đóng gói, nhà sản xuất và các tiêu chí khác được sử dụng làm căn cứ xác định mã số của hàng hóa theo hợp đồng thương mại và tài liệu khác liên quan đến lô hàng. Trường hợp hàng hóa là giống cây trồng phải ghi rõ tên giống cây trồng đó. \nLưu ý: \n- Tên hàng hóa được khai bằng tiếng Việt hoặc tiếng Anh.\n- Trường hợp hàng hóa nhập khẩu là nguyên liệu, vật tư gia công, sản xuất xuất khẩu khai: Mã nguyên liệu, vật tư, linh kiện#&tên hàng hóa, quy cách, phẩm chất. Trường hợp hàng hóa là sản phẩm gia công đặt gia công ở nước ngoài khai: Mã sản phẩm#&tên hàng hóa, quy cách, phẩm chất.\n- Trường hợp hàng hóa nhập khẩu là nguyên liệu, vật tư gia công, sản xuất xuất khẩu khai: Mã nguyên liệu, vật tư, linh kiện#&tên hàng hóa, quy cách, phẩm chất. Trường hợp hàng hóa là sản phẩm gia công đặt gia công ở nước ngoài khai: Mã sản phẩm#&tên hàng hóa, quy cách, phẩm chất.\n- Trường hợp khai gộp mã HS theo quy định tại khoản 2 Điều 18 Thông tư này thì mô tả khái quát hàng hóa (nêu những đặc điểm khái quát cơ bản của hàng hóa, ví dụ: linh kiện ô tô các loại, vải các loại,…). \n- Trường hợp hàng hóa nhập khẩu là máy móc, thiết bị được phân loại theo bộ phận chính hoặc máy thực hiện chức năng chính hoặc nhóm phù hợp với chức năng xác định của máy hoặc hàng hóa ở dạng chưa lắp ráp hoặc tháo rời được phân loại theo nguyên chiếc thì ngoài khai như quy định tại điểm (1) cần phải ghi rõ tên chi tiết từng máy móc/thiết bị… đã đăng ký trong Danh mục máy móc, thiết bị là tổ hợp, dây chuyền hoặc tên từng chi tiết, linh kiện rời đối với hàng hóa ở dạng chưa lắp ráp hoặc tháo rời tương ứng với mã số hàng hóa của máy chính hoặc của hàng hóa ở dạng nguyên chiếc. Trường hợp không thể tách được trị giá từng máy móc/bộ phận/chi tiết/linh kiện/phụ tùng thì khai kèm theo Danh mục tên, số lượng máy móc/bộ phận/chi tiết/linh kiện/phụ tùng bằng nghiệp vụ HYS.\n(2) Trường hợp hàng hóa đáp ứng điều kiện áp dụng thuế suất thuế nhập khẩu ưu đãi tại Chương 98 thì ngoài dòng mô tả hàng hóa, người khai nhập thêm mã số tại Chương 98 Biểu thuế nhập khẩu ưu đãi vào ô này.\n(3) Trường hợp áp dụng kết quả phân tích, phân loại của lô hàng cùng tên hàng, thành phần, tính chất lý hóa, tính năng, công dụng, nhập khẩu từ cùng một nhà sản xuất đã được thông quan trước đó thì ghi số/ngày văn bản thông báo."
+  },
+  {
+    "id": "1.79",
+    "ordinal": 79,
+    "labelVi": "Mã nước xuất xứ",
+    "labelEn": "Country of origin code",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "required",
+      "summaryVi": "Cần có thông tin cho trường hợp nhập khẩu tương ứng; hệ thống có thể hỗ trợ và cần xác nhận ngoại lệ. Theo chứng từ/căn cứ xuất xứ được người có chuyên môn đánh giá; không lấy từ nước gửi hàng.",
+      "summaryEn": "Information is needed for the applicable import case; system assistance and exceptions need confirmation. Based on professionally assessed origin evidence; never copied from consignment country.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Theo chứng từ/căn cứ xuất xứ được người có chuyên môn đánh giá; không lấy từ nước gửi hàng.",
+        "en": "Based on professionally assessed origin evidence; never copied from consignment country.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Xác minh xuất xứ và mã nước theo chứng từ đủ điều kiện; không tự lấy từ nơi gửi hoặc người bán.",
+        "en": "Verify origin and country code against qualifying evidence; never copy from shipping location or seller.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "classification_origin_reviewer",
+    "coverage": {
+      "status": "manual_review",
+      "aicdKeys": [
+        "goods.origin"
+      ],
+      "noteVi": "Có goods.origin nhập tay; không tự gán xuất xứ từ C/O, người bán hoặc nước gửi, chưa xác minh mã nước/quy tắc xuất xứ.",
+      "noteEn": "A manual goods.origin field exists; no automatic assignment from C/O, seller or consignment country, and no verified origin/country-code rules."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          163
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.79",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Nhập mã nước, vùng lãnh thổ nơi hàng hóa được chế tạo (sản xuất) theo bảng mã UN/LOCODE (căn cứ vào chứng từ chứng nhận xuất xứ hàng hóa hoặc các tài liệu khác có liên quan đến lô hàng)."
+  },
+  {
+    "id": "1.80",
+    "ordinal": 80,
+    "labelVi": "Mã Biểu thuế nhập khẩu",
+    "labelEn": "Import tariff schedule code",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "required",
+      "summaryVi": "Cần có thông tin cho trường hợp nhập khẩu tương ứng; hệ thống có thể hỗ trợ và cần xác nhận ngoại lệ. Theo bảng mã hiện hành và điều kiện áp dụng; TT121 thay danh sách cũ bằng tham chiếu bảng và lưu ý Chương 98.",
+      "summaryEn": "Information is needed for the applicable import case; system assistance and exceptions need confirmation. Use current codes and eligibility; TT121 replaces the old list with a table reference and Chapter 98 notes.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Theo bảng mã hiện hành và điều kiện áp dụng; TT121 thay danh sách cũ bằng tham chiếu bảng và lưu ý Chương 98.",
+        "en": "Use current codes and eligibility; TT121 replaces the old list with a table reference and Chapter 98 notes.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "TT121 yêu cầu tra bảng mã hiện hành và điều kiện Chương 98; miễn thuế khác không chịu thuế, chưa có bảng mã hoạt động.",
+        "en": "TT121 requires current tariff codes and Chapter 98 conditions; exempt differs from non-taxable and no active table is loaded.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "classification_origin_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          163,
+          164
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.80",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [
+        {
+          "sourceId": "tt121-2025-gazette",
+          "section": "Phụ lục I · mục 2(a) · Mẫu số 01 · 1.80",
+          "effectiveFrom": "2026-02-01",
+          "pages": [
+            145
+          ]
+        }
+      ],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Nhập mã Biểu thuế tương ứng loại thuế suất thuế nhập khẩu, cụ thể nhập một trong các mã sau: “B01”: Biểu thuế nhập khẩu ưu đãi (thuế suất MFN) “B02”: Chương 98 (1) Biểu thuế nhập khẩu ưu đãi “B03”: Biểu thuế nhập khẩu thông thường (bằng 150% thuế suất MFN) “B04”: Biểu thuế nhập khẩu ưu đãi đặc biệt của Việt Nam để thực hiện Hiệp định Thương mại hàng hóa ASEAN (ATIGA) “B05”: Biểu thuế nhập khẩu ưu đãi đặc biệt của Việt Nam để thực hiện Khu vực Mậu dịch Tự do ASEAN - Trung Quốc (ACFTA) “B06”: Biểu thuế nhập khẩu ưu đãi đặc biệt của Việt Nam để thực hiện Khu vực Mậu dịch Tự do ASEAN - Hàn Quốc “B07”: Biểu thuế nhập khẩu ưu đãi đặc biệt của Việt Nam để thực hiện Hiệp định Khu vực Thương mại tự do ASEAN - Úc - Niu Di lân “B08”: Biểu thuế nhập khẩu ưu đãi đặc biệt của Việt Nam để thực hiện Hiệp định Thương mại Hàng hóa ASEAN - Ấn Độ “B09”: Biểu thuế nhập khẩu ưu đãi đặc biệt của Việt Nam để thực hiện Hiệp định Đối tác kinh tế toàn diện ASEAN - Nhật Bản “B10”: Biểu thuế nhập khẩu ưu đãi đặc biệt của Việt Nam để thực hiện Hiệp định đối tác kinh tế Việt Nam - Nhật Bản “B11”: Biểu thuế thuế nhập khẩu đối với các mặt hàng được áp dụng ưu đãi thuế suất thuế nhập khẩu Việt - Lào “B12”: Biểu thuế thuế nhập khẩu đối với hàng hóa có xuất xứ Campuchia “B13”: Biểu thuế nhập khẩu ưu đãi đặc biệt của Việt Nam để thực hiện Hiệp định Thương mại tự do Việt Nam - Chi Lê “B14”: Biểu thuế NK ngoài hạn ngạch “B15”: Biểu thuế nhập khẩu tuyệt đối “B16”: Biểu thuế nhập khẩu hỗn hợp “B17”: Chương 98 (2) Biểu thuế nhập khẩu ưu đãi “B30”: Đối tượng không chịu thuế nhập khẩu Lưu ý: - Trường hợp hàng hóa đáp ứng điều kiện áp dụng thuế suất thuế nhập khẩu ưu đãi tại Chương 98 thì đối chiếu với “Biểu thuế Chương 98 - B02 và B17” trên website Hải quan (www.customs.gov.vn) để nhập mã Biểu thuế nhập khẩu là B02 hoặc B17 tương ứng với mã số hàng hóa tại Chương 98. - Đối với hàng hóa thuộc đối tượng miễn thế, không được khai mã Biểu thuế nhập khẩu là B30 mà phải lựa chọn mã biểu thuế tương ứng với loại thuế suất thuế nhập khẩu nêu trên.",
+    "amendmentInstructionsVi": "Nhập mã Biểu thuế nhập khẩu tương ứng loại thuế suất thuế nhập khẩu áp dụng theo “Bảng mã Biểu thuế nhập khẩu” trên website của Cục Hải quan www.customs.gov.vn. \nLưu ý: \n- Trường hợp hàng hóa đáp ứng điều kiện áp dụng thuế suất thuế nhập khẩu ưu đãi tại Chương 98 thì đối chiếu với “Biểu thuế Chương 98 - B02 và B17” trên website của Cục Hải quan (www.customs.gov.vn) để nhập mã Biểu thuế nhập khẩu là B02 hoặc B17 tương ứng với mã số hàng hóa tại Chương 98.\n- Đối với hàng hóa thuộc đối tượng miễn thuế không được khai mã Biểu thuế của đối tượng không chịu thuế nhập khẩu mà phải lựa chọn mã Biểu thuế tương ứng với loại thuế xuất khẩu, thuế nhập khẩu theo “Bảng mã Biểu thuế nhập khẩu” trên website của Cục Hải quan www.customs.gov.vn."
+  },
+  {
+    "id": "1.81",
+    "ordinal": 81,
+    "labelVi": "Mã ngoài hạn ngạch",
+    "labelEn": "Out-of-quota indicator",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi áp dụng thuế suất ngoài hạn ngạch.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. When an out-of-quota duty rate applies.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi áp dụng thuế suất ngoài hạn ngạch.",
+        "en": "When an out-of-quota duty rate applies.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Chỉ khai ngoài hạn ngạch khi có căn cứ về hạn ngạch và mức thuế tương ứng.",
+        "en": "Declare out-of-quota status only with a quota basis and applicable duty treatment.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          164
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.81",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Trường hợp Doanh nghiệp nhập khẩu áp dụng thuế suất ngoài hạn ngạch thì nhập chữ “X” vào ô này."
+  },
+  {
+    "id": "1.82",
+    "ordinal": 82,
+    "labelVi": "Mã áp dụng mức thuế tuyệt đối",
+    "labelEn": "Specific duty application code",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi chịu thuế tuyệt đối/thuế hỗn hợp theo mã được áp dụng.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. When specific or mixed duty applies under the applicable code.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi chịu thuế tuyệt đối/thuế hỗn hợp theo mã được áp dụng.",
+        "en": "When specific or mixed duty applies under the applicable code.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu mã mức thuế tuyệt đối/hỗn hợp, HS và đơn vị áp dụng theo bảng hiện hành.",
+        "en": "Check specific/mixed-duty code, HS and unit against the current table.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          164
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.82",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Trường hợp mặt hàng chịu thuế tuyệt đối hoặc thuế hỗn hợp thì nhập mã áp dụng mức thuế tuyệt đối của từng dòng hàng (tham khảo bảng mã áp dụng mức thuế tuyệt đối trên website Hải quan: www.customs.gov.vn)"
+  },
+  {
+    "id": "1.83",
+    "ordinal": 83,
+    "labelVi": "Số lượng (1)",
+    "labelEn": "Quantity (1)",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "required",
+      "summaryVi": "Cần có thông tin cho trường hợp nhập khẩu tương ứng; hệ thống có thể hỗ trợ và cần xác nhận ngoại lệ. Số lượng và đơn vị theo hàng hóa/giao dịch; có quy tắc làm tròn và thuế tuyệt đối.",
+      "summaryEn": "Information is needed for the applicable import case; system assistance and exceptions need confirmation. Quantity and unit by goods/transaction, with rounding and specific-duty conditions.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Số lượng và đơn vị theo hàng hóa/giao dịch; có quy tắc làm tròn và thuế tuyệt đối.",
+        "en": "Quantity and unit by goods/transaction, with rounding and specific-duty conditions.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Nguồn cho phép 2 số thập phân, có hướng dẫn làm tròn và ghi số thực tế ở mô tả; không tự làm tròn chứng từ gốc.",
+        "en": "The baseline permits two decimals with rounding/description rules; never silently round source evidence.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "source_proposal",
+      "aicdKeys": [
+        "goods.quantity",
+        "goods.unit"
+      ],
+      "noteVi": "Có số lượng và đơn vị thương mại; chưa đối chiếu đơn vị danh mục, quy tắc làm tròn hoặc thuế tuyệt đối.",
+      "noteEn": "Commercial quantity and unit exist; nomenclature units, filing rounding and specific-duty rules are not verified."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          164
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.83",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập số lượng hàng hóa nhập khẩu của từng mặt hàng theo đơn vị tính trong Danh mục hàng hóa xuất khẩu, nhập khẩu Việt Nam hoặc theo thực tế hoạt động giao dịch. Lưu ý: (1) Trường hợp hàng hóa chịu thuế tuyệt đối, nhập số lượng theo đơn vị tính thuế tuyệt đối theo quy định. (2) Có thể nhập đến 02 số sau dấu thập phân. (3) Trường hợp số lượng thực tế có phần thập phân vượt quá 02 ký tự, người khai hải quan thực hiện làm tròn số thành 02 ký tự thập phân sau dấu phẩy để khai số lượng đã làm tròn vào ô này, đồng thời khai số lượng thực tế và đơn giá hóa đơn vào ô “Mô tả hàng hóa” theo nguyên tắc sau: “mô tả hàng hóa #& số lượng” (không khai đơn giá vào ô “Đơn giá hóa đơn”). Ô 2: Nhập mã đơn vị tính theo Danh mục hàng hóa xuất khẩu, nhập khẩu hoặc theo thực tế giao dịch. (tham khảo bảng “Mã đơn vị tính” trên website www.customs.gov.vn) Lưu ý: Trường hợp hàng hóa chịu thuế tuyệt đối, nhập mã đơn vị tính thuế tuyệt đối theo quy định (tham khảo mã đơn vị tính tại “Bảng mã áp dụng mức thuế tuyệt đối” trên website www.customs.gov.vn)."
+  },
+  {
+    "id": "1.84",
+    "ordinal": 84,
+    "labelVi": "Số lượng (2)",
+    "labelEn": "Quantity (2)",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Số lượng và đơn vị thứ hai theo danh mục; không tự sao chép quantity (1).",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Second quantity/unit under the nomenclature; do not automatically copy quantity (1).",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Số lượng và đơn vị thứ hai theo danh mục; không tự sao chép quantity (1).",
+        "en": "Second quantity/unit under the nomenclature; do not automatically copy quantity (1).",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra số lượng và đơn vị theo danh mục, giới hạn 2 số thập phân trong nguồn; dữ liệu quantity (1) không đủ.",
+        "en": "Check nomenclature quantity/unit and baseline two-decimal limit; quantity (1) alone is insufficient.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Không ánh xạ lại goods.quantity và goods.unit thành cặp số lượng thứ hai. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. goods.quantity and goods.unit are not mapped again as the second quantity/unit pair. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          164,
+          165
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.84",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập số lượng hàng hóa nhập khẩu của từng mặt hàng theo đơn vị tính trong Danh mục hàng hóa xuất khẩu, nhập khẩu Việt Nam. Có thể nhập đến 02 số sau dấu thập phân. Ô 2: Nhập mã đơn vị tính theo Danh mục hàng hóa xuất khẩu, nhập khẩu Việt Nam. (tham khảo bảng “Mã đơn vị tính” trên website www.customs.gov.vn)"
+  },
+  {
+    "id": "1.85",
+    "ordinal": 85,
+    "labelVi": "Trị giá hóa đơn",
+    "labelEn": "Item invoice value",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Trị giá từng dòng và ngoại lệ gia công/FOC/không hóa đơn; khác với trị giá tính thuế.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Per-item invoice value with processing/FOC/no-invoice exceptions; distinct from customs value.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Trị giá từng dòng và ngoại lệ gia công/FOC/không hóa đơn; khác với trị giá tính thuế.",
+        "en": "Per-item invoice value with processing/FOC/no-invoice exceptions; distinct from customs value.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu trị giá dòng hóa đơn với tổng, FOC và tình huống gia công; không đồng nhất với trị giá tính thuế.",
+        "en": "Reconcile item invoice value with totals, FOC and processing cases; do not equate it with customs value.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "valuation_reviewer",
+    "coverage": {
+      "status": "source_proposal",
+      "aicdKeys": [
+        "goods.amount"
+      ],
+      "noteVi": "Có thành tiền hóa đơn của dòng; chưa áp dụng các tình huống khai đặc biệt và không phải trị giá tính thuế.",
+      "noteEn": "Per-line invoice amount exists; special filing cases are not implemented and this is not customs value."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          165
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.85",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "1. Nhập trị giá hóa đơn cho từng dòng hàng. - Trường hợp nhập khẩu hàng hóa thuê gia công ở nước ngoài: khai trị giá hàng hóa tính đến cửa khẩu nhập đầu tiên (theo điều kiện giao hàng CIF hoặc tương đương). Trường hợp không xác định được trị giá theo điều kiện giao hàng CIF hoặc tương đương thì khai đầy đủ trị giá cấu thành của sản phẩm, bao gồm toàn bộ trị giá nguyên vật liệu cấu thành nên sản phẩm, giá (phí) gia công sản phẩm và các chi phí khác (nếu có). - Trường hợp hàng hóa theo hợp đồng thuê tài chính: khai toàn bộ trị giá của hàng hóa, loại trừ các dịch vụ cung cấp kèm theo hợp đồng thuê tài chính. 2. Lưu ý: - Có thể nhập đến 04 số sau dấu thập phân. - Trường hợp trị giá hóa đơn của một mặt hàng vượt quá 12 ký tự phần nguyên thì được tách ra nhiều dòng hàng nếu đáp ứng nguyên tắc tổng lượng của các dòng hàng bằng tổng lượng tờ khai. Trường hợp không đáp ứng nguyên tắc này chuyển khai trên tờ khai hải quan giấy. - Trường hợp không có hóa đơn thì không khai tiêu chí này."
+  },
+  {
+    "id": "1.86",
+    "ordinal": 86,
+    "labelVi": "Đơn giá hóa đơn",
+    "labelEn": "Invoice unit price",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Gồm đơn giá, đồng tiền và đơn vị tính; có ngoại lệ/giới hạn nguồn.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Includes unit price, currency and unit, with source-specific limits and exceptions.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Gồm đơn giá, đồng tiền và đơn vị tính; có ngoại lệ/giới hạn nguồn.",
+        "en": "Includes unit price, currency and unit, with source-specific limits and exceptions.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra 3 ô con và quan hệ đơn giá × lượng với trị giá; nguồn có ngoại lệ quá 9 ký tự/không hóa đơn/làm tròn lượng.",
+        "en": "Check all three subfields and unit-price × quantity reconciliation; the source has length, no-invoice and quantity-rounding exceptions.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "valuation_reviewer",
+    "coverage": {
+      "status": "source_proposal",
+      "aicdKeys": [
+        "goods.unitPrice",
+        "goods.unit"
+      ],
+      "noteVi": "Có đơn giá và đơn vị thương mại; chưa có đồng tiền riêng của dòng hoặc đủ ánh xạ 3 ô/ngoại lệ VNACCS.",
+      "noteEn": "Commercial unit price and unit exist; separate item currency and the full three-subfield/exception mapping are missing."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          165,
+          166
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.86",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Ô 1: Nhập đơn giá hóa đơn. Ô 2: Nhập mã đơn vị tiền tệ của đơn giá hóa đơn. Ô 3: Nhập mã đơn vị tính số lượng của đơn giá hóa đơn. Lưu ý: - Đơn giá hóa đơn x số lượng = trị giá hóa đơn ± 1; - Trường hợp đơn giá hóa đơn vượt quá 9 kí tự thì không khai báo tại chỉ tiêu này, mà khai báo tại ô “Mô tả hàng hóa”. - Trường hợp không có hóa đơn thì không khai tiêu chí này. - Trường hợp nhập khẩu hàng hóa thuê gia công ở nước ngoài: khai đầy đủ đơn giá cấu thành của một sản phẩm theo điều kiện giao hàng CIF hoặc tương đương. Trường hợp không xác định được đơn giá theo điều kiện giao hàng CIF hoặc tương đương thì khai đầy đủ đơn giá cấu thành của một sản phẩm, bao gồm toàn bộ trị giá nguyên vật liệu cấu thành một sản phẩm, giá (phí) gia công một sản phẩm và các chi phí khác (nếu có) của một đơn vị sản phẩm. - Trường hợp nhập khẩu hàng hóa theo hợp đồng thuê tài chính: khai toàn bộ trị giá của hàng hóa, loại trừ các dịch vụ cung cấp kèm theo hợp đồng thuê tài chính."
+  },
+  {
+    "id": "1.87",
+    "ordinal": 87,
+    "labelVi": "Trị giá tính thuế",
+    "labelEn": "Customs/taxable value",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Có thể hệ thống phân bổ hoặc người khai xác định; phải đánh giá phương pháp và điều kiện.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. May be system-allocated or manually established; valuation method and applicability need assessment.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Có thể hệ thống phân bổ hoặc người khai xác định; phải đánh giá phương pháp và điều kiện.",
+        "en": "May be system-allocated or manually established; valuation method and applicability need assessment.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Xác nhận phương pháp phân bổ, đồng tiền và trị giá thủ công/hệ thống; không lấy invoice amount làm trị giá hải quan tự động.",
+        "en": "Confirm allocation method, currency and manual/system value; never automatically use invoice amount as customs value.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "valuation_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Không tự coi goods.amount hoặc invoiceTotal là trị giá tính thuế. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. goods.amount and invoiceTotal are not automatically treated as customs value. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          166
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.87",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "(1) Trường hợp hệ thống tự động phân bổ, tính toán trị giá hải quan thì không cần nhập các ô này (hệ thống sẽ tự động tính toán đối với các trường hợp tại ô \"Mã phân loại khai trị giá\" điền mã tương ứng là “6”, “7”); (2) Trường hợp phân bổ, tính toán trị giá hải quan thủ công thì nhập các ô này như sau: Ô 1: Nhập mã đơn vị tiền tệ của trị giá hải quan. Ô 2: Nhập trị giá hải quan của dòng hàng: - Trường hợp mã đơn vị tiền tệ không phải là “VND” thì có thể nhập đến 04 số sau dấu thập phân. - Trường hợp mã đơn vị tiền tệ là “VND” thì không được nhập số thập phân. (3) Các trường hợp bắt buộc nhập: - Tại ô \"Mã phân loại khai trị giá\" điền một trong các mã: “1”, “2”, “3”, “4”, “8”, “9”, “T”; - Không phân bổ các khoản điều chỉnh theo tỷ lệ trị giá. (4) Hệ thống ưu tiên trị giá được nhập thủ công. (5) Trường hợp trị giá hóa đơn của một mặt hàng vượt quá 12 ký tự phần nguyên thì được tách ra nhiều dòng hàng nếu đáp ứng nguyên tắc tổng lượng của các dòng hàng bằng tổng lượng tờ khai. Trường hợp không đáp ứng nguyên tắc này chuyển khai trên tờ khai hải quan giấy."
+  },
+  {
+    "id": "1.88",
+    "ordinal": 88,
+    "labelVi": "Số của mục khai khoản điều chỉnh",
+    "labelEn": "Adjustment entry number",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi liên kết dòng hàng với khoản điều chỉnh đã khai ở phần chung.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. When linking the goods line to a header valuation adjustment.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi liên kết dòng hàng với khoản điều chỉnh đã khai ở phần chung.",
+        "en": "When linking the goods line to a header valuation adjustment.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Số mục phải tham chiếu khoản điều chỉnh phần chung thực sự áp dụng cho dòng hàng.",
+        "en": "The entry number must reference a header adjustment actually applicable to the goods line.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "valuation_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          166
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.88",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập số thứ tự của khoản điều chỉnh đã khai báo tại mục “Các khoản điều chỉnh”."
+  },
+  {
+    "id": "1.89",
+    "ordinal": 89,
+    "labelVi": "Số thứ tự của dòng hàng trên tờ khai TN- TX tương ứng",
+    "labelEn": "Corresponding temporary declaration line number",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi đối chiếu dòng hàng tạm nhập/tạm xuất; kiểm tra số lượng còn lại.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. When linking a temporary import/export line; verify remaining quantity.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi đối chiếu dòng hàng tạm nhập/tạm xuất; kiểm tra số lượng còn lại.",
+        "en": "When linking a temporary import/export line; verify remaining quantity.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu dòng hàng tạm nhập/tạm xuất và lượng còn lại; không dùng số dòng hiện tại thay thế.",
+        "en": "Reconcile temporary declaration line and remaining quantity; do not substitute the current line number.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "qualified_customs_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          166
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.89",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập số thứ tự của dòng hàng trên tờ khai đã tạm nhập, tạm xuất tương ứng. Lưu ý: - Số lượng của dòng hàng trên tờ khai phải <= số lượng còn lại trên CSDL quản lý tờ khai tạm xuất, tạm nhập tương ứng."
+  },
+  {
+    "id": "1.90",
+    "ordinal": 90,
+    "labelVi": "Số danh mục miễn thuế nhập khẩu",
+    "labelEn": "Import-duty exemption list number",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi thuộc danh mục miễn thuế đăng ký trên VNACCS; kiểm tra hiệu lực và quyền sử dụng.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For a registered VNACCS exemption list; verify validity and eligible user.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi thuộc danh mục miễn thuế đăng ký trên VNACCS; kiểm tra hiệu lực và quyền sử dụng.",
+        "en": "For a registered VNACCS exemption list; verify validity and eligible user.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Xác nhận số danh mục miễn thuế đã đăng ký, hiệu lực, chủ thể và cơ quan áp dụng.",
+        "en": "Verify registered exemption-list number, validity, eligible party and applicable office.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          166,
+          167
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.90",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập số Danh mục miễn thuế nhập khẩu đã được thông báo trên hệ thống VNACCS. Lưu ý: (1) Danh mục miễn thuế phải trong thời hạn hiệu lực áp dụng (nếu có). (2) Không nhập số Danh mục miễn thuế khi Danh mục này đang được sử dụng cho tờ khai khác chưa thông quan/hoàn thành thủ tục hải quan. (3) Phải nhập đồng thời mã miễn thuế nhập khẩu vào ô \"Mã miễn/giảm/không chịu thuế nhập khẩu\". (4) Người nhập khẩu phải được thông báo trên Danh mục miễn thuế. (5) Nếu hàng hóa nhập khẩu miễn thuế không thuộc đối tượng phải đăng ký Danh mục trên VNACCS thì không phải nhập ô này."
+  },
+  {
+    "id": "1.91",
+    "ordinal": 91,
+    "labelVi": "Số dòng tương ứng trong Danh mục miễn thuế nhập khẩu",
+    "labelEn": "Corresponding exemption-list line number",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision",
+      "customs_system"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi dùng danh mục miễn thuế; lượng khai không vượt số còn lại.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. When using an exemption list; declared quantity must respect the remaining balance.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi dùng danh mục miễn thuế; lượng khai không vượt số còn lại.",
+        "en": "When using an exemption list; declared quantity must respect the remaining balance.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Đối chiếu dòng trong danh mục và lượng còn lại; không tự giảm số dư ngoài hệ thống hải quan.",
+        "en": "Reconcile list line and remaining balance; do not alter customs balances outside the customs system.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          167
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.91",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập số thứ tự của dòng hàng tương ứng đã được thông báo trên Danh mục miễn thuế. Lưu ý: Số lượng hàng hóa nhập khẩu trong tờ khai nhập khẩu ≤ số lượng hàng hóa còn lại trong Danh mục miễn thuế đã được thông báo trên hệ thống VNACCS."
+  },
+  {
+    "id": "1.92",
+    "ordinal": 92,
+    "labelVi": "Mã miễn/giảm/không chịu thuế nhập khẩu",
+    "labelEn": "Import-duty exemption/reduction/non-taxable code",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi có căn cứ miễn, giảm hoặc không chịu thuế; cần bảng mã và ngày hiệu lực.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. When an exemption/reduction/non-taxable basis applies; current codes and dates are required.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi có căn cứ miễn, giảm hoặc không chịu thuế; cần bảng mã và ngày hiệu lực.",
+        "en": "When an exemption/reduction/non-taxable basis applies; current codes and dates are required.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra mã miễn/giảm/không chịu thuế và căn cứ, hiệu lực tại ngày đăng ký.",
+        "en": "Check exemption/reduction/non-taxable code, basis and validity on registration date.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          167
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.92",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Nhập mã miễn/giảm/không chịu thuế nhập khẩu trong trường hợp hàng hóa thuộc đối tượng miễn/giảm /không chịu thuế nhập khẩu. (Tham khảo bảng mã miễn/giảm/không chịu thuế nhập khẩu trên website Hải quan: www.customs.gov.vn) Lưu ý: (1) Ngày đăng kí tờ khai hàng hóa được miễn/giảm/không chịu thuế nhập khẩu là ngày còn trong thời hạn hiệu lực áp dụng. (2) Trường hợp thuộc đối tượng phải thông báo DMMT trên VNACCS thì phải nhập ô này và các ô tại chỉ tiêu “Số danh mục miễn thuế nhập khẩu”. (3) Trường hợp không thuộc đối tượng phải thông báo DMMT trên VNACCS thì không phải nhập vào các ô tại chỉ tiêu “Số danh mục miễn thuế nhập khẩu”."
+  },
+  {
+    "id": "1.93",
+    "ordinal": 93,
+    "labelVi": "Số tiền giảm thuế nhập khẩu",
+    "labelEn": "Import-duty reduction amount",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi có quyết định/căn cứ giảm thuế nhập khẩu.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. When a valid import-duty reduction basis or decision exists.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi có quyết định/căn cứ giảm thuế nhập khẩu.",
+        "en": "When a valid import-duty reduction basis or decision exists.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Số tiền giảm phải có căn cứ và khớp loại thuế/quyết định; không tự tính giảm từ chênh lệch thuế.",
+        "en": "Reduction amount needs a basis and matching tax/decision; do not infer relief from a tax discrepancy.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          167
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.93",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập số tiền giảm thuế nhập khẩu."
+  },
+  {
+    "id": "1.94",
+    "ordinal": 94,
+    "labelVi": "Mã áp dụng thuế suất/mức thuế và thu khác",
+    "labelEn": "Other tax/levy rate application code",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Mã sắc thuế và mức áp dụng theo thứ tự; giá trị VAT nhập tay không thay được mã này.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. Tax/levy category and rate codes in the specified order; a manually entered VAT rate is not this code.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Mã sắc thuế và mức áp dụng theo thứ tự; giá trị VAT nhập tay không thay được mã này.",
+        "en": "Tax/levy category and rate codes in the specified order; a manually entered VAT rate is not this code.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra thứ tự sắc thuế, mã mức áp dụng và hiệu lực; VAT dạng phần trăm trong AICD không thay được các mã.",
+        "en": "Check tax ordering, rate codes and validity; an AICD percentage VAT field cannot replace these codes.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. goods.vatRate nhập tay không thay thế mã sắc thuế và mã mức thuế VNACCS. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. A manual goods.vatRate does not replace VNACCS tax-category and rate codes. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          167
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.94",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Nhập mã áp dụng thuế suất/mức thuế trong trường hợp hàng hóa phải chịu thuế nhập khẩu bổ sung (thuế tự vệ, thuế chống bán phá giá,...), thuế tiêu thụ đặc biệt, thuế bảo vệ môi trường, thuế GTGT. Lưu ý: (1) Phải nhập theo thứ tự: thuế nhập khẩu bổ sung, thuế tiêu thụ đặc biệt, thuế bảo vệ môi trường, thuế GTGT. Trường hợp hàng hóa thuộc đối tượng không chịu thuế thì nhập mã sắc thuế đồng thời phải nhập mã đối tượng không chịu thuế tại chỉ tiêu Mã miễn/giảm/không chịu thuế và thu khác. Trường hợp hàng hóa không áp dụng các loại thuế và thu khác thì không phải nhập vào ô này. (Tham khảo bảng mã áp dụng thuế suất/mức thuế và mã sắc thuế trên website Hải quan: www.customs.gov.vn) (2) Ngày đăng kí tờ khai nhập khẩu phải trong thời hạn hiệu lực áp dụng thuế suất/mức thuế."
+  },
+  {
+    "id": "1.95",
+    "ordinal": 95,
+    "labelVi": "Mã miễn/giảm/không chịu thuế và thu khác",
+    "labelEn": "Other tax/levy exemption/reduction/non-taxable code",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "master_data",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi miễn, giảm hoặc không chịu thuế và thu khác; cần căn cứ, mã và hiệu lực.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. For other tax/levy relief or non-taxability; requires a basis, code and validity.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi miễn, giảm hoặc không chịu thuế và thu khác; cần căn cứ, mã và hiệu lực.",
+        "en": "For other tax/levy relief or non-taxability; requires a basis, code and validity.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Mỗi mã miễn/giảm/không chịu thuế phải đúng sắc thuế và căn cứ, hiệu lực tương ứng.",
+        "en": "Each relief/non-taxable code must match its tax category, basis and validity.",
+        "verification": "source_read_human_confirmation_required"
+      },
+      {
+        "vi": "Chưa nạp bảng mã hiện hành có phiên bản/ngày hiệu lực; nội dung mã trong nguồn chỉ để đối chiếu, không phải danh sách được phép đang hoạt động.",
+        "en": "No versioned current code table with effective dates is loaded; codes quoted in the source are reference text, not an active allowed-value set.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          168
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.95",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": true,
+      "status": "not_loaded"
+    },
+    "sourceInstructionsVi": "Nhập mã miễn/giảm/không chịu thuế và thu khác tương tự như nhập mã miễn/giảm/không chịu thuế nhập khẩu. Ngày đăng kí tờ khai nhập khẩu hàng hóa được miễn/giảm/không chịu thuế là ngày còn trong thời hạn hiệu lực áp dụng. (Tham khảo bảng mã miễn/giảm/không chịu thuế và thu khác trên website Hải quan: www.customs.gov.vn)"
+  },
+  {
+    "id": "1.96",
+    "ordinal": 96,
+    "labelVi": "Số tiền giảm thuế và thu khác",
+    "labelEn": "Other tax/levy reduction amount",
+    "scope": "item",
+    "sourceKind": [
+      "document",
+      "reviewer_decision"
+    ],
+    "requirement": {
+      "kind": "conditional",
+      "summaryVi": "Chỉ nhập khi điều kiện áp dụng được xác nhận; bao gồm trường tùy chọn/hoãn nhập theo nguồn. Khi có căn cứ giảm thuế và thu khác.",
+      "summaryEn": "Enter only when applicability is confirmed; includes optional/deferred-entry cases in the source. When a valid other-tax/levy reduction basis exists.",
+      "verification": "source_read_human_confirmation_required"
+    },
+    "conditions": [
+      {
+        "vi": "Khi có căn cứ giảm thuế và thu khác.",
+        "en": "When a valid other-tax/levy reduction basis exists.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "validation": [
+      {
+        "vi": "Kiểm tra số tiền giảm theo từng sắc thuế và quyết định; không mặc định toàn bộ thuế được giảm.",
+        "en": "Check reduction by tax category and decision; do not default to full relief.",
+        "verification": "source_read_human_confirmation_required"
+      }
+    ],
+    "reviewOwner": "tax_reviewer",
+    "coverage": {
+      "status": "not_implemented",
+      "aicdKeys": [],
+      "noteVi": "Chưa có liên kết trích xuất nguồn trong mô hình dữ kiện AICD ban đầu cho chỉ tiêu này. Khả năng nhập cấu trúc tờ khai là một chiều riêng; trạng thái này không có nghĩa trình soạn thảo không có ô nhập.",
+      "noteEn": "No source-extraction relationship exists in the original AICD fact model for this indicator. Structured declaration capture is a separate dimension; this status does not mean the editor has no input."
+    },
+    "ecusMapping": {
+      "status": "unverified",
+      "target": null,
+      "noteVi": "Chưa có đặc tả nhập ECUS được nhà cung cấp xác nhận; không khai báo tên cột, vị trí hoặc định dạng thay thế. Bộ kết nối ECUS thử nghiệm của AICD chưa thực hiện ánh xạ này.",
+      "noteEn": "No vendor-confirmed ECUS import specification is available; column names, positions and replacement formats are not asserted. The AICD ECUS test connector does not implement this mapping."
+    },
+    "provenance": {
+      "baseline": {
+        "sourceId": "tt39-2018-form01",
+        "pages": [
+          168
+        ],
+        "section": "Phụ lục I · Mẫu số 01 · 1.96",
+        "effectiveFrom": "2018-06-05"
+      },
+      "amendments": [],
+      "currentLawConfirmed": false
+    },
+    "codeTable": {
+      "referenced": false,
+      "status": "not_applicable"
+    },
+    "sourceInstructionsVi": "Nhập số tiền giảm thuế và thu khác."
+  }
+];

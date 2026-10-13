@@ -1,8 +1,10 @@
 # Validation scope
 
+This document is a chronological validation record. Counts, limitations and “planned” statements in earlier delivery sections describe those checkpoints, not necessarily the current implementation. The latest shipment-first section below supersedes earlier statements that automatic Kimi processing, combined declaration autofill, shared email-attachment OCR and sender-question drafts were not implemented. Live Gmail, sending, follow-ups and real ECUS integration remain absent.
+
 ## Evidence available
 
-No existing repository was supplied. Six real shipment PDFs (55 pages) were supplied later and inspected locally. Their contents and derived results remain in ignored local storage; the deployed demo and tracked fixtures contain synthetic examples only. No broad extraction accuracy or real ECUS success metric is reported.
+No existing repository was supplied. Six real shipment PDFs (55 pages) were supplied later and inspected locally. They are now stored together in the local application as described in the latest section. Their contents and derived results remain in ignored local storage; source fixtures contain synthetic examples only. No broad extraction accuracy or real ECUS success metric is reported.
 
 ## Required software checks
 
@@ -18,15 +20,15 @@ Run `npm test` for the actual executable test list. See the delivery notes for c
 - Extracted-field accuracy and wrong values that software failed to flag.
 - Shipment grouping mistake rates and broker review time.
 - An authorized live Gmail synchronization and its retention policy.
-- Multi-person use under an explicitly configured shared Site audience.
+- Multi-person use under the selected Google sign-in and owner-approval flow.
 - Real ECUS installation, real draft creation/read-back, transmission or registration.
-- Regulations, code tables, valuation, duty/VAT, origin/FTA or HS classification.
+- Executable current customs rules, code tables, valuation, duty/VAT, origin/FTA or HS classification. The source-based VNACCS field audit is separate from legal validation.
 - Live Supabase sign-in, SMTP invitations/recovery, session renewal and standalone deployment in the owner's cloud accounts.
 - Live Kimi model responses, account/model availability and extraction accuracy. All Kimi transport tests are mocked; no real shipment was sent.
 
 ## Acceptance boundary
 
-Internal approval freezes an AICD review snapshot; it does not grant customs approval. `Create ECUS draft` executes the **test** connector only. A legal/customs status must remain `Not yet assessed`, including after a successful test run or archive.
+Internal approval freezes an AICD review snapshot; it does not grant customs approval. `Create test ECUS draft` executes the **test** connector only. Legal/customs validation remains unassessed, including after a successful test run or archive.
 
 ## Verified in this delivery (October 10, 2026)
 
@@ -39,17 +41,17 @@ Internal approval freezes an AICD review snapshot; it does not grant customs app
 
 ## Email/password and Kimi update
 
-- 96 automated tests pass, including provider identity validation, invite allowlists, atomic throttling, one-use recovery proofs, cookie protections, bounded and redacted provider responses, callback parsing and localization, session refresh, Kimi page selection, exact source grounding, version retirement and review invalidation.
+- At that earlier checkpoint, 96 automated tests passed, including provider identity validation, invite allowlists, atomic throttling, one-use recovery proofs, cookie protections, bounded and redacted provider responses, callback parsing and localization, session refresh, Kimi page selection, exact source grounding, version retirement and review invalidation. See the local delivery section for the later integrated count.
 - The standalone build and Wrangler dry run passed without deployment, using clearly synthetic infrastructure identifiers. Generated configuration selects Supabase mode, disables simulated Sites identity and resolves both D1 migration files.
 - Local HTTP checks rejected forged platform identity headers in standalone mode, rejected HTTP password submission before any provider call and blocked cross-origin authentication requests.
 - Browser inspection verified English/Vietnamese login and password-reset screens using a fake local provider configuration without submitting credentials. The unconfigured state blocks login. Kimi settings display the international endpoint and unavailable state until server configuration exists.
 - Eight existing API integration groups passed again after the auth changes. These checks cover the Sites-mode local workspace with synthetic data; they do not substitute for live Supabase testing.
 
-Kimi only proposes factual header fields from explicitly selected stored text pages (up to five pages / 24,000 characters). Successful proposal saves are audited. Failed or timed-out provider attempts consume the rate limit but do not yet create a separate durable transmission ledger. Requests are not automatically retried after provider errors.
+At that checkpoint, Kimi only proposed factual header fields from explicitly selected stored text pages (up to five pages / 24,000 characters). The shipment-first update below adds automatic bounded intake and commercial goods proposals. Successful proposal saves are audited. Failed or timed-out provider attempts consume the rate limit but do not yet create a separate durable transmission ledger. Requests are not automatically retried after provider errors.
 
 The API smoke script supplies known text fixture pages for its PDF upload. That check validates storage and page/provenance constraints, not the browser PDF text parser's accuracy. These API and workflow tests use synthetic data only. The separate real-sample regression is described below.
 
-## Real sample: exact coverage
+## Earlier real-sample checkpoint: exact coverage
 
 - Inventoried all six PDFs and all 55 physical pages. 54 pages have absent/minimal native text; one master B/L page has a usable text layer.
 - Local regression processed nine scanned pages with the same Tesseract.js engine and bundled language models used by browser intake, plus one native-text page. The sampled scans cover the combined invoice/packing file, C/O, HBL, labelled contract, and three detailed packing pages.
@@ -60,3 +62,110 @@ The API smoke script supplies known text fixture pages for its PDF upload. That 
 - Browser QA verified the language switch, preference across reload, queue and review screens. Browser file-picker automation stalled, so end-to-end browser upload/OCR was not verified. Direct API original-file intake, parser/OCR module checks and local OCR evaluation were tested separately.
 
 Do not report 23/23 selected matches as overall shipment accuracy. Unchecked fields, grouping mistakes, reviewer time and actual ECUS transfer still have no representative measurement.
+
+## Local delivery and reference audit
+
+- At the previous local-delivery checkpoint, the integrated suite had **120 passing tests**. Added coverage included the loopback launcher, duplicate-instance protection, draft-save races, local actor selection, reference coverage and audit payload copying. Later review invalidation cannot mutate earlier audit before/after details.
+- Integrated TypeScript checking and a production build pass. Local access is development-only and cannot be selected by a production build.
+- Eight API integration groups passed in local mode using synthetic data. Nine read-only local boundary checks passed, including spoofed Host, cross-site Origin, forwarded headers and private file paths.
+- Restart checks preserved the exact workspace and original PDF hashes. A second launch on the same or a different port was rejected without rotating the running instance's private configuration.
+- Browser inspection verified direct local access, Vietnamese/English presentation, persistent language preference, case and global reference views, combined filters and case values. No console errors were observed in the inspected flow. The previously noted browser file-picker/OCR end-to-end gap remains.
+- The source-fact registry covers all 96 numbered indicators with 13 source amendments: 15 partial source relationships, 4 manual relationships, 72 gaps in the original source-fact mapping and 5 customs-authority/system-owned indicators. These mapping categories are separate from the structured editor added below. Exact ECUS mappings and current code tables remain unverified; executable legal rules remain empty.
+- This update used synthetic data and source-reference research. It did not call live Kimi, Gmail or Supabase, contact ECUS, send email, publish or deploy the application, or retest private client documents.
+
+The architecture and module explanation is in [the learning walkthrough](code-walkthrough.md). The source download excludes `.aicd-local`, other runtime state, credentials, client documents and old build archives; it is not a backup of shipment records.
+
+## Structured declaration and ECUS-style interface update
+
+- Final integrated checks: **152 tests passed**, TypeScript passed, production build passed. The bundler still reports a large-chunk advisory; no build error occurred. New PDF declaration content is covered by automated report checks; the earlier eight-page visual PDF checks predate this expanded section.
+- The editor models 90 editable indicators, including 1.48 with a deferred fourth component. Five customs-owned indicators are read-only; 1.46 remains deferred. Of the 72 original source-fact gaps, 71 now have a capture model (70 without an explicitly blocked component, 1.48 partial); this does not add automated extraction, verified legal rules or ECUS import mappings.
+- New tests cover strict typed payloads, malformed decimal/date handling, explicit applicability and evidence, preserved manual context, scope, stable repeating IDs, parent-row references, goods identity collisions, stale review, audited orphan removal, immutable snapshots and old-record initialization. Exact decimal reconciliation catches small differences without a universal rounding tolerance; malformed unit price and packing-list date checks are active.
+- Five `smoke-declaration.mjs` HTTP groups pass: incomplete saved drafts versus reviewed values, forged/blocked inputs, stable row links and invalidation, HTTP 409 conflicts and reopened drafts, and explicit audited orphan removal. Existing eight workflow API groups and nine loopback boundary checks also pass.
+- A full stop/start preserved the exact JSON workspace hash, saved declaration drafts, earlier snapshots and original PDF bytes at revision 94. Existing cases received empty drafts; no historical snapshot was rewritten.
+- Browser checks cover General 1 / General 2 / Goods navigation, compound invoice components, persistent Vietnamese/English preference, review with a manual basis, unsaved input retained across sections/cases, disabled exports while edits are pending, accurate save-status labels and deliberate discard. Changes were tested with labelled synthetic data.
+- The user supplied the software label ECUS5-VNACCS 2018. The layout follows published vendor help sections; no installed-build import template or accepted external declaration was verified. No real model, inbox, auth provider or customs service was called, and no deployment occurred.
+
+Browser upload/OCR and live-provider limitations listed earlier remain; these tests do not establish representative extraction accuracy or legal correctness.
+
+
+## Application structure and navigation cleanup (October 11, 2026)
+
+- 148 regression tests, TypeScript checking and production build passed. Four tests exclusively for the removed coverage presentation helper were deleted; the declaration/reference/export checks remain.
+- A fresh exported-source installation completed with `npm ci --offline --no-audit --no-fund`, including postinstall asset preparation. The fresh copy also passed all 148 tests, type checking and build.
+- Eight workflow API groups and five declaration API groups passed with isolated synthetic data. Nine read-only loopback boundary checks passed against the existing local workspace.
+- The existing workspace reopened at revision 94 with five cases and eight documents. Its serialized state hash exactly matched the pre-cleanup snapshot; browser testing saved no edits.
+- Browser checks covered Vietnamese/English, desktop and narrow navigation, shipment section changes, unsaved declaration retention, disabled report/approval while edits were pending, and list search/filter retention on returning from a shipment. The final fresh browser tab reported no errors.
+- The source export excludes runtime state, credentials, client originals, dependency directories and build caches. Unused hosting/login/template code was removed; no real Gmail, Kimi, Supabase or ECUS request, outgoing email or deployment occurred.
+
+See [the cleanup notes](cleanup-2026-10-11.md) for module changes. At this cleanup checkpoint, Google sign-in, owner approval, automatic Gmail/Kimi processing and evidence-backed sender questions were planned work. The later shipment-first section records which parts were subsequently implemented and tested.
+
+
+## Settings simplification (October 11, 2026)
+
+- Settings now contains only Gmail and ECUS connection cards. Removed account/team/default-reviewer/regulations/practice-data controls and their unused UI code.
+- Gmail address saves omit the default-reviewer field, preserving the existing assignment setting. Neither card claims an active connection.
+- Type checking, production build and 21 existing localization/frontend-access tests passed. Browser inspection verified both languages and exactly two Settings sections with no browser errors. No settings or shipment data was saved during verification.
+
+## Shipment-first intake and combined drafts (October 11, 2026)
+
+### Current implementation and software checks
+
+- Intake prepares the selected batch and saved-email attachments before one revision-checked workspace commit. Grouping runs before supported declaration autofill. Missing-information checks wait until grouping is confirmed and the available documents have readable extraction results; unreadable source pages remain visible review problems.
+- Regression coverage includes attachment-order independence, evidence bridges, container subsets, contradictory House and unqualified B/L references, unsafe shared-container joins, duplicates, later attachments, preserved manual decisions, selective stale-source flags, exact totals, partial declaration components, source quotations, and immutable snapshots. Routine generated draft entries do not each become a confirmation question; real structural or evidence problems remain actionable.
+- Final integrated checks: **190 tests passed**, TypeScript passed, and production build passed. Lint completed with no errors and three existing framework advisories (two full-page auth navigations and the private source-image preview). Vendored PDF/OCR workers are excluded from application linting. The build still reports a large-chunk advisory.
+- The six intake HTTP groups, eight existing workflow HTTP groups and five declaration HTTP groups all passed on an isolated local server with synthetic data. Browser checks verified the six real documents in one shipment, both languages, evidence-backed confirmation questions, an editable local sender draft, preservation of unsaved email edits across navigation, and HTTP 409 recovery without losing typed text. Development hot reload briefly recreated the locale context while files were being edited; after reload the inspected flow had no new errors.
+- `node scripts/smoke-shipment-intake.mjs` passed six synthetic HTTP groups: a complete multipart batch groups before autofill; duplicate batches are idempotent across file order; invalid later files or mismatched metadata leave no partial workspace changes; a valid PDF above 1 MiB reaches upload handling without false extraction success; saved-email attachments retain OCR metadata and sender relationships; and local question drafts remain editable while cross-shipment issue IDs are rejected.
+- The greater-than-1-MiB smoke case exposed the framework's earlier multipart limit. `next.config.ts` now sets the framework body limit to 22 MiB, matching the bounded upload endpoint. Per-file/page limits and the 22-MiB whole-request limit still apply; the framework setting does not disable validation.
+- Automatic Kimi intake is owner-configured, bounded and covered with mocked transport/fallback tests. Missing configuration continues local extraction; provider failures and limits preserve evidence with unavailable/failed/partial status. These software checks establish neither live model availability nor extraction accuracy.
+
+### Real files now saved as one local shipment
+
+- All **six supplied PDFs, containing 55 physical pages**, were imported and retained under the single local shipment **AICD-0006**. At the initial post-grouping checkpoint, the workspace revision was 101; later normal saves may increase that revision.
+- **The final grouping was explicitly confirmed using the already visually checked cross-document references.** The automatic grouping run initially left five groups because its OCR-derived evidence was insufficient. This sample is evidence of a completed reviewed grouping workflow, not evidence that automatic grouping correctly joined all six files unaided.
+- Local OCR has now been attempted for all 48 pages of the detailed packing list. Many dense, rotated or Chinese-language sections remain unreadable or uncertain with the current local language assets. OCR execution is not validation: these pages have not all been transcribed accurately or reconciled line by line.
+- At that checkpoint, combined evidence produced **14 generated declaration entries and one commercial goods row**. These are unapproved source-backed draft values, not 14 broker-validated fields or a complete declaration. No individual field was approved and no final shipment approval or customs submission was performed.
+- Each of the six originals was downloaded through the application's authorized document route and its SHA-256 compared with the supplied source file. All six hashes matched. This verifies original-byte preservation, not extraction correctness.
+- The five pre-existing cases were compared with their baseline and remained unchanged. Private originals, OCR output, runtime records and verification artifacts remain local and excluded from source downloads.
+- No live Gmail or Kimi call was made while processing this sample. No email was sent and no ECUS system was contacted. Ask sender currently creates an editable draft inside AICD only; it does not create a Gmail draft, deliver mail, monitor replies or schedule follow-ups.
+
+The final sample revision is 102, with 14 generated declaration entries, one commercial goods row and 16 unresolved questions. Formatting-only differences in company-name spacing no longer create conflicts; different letters remain meaningful. The unresolved OCR and questions stay visible. Accurate completion of every declaration field and every packing-table line remains unverified. The [code walkthrough, Chapter 21](code-walkthrough.md#21-why-shipment-first-processing-changes-the-product) explains the implemented processing and review boundaries.
+
+
+## Individual confirmation and real-only workspace (October 11, 2026)
+
+- **205 automated tests passed**, including per-field history, explicit per-row confirmation, ignored incoming approval flags, safe save-only behavior, unchanged-row preservation, row-scoped fingerprints, high-confidence facts without routine questions, changed-source reopening and legacy confirmation recovery. Type checking and production build passed. Lint has zero errors and three existing advisories (two authentication navigations and the private image preview).
+- **23 HTTP groups passed in a separate disposable workspace:** four new review groups, eight existing workflow groups, five declaration groups and six shipment-intake groups. They verify that one header confirmation retains every unrelated issue, saving a goods table grants no approvals, confirming one row retains other rows/questions, and saved history survives a fresh read. The smoke scripts require `AICD_SMOKE_ISOLATED=1`; their default port is 5174.
+- Browser checks in the isolated workspace confirmed one exporter question and one goods row individually. Other questions remained pending; the completed count increased by one each time. Reload retained six pending questions and four completed decisions in the test case. The completed section started collapsed. No browser console errors were recorded for that inspected flow.
+- Read-only browser verification of the actual workspace showed one shipment with six original PDFs, twelve pending questions and three earlier explicit field confirmations (importer, unloading port and vessel). All three historical values, timestamps and reasons were preserved. No additional real field or goods decision was made during testing.
+- Removed five synthetic/demo cases and their eight documents from the actual workspace records at revision 106, after saving a local recovery copy. Four empty merged case shells remain hidden as grouping history. The retained real shipment, sources, candidates, draft and user decisions were preserved. Full stored-state comparison after QA exactly matched the post-cleanup snapshot. Recovery artifacts and old original blobs remain local and excluded from the source ZIP.
+- The goods table's reviewed count now reflects goods rows, instead of counting header-field reviews. Saving edits and confirming a row are separate controls. Completed question snapshots are historical presentation; they cannot approve a current question.
+
+The remaining questions reflect unresolved evidence, including uncertain OCR. This change does not establish extraction accuracy or customs correctness. No live Kimi/Gmail call, email send, ECUS connection or deployment occurred. The test server was stopped; the user's regular local application remains running. See [Chapter 22 of the walkthrough](code-walkthrough.md#22-confirming-one-question-must-not-confirm-its-neighbours).
+
+
+## Kimi vision pipeline (October 12, 2026)
+
+- 245 automated tests passed; typecheck and production build passed. Lint has no errors and three existing warnings. New coverage includes blank scans, bounded inline image requests, page/image/version binding, rejected proposals, progress/resume, separate PDF/OCR text, visual citations, draft autofill and preserved human decisions. Provider responses are mocked.
+- A local endpoint check used page 1 of the supplied XCMG invoice/packing PDF. Its rendered JPEG was stored privately with a verified SHA-256; incorrect source versions, nonexistent pages and mismatched image dimensions were rejected. The test used PDFium to prepare its raster; production browser rendering uses PDF.js. Workspace revision stayed 269 across this check. No shipment records were mutated.
+- Browser verification showed the new extraction dialog, page progress, administrator-only configuration message and disabled submission while the key is absent. The existing source documents stayed available.
+- No live Moonshot call or empirical extraction accuracy evaluation was performed: the running server has no configured key. No Gmail message, ECUS transmission or deployment occurred.
+- The old text-only page-selection helper was removed; text and vision now use the shared resumable batch planner. See [Kimi vision guide](kimi-vision.md) for activation and implementation boundaries.
+
+## Email shipment matching and sample classification (October 12, 2026)
+
+- The integrated suite passes **289 tests**. Added provider tests use mocked Kimi responses for exact references and quotations, ambiguous/shared identifiers, contradictory sources, line-bound heading parsing, truncated context, malformed output, timeout, and all-rejected or partially rejected proposals.
+- Domain regressions cover individual confirmation, preserved human rejection, new conflicting evidence, omitted earlier AI links, document replacement, merged cases, archived correspondence and unchanged declaration approvals. Public API requests cannot inject internal AI-result actions.
+- Isolated upload tests exercise the actual email upload function with private storage/server stubs. Plain-text and HTML-only replies preserve original EML bytes and searchable text without creating extra shipment documents/cases; duplicates and body-length limits are checked.
+- Live local HTTP validation at revision 312 checked foreign-origin rejection (403), revision conflict (409), an empty mailbox (422), an unknown email (400), and forged internal actions (400). Workspace state remained unchanged; no Kimi request was made.
+- All 42 previously misclassified sample collections were corrected through audited application actions: 25 reference collections, 15 export/re-export collections, and 2 with unresolved direction. Source hashes were checked first. The repair preserved all 857 documents, candidates, original grouping decisions, saved declaration values and unrelated cases. No shipment was approved.
+- English browser checks verified the email intake/matching controls, specific reference collection labels, and removal of import-only approval actions from non-import records. Vietnamese/English dictionaries and scope checks also pass automated tests.
+- Live Gmail retrieval is not implemented. No provider key is configured, and real Kimi grouping accuracy has not been evaluated. The private sample backup and repair evidence remain excluded from source exports.
+
+
+## Kimi-only extraction (October 13, 2026)
+
+- **304 automated tests pass**, together with TypeScript and the production build. Lint has no errors and three existing framework advisories. Mocked provider checks verify clear visual readings without OCR agreement, absence of legacy text from image requests, exact selected-page metadata, uncertain-page handling, source evidence, unsupported formats and partial results across several batches. These tests establish software behavior, not live model accuracy.
+- Removed PDF.js, Tesseract, OCR language data and local OCR/PDF text readers. PDFium only renders pixels. New PDF uploads ignore caller-supplied text/OCR results and remain pending until Kimi reads the original pages. Legacy source records and human decisions remain preserved.
+- Domain tests verify that clear source-backed facts and goods cells do not raise routine confirmation questions, while conflicting sources, ambiguous dates/numbers and genuinely unclear readings remain actionable. Re-reading preserves unchanged human decisions and records evidence replacement in the audit trail. Unsupported or unreadable originals do not become endlessly pending documents.
+- A temporary, isolated browser rendering page generated a one-page PDF and verified the actual dedicated worker, self-hosted Wasm and 1200 × 600 RGBA output. This exposed and resolved a Vite worker URL problem. No synthetic shipment was added to the workspace.
+- Real sample extraction has not been rerun: this local server still has no configured Kimi key. Existing sample questions therefore reflect historical saved readings until Kimi is configured and those originals are reprocessed. No Gmail, ECUS, outgoing email or live Moonshot operation was performed.

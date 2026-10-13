@@ -22,7 +22,7 @@ export function canUseMembership(actor: Actor, members: IdentityMember[]): boole
 export async function allowedIdentity(db: D1Database, actor: Actor, ownerEmail: string): Promise<boolean> {
   const { results } = await db.prepare('SELECT user_id, email FROM workspace_members WHERE email = ?').bind(actor.email).all<IdentityMember>();
   if (canUseMembership(actor, results)) return true;
-  // Never rebind an existing Sites identity to a different provider by email.
+  // Never rebind an existing identity to a different provider by email.
   if (results.length || actor.email !== ownerEmail) return false;
   const existing = await db.prepare('SELECT id FROM workspaces LIMIT 1').first();
   return !existing;

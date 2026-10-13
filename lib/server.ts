@@ -1,9 +1,9 @@
 import { env } from 'cloudflare:workers';
 import { ZodError } from 'zod';
-import { AuthError, authMode, supabaseConfig } from '@/lib/auth-provider';
-import { requireAuthActor } from '@/lib/server-auth';
-import { applyAction, createEmptyWorkspace, getIssues } from '@/lib/engine';
-import { commitSucceeded, prepareCommit } from '@/lib/server-persistence';
+import { AuthError, supabaseConfig } from '@/lib/auth-provider';
+import { requireAuthActor, runtimeAuthMode } from '@/lib/server-auth';
+import { applyAction, createEmptyWorkspace, getIssues, initializeDeclarationDrafts } from '@/lib/engine';
+import { commitSucceeded, prepareWorkspaceCommit, readWorkspaceState } from '@/lib/server-persistence';
 import { MAX_JSON_BYTES, MAX_WORKSPACE_BYTES, parseId, sameOrigin } from '@/lib/server-validation';
 import type { Action, Actor, WorkspaceResponse, WorkspaceState } from '@/lib/types';
 
@@ -11,7 +11,6 @@ export class ApiError extends Error {
   constructor(public status: number, message: string, public detail?: object) { super(message); }
 }
 type Membership = { workspace_id: string; role: 'owner' | 'reviewer' };
-type WorkspaceRow = { id: string; revision: number; state_json: string };
 export type WorkspaceContext = { db: D1Database; state: WorkspaceState; actor: Actor; role: 'owner' | 'reviewer' };
 export const privateHeaders = { 'Cache-Control': 'private, no-store, max-age=0', 'Vary': 'Cookie', 'X-Content-Type-Options': 'nosniff' };
 export function json(value: unknown, status = 200): Response { return Response.json(value, { status, headers: privateHeaders }); }
@@ -72,7 +71,7 @@ export async function workspace(request: Request): Promise<WorkspaceContext> {
     membership = await db.prepare("SELECT workspace_id, role FROM workspace_members WHERE user_id = ? ORDER BY CASE WHEN role = 'reviewer' THEN 0 ELSE 1 END, created_at DESC LIMIT 1")
       .bind(actor.id).first<Membership>();
     if (!membership) {
-      if (authMode(env) === 'supabase') {
+      if (runtimeAuthMode() === 'supabase') {
         // Standalone users need an owner-created membership. Only the explicitly
         // configured, verified owner can bootstrap a completely empty database.
         if (actor.email !== supabaseConfig(env).ownerEmail || await db.prepare('SELECT id FROM workspaces LIMIT 1').first()) throw new ApiError(403, 'Workspace membership is required. Existing identities must be migrated explicitly.');
@@ -90,10 +89,9 @@ export async function workspace(request: Request): Promise<WorkspaceContext> {
     }
   }
   if (!membership) throw new ApiError(403, 'Workspace membership is required.');
-  const row = await db.prepare('SELECT id, revision, state_json FROM workspaces WHERE id = ?').bind(membership.workspace_id).first<WorkspaceRow>();
-  if (!row) throw new ApiError(404, 'Workspace not found.');
-  const state = JSON.parse(row.state_json) as WorkspaceState;
-  state.revision = row.revision;
+  const stored = await readWorkspaceState(db, membership.workspace_id, actor.id);
+  if (!stored) throw new ApiError(404, 'Workspace not found.');
+  const state = initializeDeclarationDrafts(stored);
   return { db, state, actor, role: membership.role };
 }
 export function response(context: WorkspaceContext): WorkspaceResponse {
@@ -113,13 +111,11 @@ export async function mutate(context: WorkspaceContext, expected: number, action
   catch (error) { throw new ApiError(422, error instanceof Error ? error.message : 'This action is not valid for the current case.'); }
   next.revision = expected + 1;
   assertWorkspaceSize(next);
-  const result = await prepareCommit(context.db, next, expected, context.actor).run();
-  if (!commitSucceeded(result)) {
-    const row = await context.db.prepare('SELECT state_json, revision FROM workspaces WHERE id = ? AND EXISTS (SELECT 1 FROM workspace_members WHERE workspace_id = workspaces.id AND user_id = ?)')
-      .bind(context.state.id, context.actor.id).first<WorkspaceRow>();
-    if (!row) throw new ApiError(403, 'Workspace membership is required.');
-    context.state = JSON.parse(row.state_json) as WorkspaceState;
-    context.state.revision = row.revision;
+  const results = await context.db.batch(prepareWorkspaceCommit(context.db, next, expected, context.actor));
+  if (!commitSucceeded(results[0])) {
+    const stored = await readWorkspaceState(context.db, context.state.id, context.actor.id);
+    if (!stored) throw new ApiError(403, 'Workspace membership is required.');
+    context.state = initializeDeclarationDrafts(stored);
     throw new ApiError(409, 'The workspace changed in another session. Review the latest state before trying again.', response(context));
   }
   context.state = next;

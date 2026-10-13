@@ -1,6 +1,6 @@
 import type { ShipmentCase } from './types.ts';
 
-/** Interface only: no Vietnamese customs requirements or code tables have been supplied. */
+/** Executable-rule interface only. Reviewed VNACCS reference sources are not an activated legal rule set or verified current code tables. */
 export type CustomsRule = {
   id: string;
   version: string;
@@ -17,7 +17,7 @@ export type CodeTable = { id: string; version: string; source: CustomsRule['sour
 export const CUSTOMS_RULES: readonly CustomsRule[] = Object.freeze([]);
 export const CODE_TABLES: readonly CodeTable[] = Object.freeze([]);
 export function assessCustomsRules() {
-  return { status: 'Not yet assessed' as const, ruleSetVersion: null, rulesEvaluated: 0, explanation: 'Verified regulations and current code tables have not been supplied. Customs decisions require qualified manual review.' };
+  return { status: 'Not yet assessed' as const, ruleSetVersion: null, rulesEvaluated: 0, explanation: 'VNACCS reference sources have been reviewed, but executable legal rules and current code tables remain unverified and inactive. Customs decisions require qualified manual review.' };
 }
 /** A future rule refresh must invalidate the named decisions before re-review. */
 export function decisionsAffectedByRuleChange(previous: readonly CustomsRule[], next: readonly CustomsRule[]): string[] {

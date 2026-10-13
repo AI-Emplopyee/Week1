@@ -13,8 +13,10 @@ function sqliteD1(sqlite: DatabaseSync): D1Database {
     return { first: async () => sqlite.prepare(sql).get(...args) || null, all: async () => ({ results: sqlite.prepare(sql).all(...args) }), run: async () => sqlite.prepare(sql).run(...args) };
   }, first: async () => sqlite.prepare(sql).get() || null }; } } as unknown as D1Database;
 }
-test('auth defaults to Sites, unknown modes fail closed, and standalone requires a public key and verified owner configuration', () => {
-  assert.equal(authMode({}), 'sites');
+test('auth requires explicit configuration, rejects legacy modes, and validates standalone public keys', () => {
+  assert.throws(() => authMode({}), AuthError);
+  assert.throws(() => authMode({ AICD_AUTH_MODE: 'sites' }), AuthError);
+  assert.throws(() => authMode({ AICD_AUTH_MODE: 'unconfigured' }), AuthError);
   assert.equal(authMode({ AICD_AUTH_MODE: 'supabase' }), 'supabase');
   assert.throws(() => authMode({ AICD_AUTH_MODE: '' }), AuthError);
   assert.throws(() => authMode({ AICD_AUTH_MODE: 'SUPABASE' }), AuthError);
@@ -81,13 +83,13 @@ test('logout refreshes an expired access token before revoking the remaining pro
   assert.deepEqual(paths.map(path => new URL(path).pathname + new URL(path).search), ['/auth/v1/logout?scope=local', '/auth/v1/token?grant_type=refresh_token', '/auth/v1/logout?scope=local']);
   assert.equal(await revokeCurrentSession(config, session.access_token, session.refresh_token, async () => { throw new Error('offline'); }), false);
 });
-test('invite-only membership never rebinds linked Sites identities or bootstraps over existing data', async () => {
+test('invite-only membership never rebinds linked provider identities or bootstraps over existing data', async () => {
   const sqlite = new DatabaseSync(':memory:'); const db = sqliteD1(sqlite);
   try {
     sqlite.exec('CREATE TABLE workspace_members (email TEXT, user_id TEXT); CREATE TABLE workspaces (id TEXT);');
     assert.equal(await allowedIdentity(db, actor, actor.email), true);
     assert.equal(await allowedIdentity(db, { ...actor, email: 'outsider@example.test' }, actor.email), false);
-    sqlite.prepare('INSERT INTO workspace_members VALUES (?, ?)').run(actor.email, 'old-sites-user');
+    sqlite.prepare('INSERT INTO workspace_members VALUES (?, ?)').run(actor.email, 'old-provider-user');
     assert.equal(await allowedIdentity(db, actor, actor.email), false);
     sqlite.exec('DELETE FROM workspace_members; INSERT INTO workspaces VALUES (\'existing_workspace\');');
     assert.equal(await allowedIdentity(db, actor, actor.email), false);

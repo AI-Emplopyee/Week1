@@ -1,103 +1,57 @@
 import vinext from "vinext";
 import { defineConfig } from "vite";
-import hostingConfig from "./.openai/hosting.json";
-import { readExecutionProfile } from "./scripts/execution-profile.mjs";
-import { sites } from "./build/sites-vite-plugin";
-import { connectorPreview } from "./build/connector-preview-plugin.mjs";
 import { standaloneConfig } from "./scripts/standalone-config.mjs";
+import { assertLocalDevelopment, localPaths } from "./scripts/local-config.mjs";
+import { localOnly } from "./build/local-vite-plugin";
 
-const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
-  "00000000-0000-4000-8000-000000000000";
-
-const { d1, r2 } = hostingConfig;
-
-// macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
-const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt" || process.platform === "darwin";
-const managedLinux = readExecutionProfile() === "managed-linux";
+const local = process.env.AICD_LOCAL === "1";
 const standalone = process.env.AICD_STANDALONE === "1";
-
-const localBindingConfig = {
-  main: "./build/sites-worker.ts",
-  compatibility_flags: ["nodejs_compat"],
-  d1_databases: d1
-    ? [
-        {
-          binding: d1,
-          database_name: "site-creator-d1",
-          database_id: SITE_CREATOR_PLACEHOLDER_DATABASE_ID,
-        },
-      ]
-    : [],
-  r2_buckets: r2
-    ? [
-        {
-          binding: r2,
-          bucket_name: "site-creator-r2",
-        },
-      ]
-    : [],
-};
+const placeholderDatabaseId = "00000000-0000-4000-8000-000000000000";
 
 export default defineConfig(async ({ command }) => {
-  // Use Miniflare's local Request.cf placeholder unless fetching is requested.
+  if (local) {
+    assertLocalDevelopment(command, process.env.AICD_LOCAL_REQUEST_TOKEN);
+    if (standalone) throw new Error("Local and standalone deployment modes cannot be combined.");
+  }
+
+  // Keep development tools offline and their state within the project.
   process.env.CLOUDFLARE_CF_FETCH_ENABLED ??= "false";
   process.env.WRANGLER_SEND_METRICS ??= "false";
-
-  // Keep Wrangler and Miniflare state project-local. These are non-secret tool
-  // settings; application environment belongs in ignored `.env*` files.
   process.env.WRANGLER_WRITE_LOGS ??= "false";
   process.env.WRANGLER_LOG_PATH ??= ".wrangler/logs";
   process.env.WRANGLER_REGISTRY_PATH ??= ".wrangler/dev-registry";
   process.env.MINIFLARE_REGISTRY_PATH ??= ".wrangler/registry";
 
-  // Wrangler snapshots its log path while the Cloudflare plugin is imported.
+  // Wrangler snapshots tool settings when this plugin is imported.
   const { cloudflare } = await import("@cloudflare/vite-plugin");
+  const bindings = standalone ? standaloneConfig({ development: command === "serve" }) : {
+    name: "aicd-preview",
+    vars: { AICD_AUTH_MODE: "unconfigured" },
+    d1_databases: [{ binding: "DB", database_name: "aicd-preview-db", database_id: placeholderDatabaseId, migrations_dir: "drizzle" }],
+    r2_buckets: [{ binding: "BUCKET", bucket_name: "aicd-preview-documents" }],
+  };
 
   return {
+    ...(local ? { envDir: localPaths().directory } : {}),
+    define: { "import.meta.env.AICD_LOCAL_RUNTIME": JSON.stringify(local && command === "serve") },
     server: {
-      ...(managedLinux
-        ? { host: "0.0.0.0", allowedHosts: ["terminal.local"] }
-        : {}),
-      ...(isCodexSeatbeltSandbox
-        ? { watch: { useFsEvents: false, usePolling: true } }
-        : {}),
+      host: "127.0.0.1", allowedHosts: ["localhost", "127.0.0.1"], cors: false,
+      ...(local ? { strictPort: true } : {}),
+      // macOS sandboxed previews cannot use FSEvents.
+      ...(process.platform === "darwin" ? { watch: { useFsEvents: false, usePolling: true } } : {}),
+      fs: { deny: ["**/.env", "**/.env.*", "**/*.{crt,pem,key}", "**/.git/**", "**/.aicd-local/**", "**/.dev.vars*", "**/.wrangler/**"] },
     },
     plugins: [
+      ...(local ? [localOnly(process.env.AICD_LOCAL_REQUEST_TOKEN!)] : []),
       vinext(),
-      sites({ mockAuth: !managedLinux && !standalone }),
-      ...(!standalone ? [connectorPreview()] : []),
       cloudflare({
-        viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
-        inspectorPort: false,
-        config: {
-          ...localBindingConfig,
-          d1_databases: localBindingConfig.d1_databases.map(binding => ({ ...binding, migrations_dir: command === "serve" ? "drizzle" : "../../drizzle" })),
-          ...(standalone ? standaloneConfig({ development: command === "serve" }) : {}),
-          ...(command === "serve" && !standalone
-            ? {
-                services: [
-                  {
-                    binding: "CONNECTORS",
-                    service: "sites-connector-preview",
-                    entrypoint: "ConnectorPreview",
-                  },
-                ],
-              }
-            : {}),
+        viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] }, inspectorPort: false,
+        ...(local ? { configPath: localPaths().config, persistState: { path: localPaths().state }, remoteBindings: false, tunnel: false } : {}),
+        config: local ? {} : {
+          main: "./build/worker.ts", compatibility_date: "2026-05-15", compatibility_flags: ["nodejs_compat"],
+          ...bindings,
+          d1_databases: bindings.d1_databases.map(binding => ({ ...binding, migrations_dir: command === "serve" ? "drizzle" : "../../drizzle" })),
         },
-        ...(command === "serve" && !standalone
-          ? {
-              auxiliaryWorkers: [
-                {
-                  config: {
-                    name: "sites-connector-preview",
-                    main: "./build/connector-preview-worker.mjs",
-                    compatibility_date: "2026-05-15",
-                  },
-                },
-              ],
-            }
-          : {}),
       }),
     ],
   };

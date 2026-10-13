@@ -40,18 +40,17 @@ yarn-error.log*
 
 # typescript
 next-env.d.ts
+*.tsbuildinfo
 
-# Maintained Vite plugin and worker sources.
+# Maintained development gate and Worker entry point.
 !/build/
 /build/*
-!/build/connector-preview-plugin.mjs
-!/build/connector-preview-worker.mjs
-!/build/sites-vite-plugin.LICENSE
-!/build/sites-vite-plugin.ts
-!/build/sites-worker.ts
+!/build/worker.ts
+!/build/local-vite-plugin.ts
 
 /dist/
 /.wrangler/
+/.aicd-local/
 # Checkout-local execution profile and tool state; never publish them.
 /.sites-runtime/
 /.agents/

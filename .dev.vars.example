@@ -5,7 +5,9 @@ SUPABASE_URL=""
 SUPABASE_ANON_KEY=""
 AICD_OWNER_EMAIL=""
 
-# Optional Kimi extraction. Both values are required to enable it.
+# Optional owner-configured Kimi extraction. The key enables paid processing.
+# For npm run local, edit .aicd-local/.dev.vars instead: this root file is ignored.
 # The API endpoint is fixed to https://api.moonshot.ai/v1 by server code.
 MOONSHOT_API_KEY=""
-MOONSHOT_MODEL=""
+# Optional override. An omitted model uses kimi-k2.6.
+MOONSHOT_MODEL="kimi-k2.6"

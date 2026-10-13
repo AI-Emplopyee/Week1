@@ -1,25 +1,28 @@
-// Runs only against a local preview. Creates labelled DEMO records; never deletes existing data.
+// Writes synthetic records only in an explicitly designated disposable workspace.
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
-const origin = process.argv[2] || 'http://127.0.0.1:5173';
+const origin = process.argv[2] || 'http://127.0.0.1:5174';
+if (process.env.AICD_SMOKE_ISOLATED !== '1') throw new Error('Set AICD_SMOKE_ISOLATED=1 only after starting a disposable local workspace. Never run this script against your shipment records.');
 const base = new URL(origin);
 if (!['127.0.0.1', 'localhost', '[::1]'].includes(base.hostname) || base.protocol !== 'http:') throw new Error('This smoke test is restricted to an HTTP loopback preview.');
 const results = [];
 const pass = (name, detail = '') => { results.push({ test: name, passed: true, detail }); console.log(`PASS ${name}${detail ? `: ${detail}` : ''}`); };
 const fixture = name => readFile(fileURLToPath(new URL(`../fixtures/${name}`, import.meta.url)));
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
-const anonymous = await fetch(new URL('/api/workspace', base));
-assert.equal(anonymous.status, 401);
-pass('unauthenticated workspace rejected', '401');
-const signIn = await fetch(new URL('/signin-with-chatgpt?return_to=/', base), { redirect: 'manual' });
-assert.equal(signIn.status, 302);
-const cookie = signIn.headers.get('set-cookie')?.split(';')[0];
-assert(cookie, 'Local preview sign-in cookie is missing.');
+const auth = await fetch(new URL('/api/auth/status', base)).then(response => response.json());
+assert.equal(auth.mode, 'local', 'This fixture runner requires npm run local. It never signs in or sends external requests.');
+assert.equal(auth.authenticated, true);
+assert.equal((await fetch(new URL('/api/workspace', base))).status, 200);
+const remoteOrigin = await fetch(new URL('/api/workspace', base), { headers: { Origin: 'https://untrusted.invalid' } });
+assert.equal(remoteOrigin.status, 403);
+const forwarded = await fetch(new URL('/api/workspace', base), { headers: { 'X-Forwarded-For': '203.0.113.1' } });
+assert.equal(forwarded.status, 403);
+pass('local-only identity and request boundary', 'Direct loopback access; external Origin and forwarded requests rejected');
 async function request(path, options = {}) {
-  return fetch(new URL(path, base), { ...options, headers: { Cookie: cookie, Origin: base.origin, ...options.headers } });
+  return fetch(new URL(path, base), { ...options, headers: { Origin: base.origin, ...options.headers } });
 }
 async function json(path, options = {}) {
   const response = await request(path, options);
@@ -52,7 +55,11 @@ for (const candidate of workspace.state.candidates.filter(candidate => candidate
 }
 for (const candidate of headers.values()) await action({ type: 'review_field', caseId, field: candidate.field, value: candidate.value, candidateId: candidate.id, reason: 'DEMO API integration verification: compared deterministic synthetic fixture evidence.' });
 await action({ type: 'confirm_grouping', caseId, reason: 'DEMO API integration verification: invoice, packing list and bill of lading identify the same fictional shipment.' });
-await action({ type: 'review_goods', caseId, goods: currentCase().goods.map(line => ({ ...line, reviewed: true })), reason: 'DEMO API integration verification: quantities and invoice arithmetic match the fictional source table.' });
+await action({ type: 'review_goods', caseId, goods: currentCase().goods, reviewedLineIds: currentCase().goods.map(line => line.id), reason: 'DEMO API integration verification: quantities and invoice arithmetic match the fictional source table.' });
+// The combined declaration now includes gross weight. The historical fixture
+// omits the unit, so a reviewer explicitly supplies a fictional test unit.
+const draftWeight = currentCase().declarationDraft?.fields.find(entry => entry.fieldId === '1.28');
+if (draftWeight && !draftWeight.value.unitCode) await action({ type: 'save_declaration_field', caseId, fieldId: '1.28', applicability: 'applicable', basis: 'Synthetic test fixture: reviewer supplies the omitted gross-weight unit; not a customs-code validation.', value: { ...draftWeight.value, unitCode: 'KGM' }, provenance: [...draftWeight.provenance, { kind: 'manual', note: 'Synthetic fixture review: gross weight is expressed in kilograms for this test.' }], reason: 'Synthetic fixture unit explicitly supplied by the reviewer.', review: true });
 assert.equal(workspace.issues.filter(issue => issue.caseId === caseId && !issue.resolved).length, 0);
 await action({ type: 'approve', caseId });
 assert.equal(currentCase().status, 'approved');

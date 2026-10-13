@@ -33,7 +33,7 @@ test('English PDF content localizes generated headings while preserving reviewer
   assert.match(enText, /IDA: not transmitted/);
   assert.match(viText, /AICD  \/  BÁO CÁO RÀ SOÁT/);
   assert.match(viText, /OCR cục bộ trong trình duyệt/);
-  assert.equal(english.blocks.filter(block => block.kind === 'section').length, 9);
+  assert.equal(english.blocks.filter(block => block.kind === 'section').length, 10);
   assert.equal(english.blocks.find(block => block.kind === 'section')?.value, '01   Overview and next actions');
   for (const candidate of english.data.candidates.filter(candidate => !candidate.lineId)) assert.ok(enText.includes(candidate.originalText));
   assert.equal(JSON.stringify(state), original, 'Generating translated content must not modify stored evidence.');
